@@ -56,6 +56,7 @@
 
   #board{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;align-items:flex-start;}
   .col{min-width:290px;max-width:290px;flex-shrink:0;background:rgba(255,255,255,0.35);border:1px solid var(--line);border-radius:10px;padding:12px;}
+  .col-archive{background:rgba(200,190,170,0.25);border-style:dashed;}
   .col-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px dashed var(--line-strong);}
   .col-head h3{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;margin:0;color:var(--ink);}
   .col-count{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--ink);color:var(--canvas-2);border-radius:10px;padding:1px 8px;}
@@ -187,7 +188,7 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-autoarchive</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-archivecol</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -743,13 +744,25 @@ function nextStatus(key){
 
 function renderKanban(list){
   const board = $('#board');
-  board.innerHTML = STATUSES.map(s=>{
-    const items = sortOrders(list.filter(o=>o.status===s.key));
+  const showArchived = $('#showArchived').checked;
+  const activeCols = STATUSES.map(s=>{
+    const items = sortOrders(list.filter(o=>o.status===s.key && !o.archived));
     return `<div class="col" data-status="${s.key}">
       <div class="col-head"><h3>${s.label}</h3><span class="col-count">${items.length}</span></div>
       ${items.length ? items.map(tagCardHTML).join('') : '<div class="col-empty">Aucune commande</div>'}
     </div>`;
   }).join('');
+
+  let archiveCol = '';
+  if(showArchived){
+    const archivedItems = [...list.filter(o=>o.archived)].sort((a,b)=> new Date(b.createdAt||0) - new Date(a.createdAt||0));
+    archiveCol = `<div class="col col-archive" data-status="archive">
+      <div class="col-head"><h3>Archives</h3><span class="col-count">${archivedItems.length}</span></div>
+      ${archivedItems.length ? archivedItems.map(tagCardHTML).join('') : '<div class="col-empty">Aucune commande archivée</div>'}
+    </div>`;
+  }
+
+  board.innerHTML = activeCols + archiveCol;
 
   board.querySelectorAll('.tag .edit').forEach(btn=>{
     btn.addEventListener('click', (e)=>{ e.stopPropagation(); openModal(btn.closest('.tag').dataset.id); });
