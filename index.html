@@ -30,6 +30,42 @@
 
   .storage-banner{background:var(--red-bg);color:var(--thread-2);border:1px solid var(--thread);border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px;display:none;}
   .storage-banner.show{display:block;}
+
+  .main-nav{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--line);}
+  .main-nav button{
+    font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;
+    background:none;border:none;padding:10px 18px;cursor:pointer;color:var(--ink-2);
+    border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  .main-nav button.active{color:var(--ink);border-bottom-color:var(--thread);font-weight:600;}
+  .main-nav button:hover{color:var(--ink);}
+
+  .brands-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+  .brand-card{
+    background:var(--canvas-2);border:1px solid var(--line-strong);border-radius:10px;
+    padding:16px;cursor:pointer;box-shadow:var(--shadow);
+  }
+  .brand-card:hover{border-color:var(--ink);}
+  .brand-card h3{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:16px;color:var(--ink);margin:0 0 4px;}
+  .brand-card .contact{font-size:12px;color:var(--ink-2);margin-bottom:10px;}
+  .brand-progress{font-size:11px;color:var(--ink-2);margin-bottom:6px;}
+  .brand-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .brand-bar-fill{height:100%;background:var(--green);}
+  .brand-card-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);}
+  .brand-card-actions button{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;background:none;border:none;color:var(--ink-2);cursor:pointer;}
+  .brand-card-actions button:hover{color:var(--ink);text-decoration:underline;}
+
+  .task-table{width:100%;border-collapse:collapse;margin-top:12px;}
+  .task-table th{text-align:left;font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;color:var(--ink-2);padding:6px 8px;border-bottom:1px solid var(--line-strong);}
+  .task-table td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  .task-table input[type=text], .task-table input[type=number]{border:1px solid var(--line);padding:6px 8px;font-size:13px;}
+  .task-table tr.done td{opacity:0.5;}
+  .task-table tr.done input[type=text]{text-decoration:line-through;}
+  .task-table .col-check{width:34px;text-align:center;}
+  .task-table .col-qty{width:70px;}
+  .task-table .col-del{width:34px;}
+  .task-table .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
+
   .subbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
   .team-switch{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);}
   .team-switch label.switch{position:relative;width:34px;height:19px;display:inline-block;flex-shrink:0;}
@@ -188,14 +224,21 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-archivecol</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-marques</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
 
+  <div class="main-nav">
+    <button id="navCommandes" class="active">Commandes</button>
+    <button id="navMarques">Marques</button>
+  </div>
+
   <div class="storage-banner" id="storageBanner">
     Cette application n'est pas encore connectée à une base de données. Les commandes ne seront pas partagées ni conservées d'un appareil à l'autre tant qu'une base Firebase n'est pas configurée dans le code (voir les instructions fournies).
   </div>
+
+  <div id="commandesSection">
 
   <div class="subbar">
     <label class="check-inline"><input type="checkbox" id="showArchived"> Afficher les archives</label>
@@ -224,6 +267,21 @@
     <h2>Aucune commande</h2>
     <p>Commence par créer ta première commande pour la voir apparaître ici.</p>
     <button class="btn btn-primary" id="btnNewEmpty" style="margin-top:10px;">+ Nouvelle commande</button>
+  </div>
+
+  </div>
+
+  <div id="marquesSection" style="display:none;">
+    <div class="toolbar">
+      <input type="text" id="brandSearch" placeholder="Rechercher une marque…">
+      <button class="btn btn-primary" id="btnNewBrand">+ Nouvelle marque</button>
+    </div>
+    <div id="brandsGrid" class="brands-grid"></div>
+    <div id="brandsEmpty" class="empty-state" style="display:none;">
+      <h2>Aucune marque</h2>
+      <p>Ajoute une marque pour commencer à suivre ce qu'il faut lui produire.</p>
+      <button class="btn btn-primary" id="btnNewBrandEmpty" style="margin-top:10px;">+ Nouvelle marque</button>
+    </div>
   </div>
 
 </div>
@@ -360,6 +418,56 @@
         </div>
       </div>
     </form>
+  </div>
+</div>
+
+<div class="overlay" id="brandOverlay">
+  <div class="modal" style="max-width:420px;">
+    <h2 id="brandModalTitle">Nouvelle marque</h2>
+    <div class="sub">Renseigne les informations de la marque.</div>
+    <form id="brandForm" novalidate>
+      <div class="form-grid">
+        <div class="full">
+          <label for="brandName">Nom de la marque</label>
+          <input type="text" id="brandName" required placeholder="Ex. Studio Delacroix">
+        </div>
+        <div class="full">
+          <label for="brandContact">Contact (optionnel)</label>
+          <input type="text" id="brandContact" placeholder="Téléphone, email…">
+        </div>
+        <div class="full">
+          <label for="brandNotes">Notes (optionnel)</label>
+          <textarea id="brandNotes" placeholder="Infos utiles sur cette marque…"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <div class="left">
+          <button type="button" class="btn btn-ghost btn-sm" id="btnDeleteBrand" style="display:none;color:var(--thread);border-color:var(--thread);">Supprimer</button>
+        </div>
+        <div class="right">
+          <button type="button" class="btn btn-ghost" id="btnBrandCancel">Annuler</button>
+          <button type="button" class="btn btn-primary" id="btnBrandSave">Enregistrer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="tasksOverlay">
+  <div class="modal" style="max-width:600px;">
+    <h2 id="tasksModalTitle">Marque</h2>
+    <div class="sub" id="tasksModalSub"></div>
+    <table class="task-table">
+      <thead><tr><th class="col-check">Fait</th><th>Description</th><th class="col-qty">Qté</th><th class="col-del"></th></tr></thead>
+      <tbody id="tasksTableBody"></tbody>
+    </table>
+    <button type="button" class="btn btn-ghost btn-sm" id="btnAddTaskRow" style="margin-top:10px;">+ Ajouter une ligne</button>
+    <div class="modal-actions">
+      <div class="left"></div>
+      <div class="right">
+        <button type="button" class="btn btn-primary" id="btnTasksClose">Fermer</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1316,6 +1424,243 @@ $('#btnKanban').addEventListener('click', ()=>{
 });
 $('#btnList').addEventListener('click', ()=>{
   currentView='list'; $('#btnList').classList.add('active'); $('#btnKanban').classList.remove('active'); render();
+});
+
+/* ---------- Marques ---------- */
+let brands = [];
+let currentEditingBrandId = null;
+let currentTasksBrandId = null;
+let currentTasks = [];
+let brandsLoaded = false;
+
+async function loadBrands(){
+  if(!db){ brands = []; renderBrands(); return; }
+  try{
+    const snap = await withTimeout(db.collection('brands').get(), 12000);
+    brands = snap.docs.map(d=>d.data());
+  }catch(e){
+    brands = [];
+    showToast('Erreur de chargement des marques (' + e.message + ')');
+  }
+  renderBrands();
+}
+async function saveBrandDoc(brand){
+  if(!db) return { ok:false, error:'Firebase non configuré' };
+  try{
+    await withTimeout(db.collection('brands').doc(brand.id).set(brand), 12000);
+    return { ok:true };
+  }catch(e){
+    return { ok:false, error: (e && e.message) ? e.message : 'erreur inconnue' };
+  }
+}
+async function deleteBrandCompletely(id){
+  if(!db) return;
+  try{
+    const tasksSnap = await withTimeout(db.collection('brands').doc(id).collection('tasks').get(), 12000);
+    const batch = db.batch();
+    tasksSnap.forEach(d=> batch.delete(d.ref));
+    batch.delete(db.collection('brands').doc(id));
+    await withTimeout(batch.commit(), 12000);
+  }catch(e){
+    showToast('Erreur de suppression (' + e.message + ')');
+  }
+}
+async function loadBrandTasks(brandId){
+  if(!db) return [];
+  try{
+    const snap = await withTimeout(db.collection('brands').doc(brandId).collection('tasks').get(), 12000);
+    return snap.docs.map(d=>d.data()).sort((a,b)=> (a.createdAt||'').localeCompare(b.createdAt||''));
+  }catch(e){
+    return [];
+  }
+}
+async function saveTaskDoc(brandId, task){
+  if(!db) return false;
+  try{
+    await withTimeout(db.collection('brands').doc(brandId).collection('tasks').doc(task.id).set(task), 10000);
+    return true;
+  }catch(e){
+    showToast('Erreur : ' + (e && e.message ? e.message : 'inconnue'));
+    return false;
+  }
+}
+async function deleteTaskDoc(brandId, taskId){
+  if(!db) return;
+  try{ await withTimeout(db.collection('brands').doc(brandId).collection('tasks').doc(taskId).delete(), 10000); }catch(e){}
+}
+
+function brandCardHTML(b){
+  const total = b.taskTotal || 0;
+  const done = b.taskDone || 0;
+  const pct = total ? Math.round(done/total*100) : 0;
+  return `<div class="brand-card" data-id="${b.id}">
+    <h3>${b.name}</h3>
+    ${b.contact ? `<div class="contact">${b.contact}</div>` : ''}
+    <div class="brand-progress">${done}/${total} commandes faites</div>
+    <div class="brand-bar"><div class="brand-bar-fill" style="width:${pct}%"></div></div>
+    <div class="brand-card-actions">
+      <button type="button" class="edit-brand">Modifier</button>
+    </div>
+  </div>`;
+}
+function renderBrands(){
+  const q = $('#brandSearch').value.trim().toLowerCase();
+  const list = brands.filter(b=> !q || b.name.toLowerCase().includes(q));
+  $('#brandsEmpty').style.display = brands.length===0 ? 'block' : 'none';
+  $('#brandsGrid').style.display = brands.length>0 ? 'grid' : 'none';
+  $('#brandsGrid').innerHTML = list.map(brandCardHTML).join('');
+  $('#brandsGrid').querySelectorAll('.brand-card').forEach(card=>{
+    card.addEventListener('click', (e)=>{
+      if(e.target.closest('.edit-brand')) return;
+      openTasksModal(card.dataset.id);
+    });
+  });
+  $('#brandsGrid').querySelectorAll('.edit-brand').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); openBrandModal(btn.closest('.brand-card').dataset.id); });
+  });
+}
+
+function resetBrandForm(){
+  $('#brandForm').reset();
+  $('#btnDeleteBrand').style.display = 'none';
+  currentEditingBrandId = null;
+  $('#brandModalTitle').textContent = 'Nouvelle marque';
+}
+function openBrandModal(id){
+  resetBrandForm();
+  if(id){
+    const b = brands.find(x=>x.id===id);
+    currentEditingBrandId = id;
+    $('#brandModalTitle').textContent = 'Modifier la marque';
+    $('#brandName').value = b.name;
+    $('#brandContact').value = b.contact || '';
+    $('#brandNotes').value = b.notes || '';
+    $('#btnDeleteBrand').style.display = 'inline-block';
+  }
+  $('#brandOverlay').classList.add('open');
+}
+function closeBrandModal(){ $('#brandOverlay').classList.remove('open'); }
+
+$('#btnBrandSave').addEventListener('click', async ()=>{
+  const name = $('#brandName').value.trim();
+  if(!name){ showToast('Le nom de la marque est obligatoire'); return; }
+  const id = currentEditingBrandId || ('brand_' + Date.now() + '_' + Math.random().toString(36).slice(2,7));
+  const existing = currentEditingBrandId ? brands.find(b=>b.id===currentEditingBrandId) : null;
+  const brand = {
+    id, name,
+    contact: $('#brandContact').value.trim(),
+    notes: $('#brandNotes').value.trim(),
+    taskTotal: existing ? (existing.taskTotal||0) : 0,
+    taskDone: existing ? (existing.taskDone||0) : 0,
+    createdAt: existing ? existing.createdAt : new Date().toISOString()
+  };
+  if(currentEditingBrandId){
+    const idx = brands.findIndex(b=>b.id===currentEditingBrandId);
+    brands[idx] = brand;
+  }else{
+    brands.push(brand);
+  }
+  const r = await saveBrandDoc(brand);
+  renderBrands();
+  if(!r.ok){ showToast('Échec : ' + r.error); return; }
+  showToast(currentEditingBrandId ? 'Marque mise à jour' : 'Marque créée');
+  closeBrandModal();
+});
+$('#btnDeleteBrand').addEventListener('click', async ()=>{
+  if(!currentEditingBrandId) return;
+  const b = brands.find(x=>x.id===currentEditingBrandId);
+  const ok = await askConfirm(`Supprimer définitivement la marque "${b.name}" et toutes ses lignes de suivi ? Cette action est irréversible.`);
+  if(!ok) return;
+  brands = brands.filter(x=>x.id!==currentEditingBrandId);
+  await deleteBrandCompletely(currentEditingBrandId);
+  renderBrands();
+  closeBrandModal();
+  showToast('Marque supprimée');
+});
+$('#btnBrandCancel').addEventListener('click', closeBrandModal);
+$('#brandOverlay').addEventListener('click', (e)=>{ if(e.target.id==='brandOverlay') closeBrandModal(); });
+$('#btnNewBrand').addEventListener('click', ()=> openBrandModal(null));
+$('#btnNewBrandEmpty').addEventListener('click', ()=> openBrandModal(null));
+$('#brandSearch').addEventListener('input', renderBrands);
+
+async function openTasksModal(brandId){
+  currentTasksBrandId = brandId;
+  const b = brands.find(x=>x.id===brandId);
+  $('#tasksModalTitle').textContent = b.name;
+  $('#tasksModalSub').textContent = 'Commandes à produire pour cette marque';
+  currentTasks = await loadBrandTasks(brandId);
+  renderTasksTable();
+  $('#tasksOverlay').classList.add('open');
+}
+function closeTasksModal(){
+  $('#tasksOverlay').classList.remove('open');
+  currentTasksBrandId = null;
+  renderBrands();
+}
+function renderTasksTable(){
+  $('#tasksTableBody').innerHTML = currentTasks.map(t=>`
+    <tr class="${t.done?'done':''}" data-id="${t.id}">
+      <td class="col-check"><input type="checkbox" class="task-done" ${t.done?'checked':''}></td>
+      <td><input type="text" class="task-desc" value="${(t.description||'').replace(/"/g,'&quot;')}" placeholder="Ex. 20 t-shirts logo dos"></td>
+      <td class="col-qty"><input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0"></td>
+      <td class="col-del"><button type="button" class="del-row">×</button></td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
+
+  $('#tasksTableBody').querySelectorAll('tr[data-id]').forEach(tr=>{
+    const id = tr.dataset.id;
+    const task = currentTasks.find(t=>t.id===id);
+    tr.querySelector('.task-done').addEventListener('change', async (e)=>{
+      task.done = e.target.checked;
+      tr.classList.toggle('done', task.done);
+      await saveTaskDoc(currentTasksBrandId, task);
+      await updateBrandSummary();
+    });
+    tr.querySelector('.task-desc').addEventListener('change', async (e)=>{
+      task.description = e.target.value.trim();
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    tr.querySelector('.task-qty').addEventListener('change', async (e)=>{
+      task.quantity = e.target.value;
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    tr.querySelector('.del-row').addEventListener('click', async ()=>{
+      currentTasks = currentTasks.filter(t=>t.id!==id);
+      renderTasksTable();
+      await deleteTaskDoc(currentTasksBrandId, id);
+      await updateBrandSummary();
+    });
+  });
+}
+async function updateBrandSummary(){
+  const total = currentTasks.length;
+  const done = currentTasks.filter(t=>t.done).length;
+  const idx = brands.findIndex(b=>b.id===currentTasksBrandId);
+  if(idx>=0){
+    brands[idx].taskTotal = total;
+    brands[idx].taskDone = done;
+    await saveBrandDoc(brands[idx]);
+  }
+}
+$('#btnAddTaskRow').addEventListener('click', async ()=>{
+  const task = { id:'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), description:'', quantity:'', done:false, createdAt:new Date().toISOString() };
+  currentTasks.push(task);
+  renderTasksTable();
+  await saveTaskDoc(currentTasksBrandId, task);
+  await updateBrandSummary();
+  const lastInput = $('#tasksTableBody').querySelector('tr:last-child .task-desc');
+  if(lastInput) lastInput.focus();
+});
+$('#btnTasksClose').addEventListener('click', closeTasksModal);
+$('#tasksOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tasksOverlay') closeTasksModal(); });
+
+$('#navCommandes').addEventListener('click', ()=>{
+  $('#navCommandes').classList.add('active'); $('#navMarques').classList.remove('active');
+  $('#commandesSection').style.display='block'; $('#marquesSection').style.display='none';
+});
+$('#navMarques').addEventListener('click', async ()=>{
+  $('#navMarques').classList.add('active'); $('#navCommandes').classList.remove('active');
+  $('#commandesSection').style.display='none'; $('#marquesSection').style.display='block';
+  if(!brandsLoaded){ brandsLoaded = true; await loadBrands(); }
 });
 
 loadOrders();
