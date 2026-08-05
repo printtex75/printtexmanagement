@@ -55,14 +55,20 @@
   .brand-card-actions button{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;background:none;border:none;color:var(--ink-2);cursor:pointer;}
   .brand-card-actions button:hover{color:var(--ink);text-decoration:underline;}
 
-  .task-table{width:100%;border-collapse:collapse;margin-top:12px;}
+  .task-table-wrap{overflow-x:auto;}
+  .task-table{width:100%;border-collapse:collapse;margin-top:12px;min-width:820px;}
   .task-table th{text-align:left;font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;color:var(--ink-2);padding:6px 8px;border-bottom:1px solid var(--line-strong);}
   .task-table td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
-  .task-table input[type=text], .task-table input[type=number]{border:1px solid var(--line);padding:6px 8px;font-size:13px;}
+  .task-table input[type=text], .task-table input[type=number], .task-table select{border:1px solid var(--line);padding:6px 8px;font-size:13px;width:100%;}
   .task-table tr.done td{opacity:0.5;}
   .task-table tr.done input[type=text]{text-decoration:line-through;}
   .task-table .col-check{width:34px;text-align:center;}
+  .task-table .col-nom{width:180px;}
+  .task-table .col-taille{width:90px;}
+  .task-table .col-couleur{width:110px;}
+  .task-table .col-impression{width:150px;}
   .task-table .col-qty{width:70px;}
+  .task-table .col-remarque{width:180px;}
   .task-table .col-del{width:34px;}
   .task-table .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
 
@@ -224,7 +230,7 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-marques</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-taskcols</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -454,13 +460,24 @@
 </div>
 
 <div class="overlay" id="tasksOverlay">
-  <div class="modal" style="max-width:600px;">
+  <div class="modal" style="max-width:980px;">
     <h2 id="tasksModalTitle">Marque</h2>
     <div class="sub" id="tasksModalSub"></div>
+    <div class="task-table-wrap">
     <table class="task-table">
-      <thead><tr><th class="col-check">Fait</th><th>Description</th><th class="col-qty">Qté</th><th class="col-del"></th></tr></thead>
+      <thead><tr>
+        <th class="col-check">Fait</th>
+        <th class="col-nom">Nom</th>
+        <th class="col-taille">Taille</th>
+        <th class="col-couleur">Couleur</th>
+        <th class="col-impression">Impression</th>
+        <th class="col-qty">Qté</th>
+        <th class="col-remarque">Remarque</th>
+        <th class="col-del"></th>
+      </tr></thead>
       <tbody id="tasksTableBody"></tbody>
     </table>
+    </div>
     <button type="button" class="btn btn-ghost btn-sm" id="btnAddTaskRow" style="margin-top:10px;">+ Ajouter une ligne</button>
     <div class="modal-actions">
       <div class="left"></div>
@@ -1597,14 +1614,21 @@ function closeTasksModal(){
   currentTasksBrandId = null;
   renderBrands();
 }
+const TASK_SIZES = ['', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+const TASK_PRINT_METHODS = ['', 'Sérigraphie', 'Broderie', 'DTF (transfert numérique)', 'Flocage', 'Sublimation', 'Vinyle transfert', 'Autre'];
+
 function renderTasksTable(){
   $('#tasksTableBody').innerHTML = currentTasks.map(t=>`
     <tr class="${t.done?'done':''}" data-id="${t.id}">
       <td class="col-check"><input type="checkbox" class="task-done" ${t.done?'checked':''}></td>
-      <td><input type="text" class="task-desc" value="${(t.description||'').replace(/"/g,'&quot;')}" placeholder="Ex. 20 t-shirts logo dos"></td>
+      <td class="col-nom"><input type="text" class="task-nom" value="${(t.nom||'').replace(/"/g,'&quot;')}" placeholder="Ex. T-shirt col rond"></td>
+      <td class="col-taille"><select class="task-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${t.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select></td>
+      <td class="col-couleur"><input type="text" class="task-couleur" value="${(t.couleur||'').replace(/"/g,'&quot;')}" placeholder="Ex. Noir"></td>
+      <td class="col-impression"><select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select></td>
       <td class="col-qty"><input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0"></td>
+      <td class="col-remarque"><input type="text" class="task-remarque" value="${(t.remarque||'').replace(/"/g,'&quot;')}" placeholder="Notes…"></td>
       <td class="col-del"><button type="button" class="del-row">×</button></td>
-    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
 
   $('#tasksTableBody').querySelectorAll('tr[data-id]').forEach(tr=>{
     const id = tr.dataset.id;
@@ -1615,12 +1639,28 @@ function renderTasksTable(){
       await saveTaskDoc(currentTasksBrandId, task);
       await updateBrandSummary();
     });
-    tr.querySelector('.task-desc').addEventListener('change', async (e)=>{
-      task.description = e.target.value.trim();
+    tr.querySelector('.task-nom').addEventListener('change', async (e)=>{
+      task.nom = e.target.value.trim();
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    tr.querySelector('.task-taille').addEventListener('change', async (e)=>{
+      task.taille = e.target.value;
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    tr.querySelector('.task-couleur').addEventListener('change', async (e)=>{
+      task.couleur = e.target.value.trim();
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    tr.querySelector('.task-impression').addEventListener('change', async (e)=>{
+      task.impression = e.target.value;
       await saveTaskDoc(currentTasksBrandId, task);
     });
     tr.querySelector('.task-qty').addEventListener('change', async (e)=>{
       task.quantity = e.target.value;
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    tr.querySelector('.task-remarque').addEventListener('change', async (e)=>{
+      task.remarque = e.target.value.trim();
       await saveTaskDoc(currentTasksBrandId, task);
     });
     tr.querySelector('.del-row').addEventListener('click', async ()=>{
@@ -1642,12 +1682,12 @@ async function updateBrandSummary(){
   }
 }
 $('#btnAddTaskRow').addEventListener('click', async ()=>{
-  const task = { id:'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), description:'', quantity:'', done:false, createdAt:new Date().toISOString() };
+  const task = { id:'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), nom:'', taille:'', couleur:'', impression:'', quantity:'', remarque:'', done:false, createdAt:new Date().toISOString() };
   currentTasks.push(task);
   renderTasksTable();
   await saveTaskDoc(currentTasksBrandId, task);
   await updateBrandSummary();
-  const lastInput = $('#tasksTableBody').querySelector('tr:last-child .task-desc');
+  const lastInput = $('#tasksTableBody').querySelector('tr:last-child .task-nom');
   if(lastInput) lastInput.focus();
 });
 $('#btnTasksClose').addEventListener('click', closeTasksModal);
