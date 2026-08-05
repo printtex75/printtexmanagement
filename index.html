@@ -187,7 +187,7 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-storage</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-cleanup</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -488,10 +488,29 @@ async function saveOrder(order){
     return { ok:false, error: (e && e.message) ? e.message : 'erreur inconnue' };
   }
 }
+async function deleteImageFiles(paths){
+  if(!storageRef || !paths.length) return;
+  await Promise.all(paths.map(p => storageRef.child(p).delete().catch(()=>{})));
+}
+async function purgeOrderImages(id){
+  if(!db) return;
+  try{
+    const imagesSnap = await withTimeout(db.collection('orders').doc(id).collection('images').get(), 12000);
+    const paths = [];
+    imagesSnap.forEach(d=>{ const data = d.data(); if(data && data.path) paths.push(data.path); });
+    await deleteImageFiles(paths);
+    const batch = db.batch();
+    imagesSnap.forEach(d=> batch.delete(d.ref));
+    await withTimeout(batch.commit(), 12000);
+  }catch(e){}
+}
 async function deleteOrderCompletely(id){
   if(!db) return;
   try{
     const imagesSnap = await withTimeout(db.collection('orders').doc(id).collection('images').get(), 12000);
+    const paths = [];
+    imagesSnap.forEach(d=>{ const data = d.data(); if(data && data.path) paths.push(data.path); });
+    await deleteImageFiles(paths);
     const batch = db.batch();
     imagesSnap.forEach(d=> batch.delete(d.ref));
     batch.delete(db.collection('orders').doc(id));
@@ -500,6 +519,38 @@ async function deleteOrderCompletely(id){
     showToast("Erreur de suppression (" + e.message + ")");
   }
 }
+async function copyImagesToNewOrder(images, newOrderId){
+  const copy = { face:null, dos:null, mancheGauche:null, mancheDroite:null, etiquette:null, extra:[] };
+  if(!storageRef) return copy;
+  for(const s of SLOTS){
+    const im = images[s.key];
+    if(im && im.url){
+      try{
+        const blob = await (await fetch(im.url)).blob();
+        const path = `orders/${newOrderId}/${s.key}_${Date.now()}`;
+        const ref = storageRef.child(path);
+        await ref.put(blob);
+        const url = await ref.getDownloadURL();
+        copy[s.key] = { name: im.name, url, path };
+      }catch(e){}
+    }
+  }
+  for(let i=0; i<(images.extra||[]).length; i++){
+    const im = images.extra[i];
+    if(im && im.url){
+      try{
+        const blob = await (await fetch(im.url)).blob();
+        const path = `orders/${newOrderId}/extra_${Date.now()}_${i}`;
+        const ref = storageRef.child(path);
+        await ref.put(blob);
+        const url = await ref.getDownloadURL();
+        copy.extra.push({ name: im.name, url, path });
+      }catch(e){}
+    }
+  }
+  return copy;
+}
+
 async function uploadImageFile(file, path){
   const ref = storageRef.child(path);
   await withTimeout(ref.put(file), 60000);
@@ -1040,17 +1091,25 @@ $('#btnDelete').addEventListener('click', async ()=>{
 $('#btnDuplicate').addEventListener('click', async ()=>{
   if(!currentEditId) return;
   const src = orders.find(x=>x.id===currentEditId);
-  const images = await loadOrderImages(currentEditId);
+  const srcImages = await loadOrderImages(currentEditId);
   const newId = 'ord_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  showToast('Duplication en cours…');
+  const copiedImages = await copyImagesToNewOrder(srcImages, newId);
+  const thumbSource = [
+    copiedImages.face, copiedImages.dos, copiedImages.mancheGauche,
+    copiedImages.mancheDroite, copiedImages.etiquette, ...(copiedImages.extra||[])
+  ].filter(Boolean);
   const copy = {
     ...src, id:newId,
     orderNumber: Math.max(0, ...orders.map(o=>o.orderNumber||0)) + 1,
     status:'nouvelle', archived:false,
+    thumbnails: thumbSource.slice(0,3).map(im=>im.url),
+    imageCount: thumbSource.length,
     createdAt: new Date().toISOString()
   };
   orders.push(copy);
   const dupResult = await saveOrder(copy);
-  await saveOrderImages(newId, images);
+  await saveOrderImages(newId, copiedImages);
   closeModal(); render();
   showToast(dupResult.ok ? ('Commande dupliquée en #' + String(copy.orderNumber).padStart(4,'0')) : ("Échec : " + dupResult.error));
 });
@@ -1058,10 +1117,20 @@ $('#btnDuplicate').addEventListener('click', async ()=>{
 $('#btnArchive').addEventListener('click', async ()=>{
   if(!currentEditId) return;
   const o = orders.find(x=>x.id===currentEditId);
-  o.archived = !o.archived;
+  const archiving = !o.archived;
+  if(archiving){
+    const ok = await askConfirm("Archiver cette commande supprimera définitivement ses images (pour libérer la base). L'historique de la commande reste consultable, mais les visuels ne seront plus récupérables. Continuer ?");
+    if(!ok) return;
+  }
+  o.archived = archiving;
+  if(archiving){
+    await purgeOrderImages(currentEditId);
+    o.thumbnails = [];
+    o.imageCount = 0;
+  }
   const archResult = await saveOrder(o);
   closeModal(); render();
-  showToast(archResult.ok ? (o.archived ? 'Commande archivée' : 'Commande désarchivée') : ("Échec : " + archResult.error));
+  showToast(archResult.ok ? (o.archived ? 'Commande archivée, images supprimées' : 'Commande désarchivée') : ("Échec : " + archResult.error));
 });
 
 $('#btnPrint').addEventListener('click', ()=>{
