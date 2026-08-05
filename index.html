@@ -72,16 +72,24 @@
   .task-table .col-del{width:34px;}
   .task-table .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
 
-  .quota-widget{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:18px;}
-  .quota-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;flex-wrap:wrap;gap:6px;}
-  .quota-title{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:13px;color:var(--ink);letter-spacing:0.3px;}
-  .quota-week{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);}
-  .quota-bar-track{height:16px;background:var(--line);border-radius:8px;overflow:hidden;position:relative;}
-  .quota-bar-fill{height:100%;background:var(--green);transition:width .3s ease;border-radius:8px;}
+  .quota-widget{
+    position:fixed;bottom:18px;right:18px;z-index:40;
+    background:var(--canvas-2);border:1px solid var(--line-strong);border-radius:10px;
+    padding:9px 12px;width:190px;box-shadow:0 4px 14px rgba(42,38,32,0.18);
+  }
+  .quota-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:6px;}
+  .quota-title{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:10px;color:var(--ink);letter-spacing:0.3px;white-space:nowrap;}
+  .quota-week{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-2);white-space:nowrap;}
+  .quota-bar-track{height:8px;background:var(--line);border-radius:4px;overflow:hidden;position:relative;}
+  .quota-bar-fill{height:100%;background:var(--green);transition:width .3s ease;border-radius:4px;}
   .quota-bar-fill.warn{background:var(--amber);}
   .quota-bar-fill.over{background:var(--thread);}
-  .quota-text{font-size:12px;color:var(--ink-2);margin-top:8px;}
-  .quota-text .over-amount{color:var(--thread);font-weight:700;}
+  .quota-text{font-size:10px;color:var(--ink-2);margin-top:5px;line-height:1.35;}
+  .quota-text .over-amount{color:var(--thread);font-weight:700;display:block;}
+  @media (max-width:640px){
+    .quota-widget{width:150px;padding:7px 9px;bottom:12px;right:12px;}
+    .quota-title{font-size:9px;}
+  }
   .subbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
   .team-switch{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);}
   .team-switch label.switch{position:relative;width:34px;height:19px;display:inline-block;flex-shrink:0;}
@@ -240,7 +248,7 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-quota</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-quotafloat</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -250,20 +258,20 @@
     <button id="navMarques">Marques</button>
   </div>
 
-  <div class="storage-banner" id="storageBanner">
-    Cette application n'est pas encore connectée à une base de données. Les commandes ne seront pas partagées ni conservées d'un appareil à l'autre tant qu'une base Firebase n'est pas configurée dans le code (voir les instructions fournies).
-  </div>
-
-  <div id="commandesSection">
-
   <div class="quota-widget" id="quotaWidget">
     <div class="quota-head">
-      <span class="quota-title">Quota T-shirts · cette semaine</span>
+      <span class="quota-title">Quota T-shirts</span>
       <span class="quota-week" id="quotaWeekRange"></span>
     </div>
     <div class="quota-bar-track"><div class="quota-bar-fill" id="quotaBarFill"></div></div>
     <div class="quota-text" id="quotaText"></div>
   </div>
+
+  <div class="storage-banner" id="storageBanner">
+    Cette application n'est pas encore connectée à une base de données. Les commandes ne seront pas partagées ni conservées d'un appareil à l'autre tant qu'une base Firebase n'est pas configurée dans le code (voir les instructions fournies).
+  </div>
+
+  <div id="commandesSection">
 
   <div class="subbar">
     <label class="check-inline"><input type="checkbox" id="showArchived"> Afficher les archives</label>
@@ -872,9 +880,9 @@ function renderQuota(){
 
   $('#quotaWeekRange').textContent = `Semaine du ${monday.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})} au ${sunday.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}`;
 
-  let text = `${points} / ${TSHIRT_WEEKLY_QUOTA} points (1 t-shirt = 1 point, selon la deadline)`;
+  let text = `${points} / ${TSHIRT_WEEKLY_QUOTA} pts`;
   if(points > TSHIRT_WEEKLY_QUOTA){
-    text += ` — <span class="over-amount">dépassement de ${points - TSHIRT_WEEKLY_QUOTA} points</span>`;
+    text += `<span class="over-amount">+${points - TSHIRT_WEEKLY_QUOTA} au-dessus</span>`;
   }
   $('#quotaText').innerHTML = text;
 }
