@@ -230,7 +230,7 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-taskcols</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-dtg</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -335,6 +335,7 @@
             <option>Sérigraphie</option>
             <option>Broderie</option>
             <option>DTF (transfert numérique)</option>
+            <option>DTG</option>
             <option>Flocage</option>
             <option>Sublimation</option>
             <option>Vinyle transfert</option>
@@ -1615,7 +1616,7 @@ function closeTasksModal(){
   renderBrands();
 }
 const TASK_SIZES = ['', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
-const TASK_PRINT_METHODS = ['', 'Sérigraphie', 'Broderie', 'DTF (transfert numérique)', 'Flocage', 'Sublimation', 'Vinyle transfert', 'Autre'];
+const TASK_PRINT_METHODS = ['', 'Sérigraphie', 'Broderie', 'DTF (transfert numérique)', 'DTG', 'Flocage', 'Sublimation', 'Vinyle transfert', 'Autre'];
 
 function renderTasksTable(){
   $('#tasksTableBody').innerHTML = currentTasks.map(t=>`
