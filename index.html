@@ -187,7 +187,7 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-cleanup</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-autoarchive</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -760,7 +760,15 @@ function renderKanban(list){
       const id = btn.closest('.tag').dataset.id;
       const o = orders.find(x=>x.id===id);
       const nxt = nextStatus(o.status);
-      if(nxt){ o.status = nxt; const r = await saveOrder(o); render(); showToast(r.ok ? 'Statut mis à jour' : "Échec : " + r.error); }
+      if(nxt){
+        o.status = nxt;
+        if(nxt === 'livree'){
+          o.archived = true; o.thumbnails = []; o.imageCount = 0;
+          await purgeOrderImages(o.id);
+        }
+        const r = await saveOrder(o); render();
+        showToast(r.ok ? (nxt === 'livree' ? 'Commande livrée et archivée (images supprimées)' : 'Statut mis à jour') : ("Échec : " + r.error));
+      }
     });
   });
   board.querySelectorAll('.tag').forEach(t=>{
@@ -1012,21 +1020,28 @@ $('#btnSave').addEventListener('click', async (e)=>{
       ? orders.find(o=>o.id===currentEditId).orderNumber
       : (Math.max(0, ...orders.map(o=>o.orderNumber||0)) + 1);
 
+    const willBeLivree = $('#status').value === 'livree';
     const hasPendingUploads = SLOTS.some(s=>currentImages[s.key] && currentImages[s.key].pendingFile) || (currentImages.extra||[]).some(im=>im.pendingFile);
-    if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = hasPendingUploads ? 'Envoi des images…' : 'Enregistrement…'; }
+    if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = (hasPendingUploads && !willBeLivree) ? 'Envoi des images…' : 'Enregistrement…'; }
 
-    const imagesResult = await saveOrderImages(id, currentImages);
-    if(!imagesResult){
-      showToast("Échec de l'envoi des images. Réessaie — tes fichiers sont toujours sur ton appareil.");
-      return;
+    let thumbnails = [];
+    let imageCount = 0;
+    if(willBeLivree){
+      if(currentEditId) await purgeOrderImages(id);
+    }else{
+      const imagesResult = await saveOrderImages(id, currentImages);
+      if(!imagesResult){
+        showToast("Échec de l'envoi des images. Réessaie — tes fichiers sont toujours sur ton appareil.");
+        return;
+      }
+      const thumbSource = [
+        currentImages.face, currentImages.dos, currentImages.mancheGauche,
+        currentImages.mancheDroite, currentImages.etiquette, ...(currentImages.extra||[])
+      ].filter(Boolean);
+      thumbnails = thumbSource.slice(0,3).map(im=>im.url);
+      imageCount = thumbSource.length;
     }
     if(submitBtn){ submitBtn.textContent = 'Enregistrement…'; }
-
-    const thumbSource = [
-      currentImages.face, currentImages.dos, currentImages.mancheGauche,
-      currentImages.mancheDroite, currentImages.etiquette, ...(currentImages.extra||[])
-    ].filter(Boolean);
-    const thumbnails = thumbSource.slice(0,3).map(im=>im.url);
 
     const order = {
       id, orderNumber,
@@ -1046,8 +1061,8 @@ $('#btnSave').addEventListener('click', async (e)=>{
       depositAmount: $('#depositAmount').value,
       notes: $('#notes').value.trim(),
       thumbnails,
-      imageCount: thumbSource.length,
-      archived: currentEditId ? (orders.find(o=>o.id===currentEditId).archived || false) : false,
+      imageCount,
+      archived: willBeLivree ? true : (currentEditId ? (orders.find(o=>o.id===currentEditId).archived || false) : false),
       createdAt: currentEditId ? (orders.find(o=>o.id===currentEditId).createdAt) : new Date().toISOString()
     };
 
@@ -1066,7 +1081,7 @@ $('#btnSave').addEventListener('click', async (e)=>{
       showToast("Échec de l'enregistrement : " + orderResult.error);
       return;
     }
-    showToast(wasEditing ? 'Commande mise à jour' : 'Commande créée');
+    showToast(willBeLivree ? 'Commande livrée et archivée (images supprimées)' : (wasEditing ? 'Commande mise à jour' : 'Commande créée'));
     closeModal();
   }catch(err){
     console.error('Erreur enregistrement commande:', err);
