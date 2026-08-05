@@ -75,20 +75,15 @@
   .quota-widget{
     position:fixed;bottom:18px;right:18px;z-index:40;
     background:var(--canvas-2);border:1px solid var(--line-strong);border-radius:10px;
-    padding:9px 12px;width:190px;box-shadow:0 4px 14px rgba(42,38,32,0.18);
+    padding:9px 12px;width:170px;box-shadow:0 4px 14px rgba(42,38,32,0.18);
   }
-  .quota-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:6px;}
-  .quota-title{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:10px;color:var(--ink);letter-spacing:0.3px;white-space:nowrap;}
-  .quota-week{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-2);white-space:nowrap;}
+  .quota-week{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-2);white-space:nowrap;margin-bottom:6px;}
   .quota-bar-track{height:8px;background:var(--line);border-radius:4px;overflow:hidden;position:relative;}
   .quota-bar-fill{height:100%;background:var(--green);transition:width .3s ease;border-radius:4px;}
   .quota-bar-fill.warn{background:var(--amber);}
   .quota-bar-fill.over{background:var(--thread);}
-  .quota-text{font-size:10px;color:var(--ink-2);margin-top:5px;line-height:1.35;}
-  .quota-text .over-amount{color:var(--thread);font-weight:700;display:block;}
   @media (max-width:640px){
-    .quota-widget{width:150px;padding:7px 9px;bottom:12px;right:12px;}
-    .quota-title{font-size:9px;}
+    .quota-widget{width:140px;padding:7px 9px;bottom:12px;right:12px;}
   }
   .subbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
   .team-switch{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);}
@@ -248,7 +243,7 @@
     <div class="brand">
       <h1>Atelier — Commandes</h1>
       <span class="brand-tag">Personnalisation textile</span>
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-quotafloat</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-quotaminimal</span>
     </div>
     <div class="stats" id="stats"></div>
   </header>
@@ -259,12 +254,8 @@
   </div>
 
   <div class="quota-widget" id="quotaWidget">
-    <div class="quota-head">
-      <span class="quota-title">Quota T-shirts</span>
-      <span class="quota-week" id="quotaWeekRange"></span>
-    </div>
+    <div class="quota-week" id="quotaWeekRange"></div>
     <div class="quota-bar-track"><div class="quota-bar-fill" id="quotaBarFill"></div></div>
-    <div class="quota-text" id="quotaText"></div>
   </div>
 
   <div class="storage-banner" id="storageBanner">
@@ -880,11 +871,9 @@ function renderQuota(){
 
   $('#quotaWeekRange').textContent = `Semaine du ${monday.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})} au ${sunday.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}`;
 
-  let text = `${points} / ${TSHIRT_WEEKLY_QUOTA} pts`;
-  if(points > TSHIRT_WEEKLY_QUOTA){
-    text += `<span class="over-amount">+${points - TSHIRT_WEEKLY_QUOTA} au-dessus</span>`;
-  }
-  $('#quotaText').innerHTML = text;
+  let title = `${points} / ${TSHIRT_WEEKLY_QUOTA} pts`;
+  if(points > TSHIRT_WEEKLY_QUOTA) title += ` — dépassement de ${points - TSHIRT_WEEKLY_QUOTA} pts`;
+  $('#quotaWidget').title = title;
 }
 
 /* ---------- Cards ---------- */
