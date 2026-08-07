@@ -115,7 +115,7 @@
   .oi-card .del-item{background:none;border:none;color:var(--thread);cursor:pointer;font-size:16px;padding:6px 4px;align-self:flex-end;}
   .oi-slots-row{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
   .oi-slots-label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin-bottom:6px;}
-  .oi-slots-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:420px;}
+  .oi-slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-width:520px;}
   .oi-slot{border:2px dashed var(--line-strong);border-radius:8px;background:#fff;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;text-align:center;padding:2px;}
   .oi-slot:hover{border-color:var(--ink);}
   .oi-slot.filled{border-style:solid;border-color:var(--line-strong);padding:0;}
@@ -124,7 +124,7 @@
   .oi-slot-plus{font-size:15px;color:var(--line-strong);line-height:1;margin-bottom:1px;}
   .oi-slot-tag{position:absolute;bottom:0;left:0;right:0;background:rgba(35,50,74,0.75);color:#fff;font-size:6.5px;text-transform:uppercase;padding:1px 2px;text-align:center;}
   .oi-slot-clear{position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;background:var(--thread);color:#fff;border:none;font-size:9px;cursor:pointer;line-height:1;z-index:2;}
-  @media (max-width:640px){ .oi-slots-grid{grid-template-columns:repeat(5,1fr);max-width:none;} }
+  @media (max-width:640px){ .oi-slots-grid{grid-template-columns:repeat(4,1fr);max-width:none;} }
   .task-table-wrap::-webkit-scrollbar{height:9px;}
   .task-table-wrap::-webkit-scrollbar-track{background:transparent;}
   .task-table-wrap::-webkit-scrollbar-thumb{background:var(--kraft);border-radius:9px;border:2px solid var(--canvas-2);background-clip:padding-box;}
@@ -727,7 +727,9 @@ const SLOTS = [
   {key:'dos', label:'Dos'},
   {key:'mancheGauche', label:'Manche G.'},
   {key:'mancheDroite', label:'Manche D.'},
-  {key:'etiquette', label:'Étiquette'}
+  {key:'etiquette', label:'Étiquette'},
+  {key:'mockup1', label:'Mockup 1'},
+  {key:'mockup2', label:'Mockup 2'}
 ];
 const PRIORITY_LABEL = {basse:'Basse', normale:'Normale', haute:'Haute'};
 const PRIORITY_RANK = {haute:0, normale:1, basse:2};
@@ -929,7 +931,11 @@ async function saveOrderImages(orderId, items, extra){
     return false;
   }
 }
-function emptySlots(){ return { face:null, dos:null, mancheGauche:null, mancheDroite:null, etiquette:null }; }
+function emptySlots(){
+  const o = {};
+  SLOTS.forEach(s=> o[s.key] = null);
+  return o;
+}
 async function loadOrderImages(orderId){
   const empty = { extra:[], items:{}, legacySlots: emptySlots() };
   if(!db) return empty;
