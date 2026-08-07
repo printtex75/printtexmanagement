@@ -137,11 +137,20 @@
   .task-table tr.done input[type=text]{text-decoration:line-through;}
   .task-table .col-check{width:34px;text-align:center;}
   .task-table .col-nom{width:180px;}
+  .task-table .col-blank{width:130px;}
   .task-table .col-taille{width:90px;}
   .task-table .col-couleur{width:110px;}
   .task-table .col-impression{width:150px;}
   .task-table .col-qty{width:70px;}
   .task-table .col-remarque{width:180px;}
+  .task-table .col-mockup{width:150px;}
+  .task-table input.task-blank-other{margin-top:5px;}
+  .task-mockup-thumbs{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
+  .task-mockup-thumb{position:relative;width:34px;height:34px;}
+  .task-mockup-thumb img{width:100%;height:100%;object-fit:cover;border-radius:5px;border:1px solid var(--line-strong);}
+  .task-mockup-del{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:var(--thread);color:#fff;border:none;font-size:9px;cursor:pointer;line-height:1;}
+  .task-mockup-add{width:34px;height:34px;border:2px dashed var(--line-strong);border-radius:5px;background:#fff;color:var(--line-strong);font-size:16px;cursor:pointer;line-height:1;}
+  .task-mockup-add:hover{border-color:var(--ink);color:var(--ink);}
   .task-table .col-del{width:34px;}
   .task-table .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
 
@@ -652,16 +661,19 @@
       <thead><tr>
         <th class="col-check">Fait</th>
         <th class="col-nom">Nom</th>
+        <th class="col-blank">Blank</th>
         <th class="col-taille">Taille</th>
         <th class="col-couleur">Couleur</th>
         <th class="col-impression">Impression</th>
         <th class="col-qty">Qté</th>
         <th class="col-remarque">Remarque</th>
+        <th class="col-mockup">Mockup</th>
         <th class="col-del"></th>
       </tr></thead>
       <tbody id="tasksTableBody"></tbody>
     </table>
     </div>
+    <input type="file" id="taskMockupInput" accept="image/*" style="display:none;">
     <button type="button" class="btn btn-ghost btn-sm" id="btnAddTaskRow" style="margin-top:10px;">+ Ajouter une ligne</button>
     <div class="modal-actions">
       <div class="left"></div>
@@ -1278,7 +1290,7 @@ $('#imgInput').addEventListener('change', (e)=>{
 
 /* ---------- Order items (multi-produits, avec emplacements visuels par produit) ---------- */
 const ORDER_PRODUCTS = ['T-shirt', 'Sweat / Hoodie', 'Polo', 'Casquette', 'Sac tote', 'Autre'];
-const BLANK_OPTIONS = ['180', '220/250', 'Hoodie 440', 'Crewneck 440', 'Casquette', 'Ramené par le client', 'Autre'];
+const BLANK_OPTIONS = ['', '180', '220/250', 'Hoodie 440', 'Crewneck 440', 'Casquette', 'Ramener par le client', 'Autre'];
 let currentOrderItems = [];
 let activeItemId = null;
 let activeItemSlotKey = null;
@@ -2019,13 +2031,23 @@ function renderTasksTable(){
     <tr class="${t.done?'done':''}" data-id="${t.id}">
       <td class="col-check"><input type="checkbox" class="task-done" ${t.done?'checked':''}></td>
       <td class="col-nom"><input type="text" class="task-nom" value="${(t.nom||'').replace(/"/g,'&quot;')}" placeholder="Ex. T-shirt col rond"></td>
+      <td class="col-blank">
+        <select class="task-blank">${BLANK_OPTIONS.map(b=>`<option value="${b}" ${t.blank===b?'selected':''}>${b||'—'}</option>`).join('')}</select>
+        ${t.blank === 'Autre' ? `<input type="text" class="task-blank-other" value="${(t.blankOther||'').replace(/"/g,'&quot;')}" placeholder="Préciser">` : ''}
+      </td>
       <td class="col-taille"><select class="task-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${t.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select></td>
       <td class="col-couleur"><input type="text" class="task-couleur" value="${(t.couleur||'').replace(/"/g,'&quot;')}" placeholder="Ex. Noir"></td>
       <td class="col-impression"><select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select></td>
       <td class="col-qty"><input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0"></td>
       <td class="col-remarque"><input type="text" class="task-remarque" value="${(t.remarque||'').replace(/"/g,'&quot;')}" placeholder="Notes…"></td>
+      <td class="col-mockup">
+        <div class="task-mockup-thumbs">
+          ${(t.mockup||[]).map((im,i)=>`<div class="task-mockup-thumb"><img src="${im.url}" alt=""><button type="button" class="task-mockup-del" data-i="${i}">×</button></div>`).join('')}
+          ${(t.mockup||[]).length < 4 ? '<button type="button" class="task-mockup-add">+</button>' : ''}
+        </div>
+      </td>
       <td class="col-del"><button type="button" class="del-row">×</button></td>
-    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
 
   $('#tasksTableBody').querySelectorAll('tr[data-id]').forEach(tr=>{
     const id = tr.dataset.id;
@@ -2038,6 +2060,16 @@ function renderTasksTable(){
     });
     tr.querySelector('.task-nom').addEventListener('change', async (e)=>{
       task.nom = e.target.value.trim();
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    tr.querySelector('.task-blank').addEventListener('change', async (e)=>{
+      task.blank = e.target.value;
+      renderTasksTable();
+      await saveTaskDoc(currentTasksBrandId, task);
+    });
+    const blankOtherInput = tr.querySelector('.task-blank-other');
+    if(blankOtherInput) blankOtherInput.addEventListener('change', async (e)=>{
+      task.blankOther = e.target.value.trim();
       await saveTaskDoc(currentTasksBrandId, task);
     });
     tr.querySelector('.task-taille').addEventListener('change', async (e)=>{
@@ -2060,6 +2092,17 @@ function renderTasksTable(){
       task.remarque = e.target.value.trim();
       await saveTaskDoc(currentTasksBrandId, task);
     });
+    const mockupAddBtn = tr.querySelector('.task-mockup-add');
+    if(mockupAddBtn) mockupAddBtn.addEventListener('click', ()=>{
+      activeMockupTaskId = id;
+      $('#taskMockupInput').click();
+    });
+    tr.querySelectorAll('.task-mockup-del').forEach(btn=>{
+      btn.addEventListener('click', async (e)=>{
+        e.stopPropagation();
+        await removeMockupImage(id, Number(btn.dataset.i));
+      });
+    });
     tr.querySelector('.del-row').addEventListener('click', async ()=>{
       currentTasks = currentTasks.filter(t=>t.id!==id);
       renderTasksTable();
@@ -2078,8 +2121,60 @@ async function updateBrandSummary(){
     await saveBrandDoc(brands[idx]);
   }
 }
+let activeMockupTaskId = null;
+async function uploadTaskMockupFile(brandId, taskId, file){
+  if(!storageRef) return null;
+  try{
+    const path = `brands/${brandId}/tasks/${taskId}/mockup_${Date.now()}_${Math.random().toString(36).slice(2,5)}`;
+    const ref = storageRef.child(path);
+    await withTimeout(ref.put(file), 60000);
+    const url = await withTimeout(ref.getDownloadURL(), 15000);
+    return { name: file.name, url, path };
+  }catch(e){
+    return null;
+  }
+}
+async function handleTaskMockupFile(taskId, file){
+  const task = currentTasks.find(t=>t.id===taskId);
+  if(!task) return;
+  if(!task.mockup) task.mockup = [];
+  if(task.mockup.length >= 4){ showToast('Maximum 4 images pour le mockup.'); return; }
+  const tempUrl = URL.createObjectURL(file);
+  const tempEntry = { name:file.name, url:tempUrl, uploading:true };
+  task.mockup.push(tempEntry);
+  renderTasksTable();
+  const uploaded = await uploadTaskMockupFile(currentTasksBrandId, taskId, file);
+  const idx = task.mockup.indexOf(tempEntry);
+  if(uploaded && idx > -1){
+    task.mockup[idx] = uploaded;
+    await saveTaskDoc(currentTasksBrandId, task);
+  }else if(idx > -1){
+    task.mockup.splice(idx,1);
+    showToast("Échec de l'envoi de l'image mockup.");
+  }
+  URL.revokeObjectURL(tempUrl);
+  renderTasksTable();
+}
+async function removeMockupImage(taskId, index){
+  const task = currentTasks.find(t=>t.id===taskId);
+  if(!task || !task.mockup) return;
+  const im = task.mockup[index];
+  if(im && im.path && storageRef){
+    try{ await storageRef.child(im.path).delete(); }catch(e){}
+  }
+  task.mockup.splice(index,1);
+  renderTasksTable();
+  await saveTaskDoc(currentTasksBrandId, task);
+}
+$('#taskMockupInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file || !activeMockupTaskId) return;
+  await handleTaskMockupFile(activeMockupTaskId, file);
+});
+
 $('#btnAddTaskRow').addEventListener('click', async ()=>{
-  const task = { id:'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), nom:'', taille:'', couleur:'', impression:'', quantity:'', remarque:'', done:false, createdAt:new Date().toISOString() };
+  const task = { id:'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), nom:'', blank:BLANK_OPTIONS[0], blankOther:'', taille:'', couleur:'', impression:'', quantity:'', remarque:'', mockup:[], done:false, createdAt:new Date().toISOString() };
   currentTasks.push(task);
   renderTasksTable();
   await saveTaskDoc(currentTasksBrandId, task);
