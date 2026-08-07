@@ -103,22 +103,27 @@
   .brand-card-actions button:hover{color:var(--ink);text-decoration:underline;}
 
   .task-table-wrap{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--kraft) transparent;}
-  .order-items-wrap{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--kraft) transparent;}
-  .order-items-wrap::-webkit-scrollbar{height:9px;}
-  .order-items-wrap::-webkit-scrollbar-track{background:transparent;}
-  .order-items-wrap::-webkit-scrollbar-thumb{background:var(--kraft);border-radius:9px;border:2px solid var(--canvas-2);background-clip:padding-box;}
-  .order-items-table{width:100%;border-collapse:collapse;margin-top:8px;min-width:640px;}
-  .order-items-table th{text-align:left;font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;color:var(--ink-2);padding:6px 8px;border-bottom:1px solid var(--line-strong);}
-  .order-items-table td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
-  .order-items-table input[type=text], .order-items-table input[type=number], .order-items-table select{border:1px solid var(--line);padding:6px 8px;font-size:13px;width:100%;}
-  .order-items-table input.oi-product-other{margin-top:5px;}
-  .col-oi-product{width:180px;}
-  .col-oi-taille{width:85px;}
-  .col-oi-couleur{width:110px;}
-  .col-oi-impression{width:170px;}
-  .col-oi-qty{width:65px;}
-  .col-oi-del{width:30px;}
-  .order-items-table .del-item{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
+  .oi-card{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px;}
+  .oi-card-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;}
+  .oi-cell{flex:1;min-width:110px;}
+  .oi-cell-product{min-width:150px;}
+  .oi-cell-taille, .oi-cell-qty{min-width:70px;flex:0 0 80px;}
+  .oi-cell label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin-bottom:4px;}
+  .oi-cell input[type=text], .oi-cell input[type=number], .oi-cell select{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:8px 9px;font-size:13px;background:#fff;color:var(--charcoal);}
+  .oi-cell input.oi-product-other{margin-top:5px;}
+  .oi-card .del-item{background:none;border:none;color:var(--thread);cursor:pointer;font-size:16px;padding:6px 4px;align-self:flex-end;}
+  .oi-slots-row{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
+  .oi-slots-label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin-bottom:6px;}
+  .oi-slots-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:420px;}
+  .oi-slot{border:2px dashed var(--line-strong);border-radius:8px;background:#fff;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;text-align:center;padding:2px;}
+  .oi-slot:hover{border-color:var(--ink);}
+  .oi-slot.filled{border-style:solid;border-color:var(--line-strong);padding:0;}
+  .oi-slot img{width:100%;height:100%;object-fit:cover;}
+  .oi-slot-label{font-size:8px;text-transform:uppercase;letter-spacing:0.2px;color:var(--ink-2);font-weight:600;line-height:1.1;}
+  .oi-slot-plus{font-size:15px;color:var(--line-strong);line-height:1;margin-bottom:1px;}
+  .oi-slot-tag{position:absolute;bottom:0;left:0;right:0;background:rgba(35,50,74,0.75);color:#fff;font-size:6.5px;text-transform:uppercase;padding:1px 2px;text-align:center;}
+  .oi-slot-clear{position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;background:var(--thread);color:#fff;border:none;font-size:9px;cursor:pointer;line-height:1;z-index:2;}
+  @media (max-width:640px){ .oi-slots-grid{grid-template-columns:repeat(5,1fr);max-width:none;} }
   .task-table-wrap::-webkit-scrollbar{height:9px;}
   .task-table-wrap::-webkit-scrollbar-track{background:transparent;}
   .task-table-wrap::-webkit-scrollbar-thumb{background:var(--kraft);border-radius:9px;border:2px solid var(--canvas-2);background-clip:padding-box;}
@@ -396,7 +401,7 @@
   <header>
     <div class="brand">
       <img src="data:image/png;base64,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" alt="Printtex" class="brand-logo">
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-05-multiproduct</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-08-06-perproductslots</span>
       <button type="button" class="btn btn-ghost btn-sm" id="btnLogout" style="margin-left:6px;">Déconnexion</button>
     </div>
     <div class="stats" id="stats"></div>
@@ -533,19 +538,8 @@
         </div>
         <div class="full">
           <label>Produits de la commande</label>
-          <div class="order-items-wrap">
-            <table class="order-items-table">
-              <thead><tr>
-                <th class="col-oi-product">Produit</th>
-                <th class="col-oi-taille">Taille</th>
-                <th class="col-oi-couleur">Couleur</th>
-                <th class="col-oi-impression">Impression</th>
-                <th class="col-oi-qty">Qté</th>
-                <th class="col-oi-del"></th>
-              </tr></thead>
-              <tbody id="orderItemsBody"></tbody>
-            </table>
-          </div>
+          <div id="orderItemsBody"></div>
+          <input type="file" id="itemSlotInput" accept="image/*" style="display:none;">
           <button type="button" class="btn btn-ghost btn-sm" id="btnAddOrderItem" style="margin-top:8px;">+ Ajouter un produit</button>
           <div class="hint" id="orderItemsTotal"></div>
         </div>
@@ -585,12 +579,6 @@
           <input type="number" id="depositAmount" min="0" step="0.01" placeholder="Ex. 100">
         </div>
         <div class="full hint" id="paymentHint"></div>
-
-        <div class="full">
-          <label>Emplacements du visuel</label>
-          <div class="slots-grid" id="slotsGrid"></div>
-          <input type="file" id="slotInput" accept="image/*" style="display:none;">
-        </div>
 
         <div class="full">
           <div class="extra-imgs-label"><label style="margin:0;">Images supplémentaires (croquis, références, coloris…)</label></div>
@@ -741,9 +729,8 @@ if(firebaseConfigured){
 }
 let orders = [];
 let currentEditId = null;
-let currentImages = { face:null, dos:null, mancheGauche:null, mancheDroite:null, etiquette:null, extra:[] };
+let currentImages = { extra:[] };
 let currentView = 'kanban';
-let activeSlotKey = null;
 const $ = (sel) => document.querySelector(sel);
 if(!firebaseConfigured){ $('#storageBanner') && $('#storageBanner').classList.add('show'); }
 
@@ -844,24 +831,37 @@ async function deleteOrderCompletely(id){
     showToast("Erreur de suppression (" + e.message + ")");
   }
 }
-async function copyImagesToNewOrder(images, newOrderId){
-  const copy = { face:null, dos:null, mancheGauche:null, mancheDroite:null, etiquette:null, extra:[] };
-  if(!storageRef) return copy;
-  for(const s of SLOTS){
-    const im = images[s.key];
-    if(im && im.url){
-      try{
-        const blob = await (await fetch(im.url)).blob();
-        const path = `orders/${newOrderId}/${s.key}_${Date.now()}`;
-        const ref = storageRef.child(path);
-        await ref.put(blob);
-        const url = await ref.getDownloadURL();
-        copy[s.key] = { name: im.name, url, path };
-      }catch(e){}
+async function uploadImageFile(file, path){
+  const ref = storageRef.child(path);
+  await withTimeout(ref.put(file), 60000);
+  const url = await withTimeout(ref.getDownloadURL(), 15000);
+  return url;
+}
+
+async function copyImagesToNewOrder(srcImages, newOrderId, items){
+  const copiedByItem = {};
+  const copiedExtra = [];
+  if(!storageRef) return { byItem: copiedByItem, extra: copiedExtra };
+  for(const it of items){
+    const slots = srcImages.items[it.__srcId] || {};
+    const copy = {};
+    for(const s of SLOTS){
+      const im = slots[s.key];
+      if(im && im.url){
+        try{
+          const blob = await (await fetch(im.url)).blob();
+          const path = `orders/${newOrderId}/items/${it.id}/${s.key}_${Date.now()}`;
+          const ref = storageRef.child(path);
+          await ref.put(blob);
+          const url = await ref.getDownloadURL();
+          copy[s.key] = { name: im.name, url, path };
+        }catch(e){}
+      }
     }
+    copiedByItem[it.id] = copy;
   }
-  for(let i=0; i<(images.extra||[]).length; i++){
-    const im = images.extra[i];
+  for(let i=0; i<(srcImages.extra||[]).length; i++){
+    const im = srcImages.extra[i];
     if(im && im.url){
       try{
         const blob = await (await fetch(im.url)).blob();
@@ -869,44 +869,42 @@ async function copyImagesToNewOrder(images, newOrderId){
         const ref = storageRef.child(path);
         await ref.put(blob);
         const url = await ref.getDownloadURL();
-        copy.extra.push({ name: im.name, url, path });
+        copiedExtra.push({ name: im.name, url, path });
       }catch(e){}
     }
   }
-  return copy;
+  return { byItem: copiedByItem, extra: copiedExtra };
 }
 
-async function uploadImageFile(file, path){
-  const ref = storageRef.child(path);
-  await withTimeout(ref.put(file), 60000);
-  const url = await withTimeout(ref.getDownloadURL(), 15000);
-  return url;
-}
-async function saveOrderImages(orderId, images){
+async function saveOrderImages(orderId, items, extra){
   if(!db || !storageRef) return false;
   try{
-    for(const s of SLOTS){
-      const im = images[s.key];
-      if(im && im.file){
-        const path = `orders/${orderId}/${s.key}_${Date.now()}`;
-        const url = await uploadImageFile(im.file, path);
-        images[s.key] = { name: im.name, url, path };
+    for(const it of items){
+      for(const s of SLOTS){
+        const im = it.slots[s.key];
+        if(im && im.file){
+          const path = `orders/${orderId}/items/${it.id}/${s.key}_${Date.now()}`;
+          const url = await uploadImageFile(im.file, path);
+          it.slots[s.key] = { name: im.name, url, path };
+        }
       }
     }
-    for(let i=0; i<(images.extra||[]).length; i++){
-      const im = images.extra[i];
+    for(let i=0; i<(extra||[]).length; i++){
+      const im = extra[i];
       if(im && im.file){
         const path = `orders/${orderId}/extra_${Date.now()}_${i}`;
         const url = await uploadImageFile(im.file, path);
-        images.extra[i] = { name: im.name, url, path };
+        extra[i] = { name: im.name, url, path };
       }
     }
     const imagesRef = db.collection('orders').doc(orderId).collection('images');
     const existing = await withTimeout(imagesRef.get(), 12000);
     const batch = db.batch();
     existing.forEach(d=> batch.delete(d.ref));
-    SLOTS.forEach(s=>{ if(images[s.key]) batch.set(imagesRef.doc(s.key), images[s.key]); });
-    (images.extra||[]).forEach((im,i)=> batch.set(imagesRef.doc('extra_'+i), im));
+    items.forEach(it=>{
+      SLOTS.forEach(s=>{ if(it.slots[s.key]) batch.set(imagesRef.doc(`item_${it.id}_${s.key}`), it.slots[s.key]); });
+    });
+    (extra||[]).forEach((im,i)=> batch.set(imagesRef.doc('extra_'+i), im));
     await withTimeout(batch.commit(), 14000);
     return true;
   }catch(e){
@@ -914,16 +912,31 @@ async function saveOrderImages(orderId, images){
     return false;
   }
 }
+function emptySlots(){ return { face:null, dos:null, mancheGauche:null, mancheDroite:null, etiquette:null }; }
 async function loadOrderImages(orderId){
-  const empty = { face:null, dos:null, mancheGauche:null, mancheDroite:null, etiquette:null, extra:[] };
+  const empty = { extra:[], items:{}, legacySlots: emptySlots() };
   if(!db) return empty;
   try{
     const snap = await withTimeout(db.collection('orders').doc(orderId).collection('images').get(), 12000);
-    const result = {...empty, extra:[]};
+    const result = { extra:[], items:{}, legacySlots: emptySlots() };
     const extras = [];
+    const legacyKeys = ['face','dos','mancheGauche','mancheDroite','etiquette'];
     snap.forEach(d=>{
-      if(d.id.startsWith('extra_')) extras.push(d.data());
-      else result[d.id] = d.data();
+      const data = d.data();
+      if(d.id.startsWith('extra_')){
+        extras.push(data);
+      }else if(d.id.startsWith('item_')){
+        const rest = d.id.slice('item_'.length);
+        let matchedSlot = null;
+        for(const s of SLOTS){ if(rest.endsWith('_'+s.key)){ matchedSlot = s.key; break; } }
+        if(matchedSlot){
+          const itemId = rest.slice(0, rest.length - ('_'+matchedSlot).length);
+          if(!result.items[itemId]) result.items[itemId] = {};
+          result.items[itemId][matchedSlot] = data;
+        }
+      }else if(legacyKeys.includes(d.id)){
+        result.legacySlots[d.id] = data;
+      }
     });
     result.extra = extras;
     return result;
@@ -931,8 +944,6 @@ async function loadOrderImages(orderId){
     return empty;
   }
 }
-
-
 
 /* ---------- Dates & labels ---------- */
 function daysUntil(dateStr){
@@ -1240,45 +1251,6 @@ function render(){
 }
 
 /* ---------- Image helpers ---------- */
-function renderSlots(){
-  $('#slotsGrid').innerHTML = SLOTS.map(s=>{
-    const val = currentImages[s.key];
-    if(val){
-      return `<div class="slot filled" data-slot="${s.key}">
-        <img src="${val.url}" alt="${s.label}">
-        <div class="slot-name-tag">${s.label}</div>
-        <button type="button" class="clear-btn" data-clear="${s.key}">×</button>
-      </div>`;
-    }
-    return `<div class="slot" data-slot="${s.key}"><div class="plus">+</div><div class="slot-label">${s.label}</div></div>`;
-  }).join('');
-  $('#slotsGrid').querySelectorAll('.slot').forEach(el=>{
-    el.addEventListener('click', (e)=>{
-      if(e.target.closest('.clear-btn')) return;
-      activeSlotKey = el.dataset.slot;
-      $('#slotInput').click();
-    });
-  });
-  $('#slotsGrid').querySelectorAll('.clear-btn').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      const key = btn.dataset.clear;
-      const prev = currentImages[key];
-      if(prev && prev.pendingFile && prev.url && prev.url.startsWith('blob:')) URL.revokeObjectURL(prev.url);
-      currentImages[key] = null;
-      renderSlots();
-    });
-  });
-}
-$('#slotInput').addEventListener('change', (e)=>{
-  const file = e.target.files[0];
-  if(!file || !activeSlotKey) return;
-  const prev = currentImages[activeSlotKey];
-  if(prev && prev.pendingFile && prev.url && prev.url.startsWith('blob:')) URL.revokeObjectURL(prev.url);
-  currentImages[activeSlotKey] = { name:file.name, file, url:URL.createObjectURL(file), path:null, pendingFile:true };
-  renderSlots();
-  e.target.value = '';
-});
 function renderExtraPreviews(){
   $('#imgPreviewRow').innerHTML = (currentImages.extra||[]).map((im,i)=>`
     <div class="img-preview"><img src="${im.url}" alt=""><button type="button" data-i="${i}">×</button></div>`).join('');
@@ -1301,49 +1273,98 @@ $('#imgInput').addEventListener('change', (e)=>{
   e.target.value = '';
 });
 
-/* ---------- Order items (multi-produits) ---------- */
+/* ---------- Order items (multi-produits, avec emplacements visuels par produit) ---------- */
 const ORDER_PRODUCTS = ['T-shirt', 'Sweat / Hoodie', 'Polo', 'Casquette', 'Sac tote', 'Autre'];
 let currentOrderItems = [];
+let activeItemId = null;
+let activeItemSlotKey = null;
 
 function newOrderItem(){
-  return { id: 'item_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), product:'T-shirt', productOther:'', taille:'', couleur:'', impression:'Sérigraphie', quantity:1 };
+  return { id: 'item_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), product:'T-shirt', productOther:'', taille:'', couleur:'', impression:'Sérigraphie', quantity:1, slots: emptySlots() };
 }
 function renderOrderItemsTable(){
   $('#orderItemsBody').innerHTML = currentOrderItems.map(it=>`
-    <tr data-id="${it.id}">
-      <td class="col-oi-product">
-        <select class="oi-product">${ORDER_PRODUCTS.map(p=>`<option value="${p}" ${it.product===p?'selected':''}>${p}</option>`).join('')}</select>
-        ${it.product === 'Autre' ? `<input type="text" class="oi-product-other" value="${(it.productOther||'').replace(/"/g,'&quot;')}" placeholder="Préciser">` : ''}
-      </td>
-      <td class="col-oi-taille"><select class="oi-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${it.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select></td>
-      <td class="col-oi-couleur"><input type="text" class="oi-couleur" value="${(it.couleur||'').replace(/"/g,'&quot;')}" placeholder="Ex. Noir"></td>
-      <td class="col-oi-impression"><select class="oi-impression">${TASK_PRINT_METHODS.filter(m=>m).map(m=>`<option value="${m}" ${it.impression===m?'selected':''}>${m}</option>`).join('')}</select></td>
-      <td class="col-oi-qty"><input type="number" class="oi-qty" min="1" value="${it.quantity||1}"></td>
-      <td class="col-oi-del">${currentOrderItems.length>1 ? '<button type="button" class="del-item">×</button>' : ''}</td>
-    </tr>`).join('');
+    <div class="oi-card" data-id="${it.id}">
+      <div class="oi-card-row">
+        <div class="oi-cell oi-cell-product">
+          <label>Produit</label>
+          <select class="oi-product">${ORDER_PRODUCTS.map(p=>`<option value="${p}" ${it.product===p?'selected':''}>${p}</option>`).join('')}</select>
+          ${it.product === 'Autre' ? `<input type="text" class="oi-product-other" value="${(it.productOther||'').replace(/"/g,'&quot;')}" placeholder="Préciser">` : ''}
+        </div>
+        <div class="oi-cell oi-cell-taille"><label>Taille</label><select class="oi-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${it.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select></div>
+        <div class="oi-cell oi-cell-couleur"><label>Couleur</label><input type="text" class="oi-couleur" value="${(it.couleur||'').replace(/"/g,'&quot;')}" placeholder="Ex. Noir"></div>
+        <div class="oi-cell oi-cell-impression"><label>Impression</label><select class="oi-impression">${TASK_PRINT_METHODS.filter(m=>m).map(m=>`<option value="${m}" ${it.impression===m?'selected':''}>${m}</option>`).join('')}</select></div>
+        <div class="oi-cell oi-cell-qty"><label>Qté</label><input type="number" class="oi-qty" min="1" value="${it.quantity||1}"></div>
+        ${currentOrderItems.length>1 ? '<button type="button" class="del-item">×</button>' : ''}
+      </div>
+      <div class="oi-slots-row">
+        <label class="oi-slots-label">Emplacements du visuel de ce produit</label>
+        <div class="oi-slots-grid">
+          ${SLOTS.map(s=>{
+            const val = it.slots[s.key];
+            if(val){
+              return `<div class="oi-slot filled" data-slot="${s.key}">
+                <img src="${val.url}" alt="${s.label}">
+                <div class="oi-slot-tag">${s.label}</div>
+                <button type="button" class="oi-slot-clear" data-slot="${s.key}">×</button>
+              </div>`;
+            }
+            return `<div class="oi-slot" data-slot="${s.key}"><div class="oi-slot-plus">+</div><div class="oi-slot-label">${s.label}</div></div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`).join('');
 
-  $('#orderItemsBody').querySelectorAll('tr[data-id]').forEach(tr=>{
-    const id = tr.dataset.id;
+  $('#orderItemsBody').querySelectorAll('.oi-card').forEach(card=>{
+    const id = card.dataset.id;
     const item = currentOrderItems.find(i=>i.id===id);
-    tr.querySelector('.oi-product').addEventListener('change', (e)=>{
-      item.product = e.target.value;
-      renderOrderItemsTable();
-    });
-    const otherInput = tr.querySelector('.oi-product-other');
+    if(!item) return;
+    card.querySelector('.oi-product').addEventListener('change', (e)=>{ item.product = e.target.value; renderOrderItemsTable(); });
+    const otherInput = card.querySelector('.oi-product-other');
     if(otherInput) otherInput.addEventListener('input', (e)=>{ item.productOther = e.target.value; });
-    tr.querySelector('.oi-taille').addEventListener('change', (e)=>{ item.taille = e.target.value; });
-    tr.querySelector('.oi-couleur').addEventListener('input', (e)=>{ item.couleur = e.target.value; });
-    tr.querySelector('.oi-impression').addEventListener('change', (e)=>{ item.impression = e.target.value; });
-    tr.querySelector('.oi-qty').addEventListener('input', (e)=>{ item.quantity = e.target.value; updateOrderItemsTotal(); });
-    const delBtn = tr.querySelector('.del-item');
+    card.querySelector('.oi-taille').addEventListener('change', (e)=>{ item.taille = e.target.value; });
+    card.querySelector('.oi-couleur').addEventListener('input', (e)=>{ item.couleur = e.target.value; });
+    card.querySelector('.oi-impression').addEventListener('change', (e)=>{ item.impression = e.target.value; });
+    card.querySelector('.oi-qty').addEventListener('input', (e)=>{ item.quantity = e.target.value; updateOrderItemsTotal(); });
+    const delBtn = card.querySelector('.del-item');
     if(delBtn) delBtn.addEventListener('click', ()=>{
       currentOrderItems = currentOrderItems.filter(i=>i.id!==id);
       renderOrderItemsTable();
       updateOrderItemsTotal();
     });
+    card.querySelectorAll('.oi-slot').forEach(slotEl=>{
+      slotEl.addEventListener('click', (e)=>{
+        if(e.target.closest('.oi-slot-clear')) return;
+        activeItemId = id;
+        activeItemSlotKey = slotEl.dataset.slot;
+        $('#itemSlotInput').click();
+      });
+    });
+    card.querySelectorAll('.oi-slot-clear').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const key = btn.dataset.slot;
+        const prev = item.slots[key];
+        if(prev && prev.pendingFile && prev.url && prev.url.startsWith('blob:')) URL.revokeObjectURL(prev.url);
+        item.slots[key] = null;
+        renderOrderItemsTable();
+      });
+    });
   });
   updateOrderItemsTotal();
 }
+$('#itemSlotInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file || !activeItemId || !activeItemSlotKey){ e.target.value=''; return; }
+  const item = currentOrderItems.find(i=>i.id===activeItemId);
+  if(item){
+    const prev = item.slots[activeItemSlotKey];
+    if(prev && prev.pendingFile && prev.url && prev.url.startsWith('blob:')) URL.revokeObjectURL(prev.url);
+    item.slots[activeItemSlotKey] = { name:file.name, file, url:URL.createObjectURL(file), path:null, pendingFile:true };
+    renderOrderItemsTable();
+  }
+  e.target.value = '';
+});
 function updateOrderItemsTotal(){
   const total = currentOrderItems.reduce((sum,it)=> sum + (Number(it.quantity)||0), 0);
   $('#orderItemsTotal').textContent = `Total : ${total} article${total>1?'s':''} sur ${currentOrderItems.length} ligne${currentOrderItems.length>1?'s':''}`;
@@ -1396,8 +1417,8 @@ function resetForm(){
   renderOrderItemsTable();
   $('#paymentHint').textContent=''; $('#startHint').textContent='';
   $('#historyWrap').style.display='none';
-  currentImages = { face:null, dos:null, mancheGauche:null, mancheDroite:null, etiquette:null, extra:[] };
-  renderSlots(); renderExtraPreviews();
+  currentImages = { extra:[] };
+  renderExtraPreviews();
   $('#btnDelete').style.display = 'none';
   $('#btnDuplicate').style.display = 'none';
   $('#btnArchive').style.display = 'none';
@@ -1415,10 +1436,11 @@ async function openModal(id){
     $('#modalSub').textContent = '#' + String(o.orderNumber||0).padStart(4,'0');
     $('#clientName').value = o.clientName;
     $('#clientContact').value = o.clientContact;
-    currentOrderItems = (o.items && o.items.length)
-      ? JSON.parse(JSON.stringify(o.items))
-      : [{ id:'item_'+Date.now(), product:o.product||'T-shirt', productOther:o.productOther||'', taille:'', couleur:'', impression:o.printMethod||'Sérigraphie', quantity:o.quantity||1 }];
-    renderOrderItemsTable();
+    const isLegacy = !(o.items && o.items.length);
+    const rawItems = isLegacy
+      ? [{ id:'item_'+Date.now(), product:o.product||'T-shirt', productOther:o.productOther||'', taille:'', couleur:'', impression:o.printMethod||'Sérigraphie', quantity:o.quantity||1 }]
+      : JSON.parse(JSON.stringify(o.items));
+    currentOrderItems = rawItems.map(it=>({ ...it, slots: emptySlots() }));
     $('#deadline').value = o.deadline;
     $('#prodTime').value = o.prodTime || '';
     $('#prodTimeUnit').value = o.prodTimeUnit || 'jours';
@@ -1435,8 +1457,14 @@ async function openModal(id){
     $('#btnArchive').style.display = ['livree','annulee'].includes(o.status) || o.archived ? 'inline-block' : 'none';
     $('#btnArchive').textContent = o.archived ? 'Désarchiver' : 'Archiver';
     $('#overlay').classList.add('open');
-    currentImages = await loadOrderImages(id);
-    renderSlots(); renderExtraPreviews();
+    const imagesResult = await loadOrderImages(id);
+    currentImages = { extra: imagesResult.extra || [] };
+    currentOrderItems.forEach(it=>{
+      if(imagesResult.items[it.id]) it.slots = { ...it.slots, ...imagesResult.items[it.id] };
+      else if(isLegacy) it.slots = { ...it.slots, ...imagesResult.legacySlots };
+    });
+    renderOrderItemsTable();
+    renderExtraPreviews();
     return;
   }else{
     $('#modalTitle').textContent = 'Nouvelle commande';
@@ -1490,7 +1518,7 @@ $('#btnSave').addEventListener('click', async (e)=>{
       : (Math.max(0, ...orders.map(o=>o.orderNumber||0)) + 1);
 
     const willBeLivree = $('#status').value === 'livree';
-    const hasPendingUploads = SLOTS.some(s=>currentImages[s.key] && currentImages[s.key].pendingFile) || (currentImages.extra||[]).some(im=>im.pendingFile);
+    const hasPendingUploads = currentOrderItems.some(it => SLOTS.some(s=>it.slots[s.key] && it.slots[s.key].pendingFile)) || (currentImages.extra||[]).some(im=>im.pendingFile);
     if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = (hasPendingUploads && !willBeLivree) ? 'Envoi des images…' : 'Enregistrement…'; }
 
     let thumbnails = [];
@@ -1498,15 +1526,14 @@ $('#btnSave').addEventListener('click', async (e)=>{
     if(willBeLivree){
       if(currentEditId) await purgeOrderImages(id);
     }else{
-      const imagesResult = await saveOrderImages(id, currentImages);
+      const imagesResult = await saveOrderImages(id, currentOrderItems, currentImages.extra);
       if(!imagesResult){
         showToast("Échec de l'envoi des images. Réessaie — tes fichiers sont toujours sur ton appareil.");
         return;
       }
-      const thumbSource = [
-        currentImages.face, currentImages.dos, currentImages.mancheGauche,
-        currentImages.mancheDroite, currentImages.etiquette, ...(currentImages.extra||[])
-      ].filter(Boolean);
+      const thumbSource = [];
+      currentOrderItems.forEach(it=> SLOTS.forEach(s=>{ if(it.slots[s.key]) thumbSource.push(it.slots[s.key]); }));
+      (currentImages.extra||[]).forEach(im=> thumbSource.push(im));
       thumbnails = thumbSource.slice(0,3).map(im=>im.url);
       imageCount = thumbSource.length;
     }
@@ -1578,13 +1605,19 @@ $('#btnDuplicate').addEventListener('click', async ()=>{
   const srcImages = await loadOrderImages(currentEditId);
   const newId = 'ord_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
   showToast('Duplication en cours…');
-  const copiedImages = await copyImagesToNewOrder(srcImages, newId);
-  const thumbSource = [
-    copiedImages.face, copiedImages.dos, copiedImages.mancheGauche,
-    copiedImages.mancheDroite, copiedImages.etiquette, ...(copiedImages.extra||[])
-  ].filter(Boolean);
+  const srcItems = (src.items && src.items.length) ? src.items : [{ id:'__legacy__' }];
+  const newItems = srcItems.map(it => ({ ...it, id: 'item_'+Date.now()+'_'+Math.random().toString(36).slice(2,5) }));
+  const isLegacySrc = !(src.items && src.items.length);
+  const withSrcId = newItems.map((it,i)=>({ ...it, __srcId: isLegacySrc ? '__legacy__' : srcItems[i].id }));
+  if(isLegacySrc) srcImages.items['__legacy__'] = srcImages.legacySlots;
+  const { byItem, extra: copiedExtra } = await copyImagesToNewOrder(srcImages, newId, withSrcId);
+
+  const thumbSource = [];
+  newItems.forEach(it=> SLOTS.forEach(s=>{ if(byItem[it.id] && byItem[it.id][s.key]) thumbSource.push(byItem[it.id][s.key]); }));
+  copiedExtra.forEach(im=> thumbSource.push(im));
+
   const copy = {
-    ...src, id:newId,
+    ...src, id:newId, items: newItems.map(({__srcId, ...rest})=>rest),
     orderNumber: Math.max(0, ...orders.map(o=>o.orderNumber||0)) + 1,
     status:'nouvelle', archived:false,
     thumbnails: thumbSource.slice(0,3).map(im=>im.url),
@@ -1593,7 +1626,15 @@ $('#btnDuplicate').addEventListener('click', async ()=>{
   };
   orders.push(copy);
   const dupResult = await saveOrder(copy);
-  await saveOrderImages(newId, copiedImages);
+  if(db){
+    const imagesRef = db.collection('orders').doc(newId).collection('images');
+    const batch = db.batch();
+    newItems.forEach(it=>{
+      SLOTS.forEach(s=>{ if(byItem[it.id] && byItem[it.id][s.key]) batch.set(imagesRef.doc(`item_${it.id}_${s.key}`), byItem[it.id][s.key]); });
+    });
+    copiedExtra.forEach((im,i)=> batch.set(imagesRef.doc('extra_'+i), im));
+    try{ await batch.commit(); }catch(e){}
+  }
   closeModal(); render();
   showToast(dupResult.ok ? ('Commande dupliquée en #' + String(copy.orderNumber).padStart(4,'0')) : ("Échec : " + dupResult.error));
 });
@@ -1620,7 +1661,7 @@ $('#btnArchive').addEventListener('click', async ()=>{
 $('#btnPrint').addEventListener('click', ()=>{
   if(!currentEditId) return;
   const o = orders.find(x=>x.id===currentEditId);
-  printOrder(o, currentImages);
+  printOrder(o);
 });
 
 async function triggerDownload(url, filename){
@@ -1643,11 +1684,18 @@ function extOf(name){
   const m = /\.[a-zA-Z0-9]+$/.exec(name||'');
   return m ? m[0] : '.jpg';
 }
-async function downloadOrderImages(o, images){
+function slugify(s){
+  return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'visuel';
+}
+async function downloadOrderImages(o){
   const num = String(o.orderNumber||0).padStart(4,'0');
   const items = [];
-  SLOTS.forEach(s=>{ if(images[s.key]) items.push([images[s.key].url, `commande-${num}-${s.key}${extOf(images[s.key].name)}`]); });
-  (images.extra||[]).forEach((im,i)=> items.push([im.url, `commande-${num}-supplementaire-${i+1}${extOf(im.name)}`]));
+  currentOrderItems.forEach(it=>{
+    SLOTS.forEach(s=>{
+      if(it.slots[s.key]) items.push([it.slots[s.key].url, `commande-${num}-${slugify(itemLabel(it).split(' — ')[0])}-${s.key}${extOf(it.slots[s.key].name)}`]);
+    });
+  });
+  (currentImages.extra||[]).forEach((im,i)=> items.push([im.url, `commande-${num}-supplementaire-${i+1}${extOf(im.name)}`]));
   if(!items.length){ showToast('Aucune image à télécharger pour cette commande'); return; }
   for(const [url, filename] of items){
     await triggerDownload(url, filename);
@@ -1658,12 +1706,15 @@ async function downloadOrderImages(o, images){
 $('#btnDownloadImages').addEventListener('click', ()=>{
   if(!currentEditId) return;
   const o = orders.find(x=>x.id===currentEditId);
-  downloadOrderImages(o, currentImages);
+  downloadOrderImages(o);
 });
 
-function printOrder(o, images){
-  const slotFigs = SLOTS.filter(s=>images[s.key]).map(s=>`<figure><img src="${images[s.key].url}"><figcaption>${s.label}</figcaption></figure>`).join('');
-  const extraFigs = (images.extra||[]).map((im,i)=>`<figure><img src="${im.url}"><figcaption>Visuel ${i+1}</figcaption></figure>`).join('');
+function printOrder(o){
+  const itemsFigsHtml = currentOrderItems.map(it=>{
+    const figs = SLOTS.filter(s=>it.slots[s.key]).map(s=>`<figure><img src="${it.slots[s.key].url}"><figcaption>${s.label}</figcaption></figure>`).join('');
+    return figs ? `<h3 style="font-size:13px;margin:14px 0 4px;">${itemLabel(it)}</h3><div class="p-imgs">${figs}</div>` : '';
+  }).join('');
+  const extraFigs = (currentImages.extra||[]).map((im,i)=>`<figure><img src="${im.url}"><figcaption>Visuel ${i+1}</figcaption></figure>`).join('');
   $('#printArea').innerHTML = `
     <h2>Bon de commande #${String(o.orderNumber||0).padStart(4,'0')}</h2>
     <table>
@@ -1679,7 +1730,8 @@ function printOrder(o, images){
       ${o.depositAmount ? `<tr><td><b>Acompte versé</b></td><td>${Number(o.depositAmount).toFixed(2)} €</td></tr>` : ''}
       ${o.notes ? `<tr><td><b>Notes</b></td><td>${o.notes}</td></tr>` : ''}
     </table>
-    <div class="p-imgs">${slotFigs}${extraFigs}</div>
+    ${itemsFigsHtml}
+    ${extraFigs ? `<h3 style="font-size:13px;margin:14px 0 4px;">Images supplémentaires</h3><div class="p-imgs">${extraFigs}</div>` : ''}
   `;
   window.print();
 }
