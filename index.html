@@ -151,6 +151,8 @@
   .task-mockup-del{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:var(--thread);color:#fff;border:none;font-size:9px;cursor:pointer;line-height:1;}
   .task-mockup-add{width:34px;height:34px;border:2px dashed var(--line-strong);border-radius:5px;background:#fff;color:var(--line-strong);font-size:16px;cursor:pointer;line-height:1;}
   .task-mockup-add:hover{border-color:var(--ink);color:var(--ink);}
+  .task-mockup-dl{width:34px;height:34px;border:1px solid var(--line-strong);border-radius:5px;background:var(--canvas-2);color:var(--ink-2);font-size:14px;cursor:pointer;line-height:1;}
+  .task-mockup-dl:hover{border-color:var(--ink);color:var(--ink);background:#fff;}
   .task-table .col-del{width:34px;}
   .task-table .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
 
@@ -2044,6 +2046,7 @@ function renderTasksTable(){
         <div class="task-mockup-thumbs">
           ${(t.mockup||[]).map((im,i)=>`<div class="task-mockup-thumb"><img src="${im.url}" alt=""><button type="button" class="task-mockup-del" data-i="${i}">×</button></div>`).join('')}
           ${(t.mockup||[]).length < 4 ? '<button type="button" class="task-mockup-add">+</button>' : ''}
+          ${(t.mockup||[]).length > 0 ? '<button type="button" class="task-mockup-dl" title="Télécharger le mockup">⬇</button>' : ''}
         </div>
       </td>
       <td class="col-del"><button type="button" class="del-row">×</button></td>
@@ -2096,6 +2099,11 @@ function renderTasksTable(){
     if(mockupAddBtn) mockupAddBtn.addEventListener('click', ()=>{
       activeMockupTaskId = id;
       $('#taskMockupInput').click();
+    });
+    const mockupDlBtn = tr.querySelector('.task-mockup-dl');
+    if(mockupDlBtn) mockupDlBtn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      await downloadTaskMockups(task);
     });
     tr.querySelectorAll('.task-mockup-del').forEach(btn=>{
       btn.addEventListener('click', async (e)=>{
@@ -2165,6 +2173,16 @@ async function removeMockupImage(taskId, index){
   task.mockup.splice(index,1);
   renderTasksTable();
   await saveTaskDoc(currentTasksBrandId, task);
+}
+async function downloadTaskMockups(task){
+  const items = (task.mockup||[]).filter(im=>im && im.url && !im.uploading);
+  if(!items.length){ showToast('Aucun mockup à télécharger.'); return; }
+  const base = slugify(task.nom || 'mockup');
+  for(let i=0;i<items.length;i++){
+    await triggerDownload(items[i].url, `mockup-${base}-${i+1}${extOf(items[i].name)}`);
+    await delay(300);
+  }
+  showToast(`${items.length} mockup(s) téléchargé(s)`);
 }
 $('#taskMockupInput').addEventListener('change', async (e)=>{
   const file = e.target.files[0];
