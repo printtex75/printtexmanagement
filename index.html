@@ -185,8 +185,10 @@
   .order-cat-img{width:100%;aspect-ratio:1/1;border-radius:6px;object-fit:cover;background:var(--canvas);margin-bottom:8px;}
   .order-cat-name{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:13px;color:var(--ink);margin-bottom:3px;}
   .order-cat-meta{font-size:11px;color:var(--ink-2);line-height:1.5;margin-bottom:8px;}
-  .order-cat-qty label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--ink-2);margin-bottom:4px;}
-  .order-cat-qty input{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:7px 8px;font-size:13px;}
+  .order-cat-row{display:flex;gap:8px;}
+  .order-cat-taille, .order-cat-qty{flex:1;}
+  .order-cat-taille label, .order-cat-qty label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--ink-2);margin-bottom:4px;}
+  .order-cat-taille select, .order-cat-qty input{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:7px 8px;font-size:13px;}
   .order-empty, .product-empty{color:var(--ink-2);font-size:12px;font-style:italic;padding:10px 0;}
   .tasks-note{text-align:right;font-size:11px;font-style:italic;color:var(--ink-2);margin-top:12px;line-height:1.4;}
   .task-table .col-del{width:34px;}
@@ -2315,7 +2317,10 @@ function renderOrderCatalog(){
       ${p.images && p.images[0] ? `<img class="order-cat-img" src="${p.images[0].url}" alt="">` : `<div class="order-cat-img"></div>`}
       <div class="order-cat-name">${p.nom || '(sans nom)'}</div>
       <div class="order-cat-meta">${productMetaLine(p)}</div>
-      <div class="order-cat-qty"><label>Quantité</label><input type="number" min="0" class="order-cat-qty-input" value="0"></div>
+      <div class="order-cat-row">
+        <div class="order-cat-taille"><label>Taille</label><select class="order-cat-taille-input">${TASK_SIZES.map(s=>`<option value="${s}">${s||'—'}</option>`).join('')}</select></div>
+        <div class="order-cat-qty"><label>Quantité</label><input type="number" min="0" class="order-cat-qty-input" value="0"></div>
+      </div>
     </div>`).join('');
 }
 $('#btnShowNewOrder').addEventListener('click', ()=>{ renderOrderCatalog(); showTasksView('newOrder'); });
@@ -2327,17 +2332,18 @@ $('#btnCreateOrderFromCatalog').addEventListener('click', async ()=>{
     const qty = Number(card.querySelector('.order-cat-qty-input').value) || 0;
     if(qty > 0){
       const p = currentBrandProducts.find(x=>x.id===card.dataset.id);
-      if(p) toCreate.push({ product:p, qty });
+      const taille = card.querySelector('.order-cat-taille-input').value;
+      if(p) toCreate.push({ product:p, qty, taille });
     }
   });
   if(!toCreate.length){ showToast('Renseigne au moins une quantité.'); return; }
   const btn = $('#btnCreateOrderFromCatalog');
   btn.disabled = true; btn.textContent = 'Création…';
-  for(const { product, qty } of toCreate){
+  for(const { product, qty, taille } of toCreate){
     const task = {
       id: 'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
       nom: product.nom, blank: product.blank, blankOther: product.blankOther || '',
-      taille: '', couleur: product.couleurs || '', impression: product.impression || '',
+      taille: taille || '', couleur: product.couleurs || '', impression: product.impression || '',
       quantity: qty, remarque: product.remarque || '',
       mockup: (product.images||[]).slice(0,4),
       done:false, createdAt:new Date().toISOString()
