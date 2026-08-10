@@ -717,6 +717,7 @@ const FIREBASE_CONFIG = {
 const STATUSES = [
   {key:'nouvelle', label:'Nouvelle demande'},
   {key:'validation', label:'Attente validation'},
+  {key:'attente_production', label:'En attente de production'},
   {key:'production', label:'En production'},
   {key:'prete', label:'Prête'},
   {key:'livree', label:'Livrée'},
@@ -991,7 +992,7 @@ function startDate(o){
   return d;
 }
 function needsToStart(o){
-  if(!['nouvelle','validation'].includes(o.status)) return false;
+  if(!['nouvelle','validation','attente_production'].includes(o.status)) return false;
   const sd = startDate(o);
   if(!sd) return false;
   const today = new Date(); today.setHours(0,0,0,0); sd.setHours(0,0,0,0);
