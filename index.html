@@ -96,6 +96,7 @@
   .brand-card h3{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:16px;color:var(--ink);margin:0 0 4px;}
   .brand-card .contact{font-size:12px;color:var(--ink-2);margin-bottom:10px;}
   .brand-progress{font-size:11px;color:var(--ink-2);margin-bottom:6px;}
+  .brand-oldest{font-size:10px;color:var(--thread);margin-bottom:6px;font-weight:600;}
   .brand-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;}
   .brand-bar-fill{height:100%;background:var(--green);}
   .brand-card-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);}
@@ -136,6 +137,7 @@
   .task-table tr.done td{opacity:0.5;}
   .task-table tr.done input[type=text]{text-decoration:line-through;}
   .task-table .col-check{width:34px;text-align:center;}
+  .task-table .col-date{width:80px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);white-space:nowrap;}
   .task-table .col-nom{width:180px;}
   .task-table .col-blank{width:130px;}
   .task-table .col-taille{width:90px;}
@@ -710,6 +712,7 @@
       <table class="task-table">
         <thead><tr>
           <th class="col-check">Fait</th>
+          <th class="col-date">Soumise le</th>
           <th class="col-nom">Nom</th>
           <th class="col-blank">Blank</th>
           <th class="col-taille">Taille</th>
@@ -2034,6 +2037,7 @@ function brandCardHTML(b){
     ${b.contact ? `<div class="contact">${b.contact}</div>` : ''}
     <div class="brand-progress">${done}/${total} commandes faites</div>
     <div class="brand-bar"><div class="brand-bar-fill" style="width:${pct}%"></div></div>
+    ${b.oldestPendingDate ? `<div class="brand-oldest">Commande en attente depuis le ${formatDate(b.oldestPendingDate)}</div>` : ''}
     <div class="brand-card-actions">
       <button type="button" class="edit-brand">Modifier</button>
     </div>
@@ -2041,7 +2045,14 @@ function brandCardHTML(b){
 }
 function renderBrands(){
   const q = $('#brandSearch').value.trim().toLowerCase();
-  const list = brands.filter(b=> !q || b.name.toLowerCase().includes(q));
+  const list = brands
+    .filter(b=> !q || b.name.toLowerCase().includes(q))
+    .sort((a,b)=>{
+      if(a.oldestPendingDate && b.oldestPendingDate) return a.oldestPendingDate < b.oldestPendingDate ? -1 : 1;
+      if(a.oldestPendingDate) return -1;
+      if(b.oldestPendingDate) return 1;
+      return a.name.localeCompare(b.name);
+    });
   $('#brandsEmpty').style.display = brands.length===0 ? 'block' : 'none';
   $('#brandsGrid').style.display = brands.length>0 ? 'grid' : 'none';
   $('#brandsGrid').innerHTML = list.map(brandCardHTML).join('');
@@ -2366,6 +2377,7 @@ function renderTasksTable(){
   $('#tasksTableBody').innerHTML = currentTasks.map(t=>`
     <tr class="${t.done?'done':''}" data-id="${t.id}">
       <td class="col-check"><input type="checkbox" class="task-done" ${t.done?'checked':''}></td>
+      <td class="col-date">${formatDate(t.createdAt)}</td>
       <td class="col-nom"><input type="text" class="task-nom" value="${(t.nom||'').replace(/"/g,'&quot;')}" placeholder="Ex. T-shirt col rond"></td>
       <td class="col-blank">
         <select class="task-blank">${BLANK_OPTIONS.map(b=>`<option value="${b}" ${t.blank===b?'selected':''}>${b||'—'}</option>`).join('')}</select>
@@ -2384,7 +2396,7 @@ function renderTasksTable(){
         </div>
       </td>
       <td class="col-del"><button type="button" class="del-row">×</button></td>
-    </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
 
   $('#tasksTableBody').querySelectorAll('tr[data-id]').forEach(tr=>{
     const id = tr.dataset.id;
@@ -2456,10 +2468,15 @@ function renderTasksTable(){
 async function updateBrandSummary(){
   const total = currentTasks.length;
   const done = currentTasks.filter(t=>t.done).length;
+  const pending = currentTasks.filter(t=>!t.done && t.createdAt);
+  const oldestPendingDate = pending.length
+    ? pending.reduce((min,t)=> t.createdAt < min ? t.createdAt : min, pending[0].createdAt)
+    : null;
   const idx = brands.findIndex(b=>b.id===currentTasksBrandId);
   if(idx>=0){
     brands[idx].taskTotal = total;
     brands[idx].taskDone = done;
+    brands[idx].oldestPendingDate = oldestPendingDate;
     await saveBrandDoc(brands[idx]);
   }
 }
