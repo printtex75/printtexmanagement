@@ -153,6 +153,41 @@
   .task-mockup-add:hover{border-color:var(--ink);color:var(--ink);}
   .task-mockup-dl{width:34px;height:34px;border:1px solid var(--line-strong);border-radius:5px;background:var(--canvas-2);color:var(--ink-2);font-size:14px;cursor:pointer;line-height:1;}
   .task-mockup-dl:hover{border-color:var(--ink);color:var(--ink);background:#fff;}
+
+  .tasks-modal-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .tasks-modal-nav{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .product-form{background:var(--canvas);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:18px;}
+  .product-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
+  .product-form-grid .full{grid-column:1/-1;}
+  .product-form-grid label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin-bottom:5px;}
+  .product-form-grid input, .product-form-grid select, .product-form-grid textarea{width:100%;font-family:'Inter',sans-serif;font-size:13px;border:1px solid var(--line-strong);border-radius:6px;padding:9px 10px;background:#fff;color:var(--charcoal);}
+  .product-form-grid textarea{min-height:56px;resize:vertical;}
+  .product-img-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .product-img-slot{position:relative;width:64px;height:64px;border:2px dashed var(--line-strong);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
+  .product-img-slot:hover{border-color:var(--ink);}
+  .product-img-slot img{width:100%;height:100%;object-fit:cover;}
+  .product-img-slot .plus{font-size:20px;color:var(--line-strong);}
+  .product-img-slot .rm{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:var(--thread);color:#fff;border:none;font-size:10px;cursor:pointer;line-height:1;z-index:2;}
+
+  .products-catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .product-card{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:12px;}
+  .product-card-img{width:100%;aspect-ratio:1/1;border-radius:6px;object-fit:cover;background:var(--canvas);margin-bottom:8px;}
+  .product-card-name{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:13px;color:var(--ink);margin-bottom:3px;}
+  .product-card-meta{font-size:11px;color:var(--ink-2);line-height:1.5;margin-bottom:8px;}
+  .product-card-actions{display:flex;gap:8px;}
+  .product-card-actions button{font-size:11px;font-weight:600;background:none;border:none;color:var(--ink-2);cursor:pointer;}
+  .product-card-actions button:hover{color:var(--ink);text-decoration:underline;}
+  .product-card-actions button.danger:hover{color:var(--thread);}
+
+  .order-catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .order-cat-card{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:12px;}
+  .order-cat-img{width:100%;aspect-ratio:1/1;border-radius:6px;object-fit:cover;background:var(--canvas);margin-bottom:8px;}
+  .order-cat-name{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:13px;color:var(--ink);margin-bottom:3px;}
+  .order-cat-meta{font-size:11px;color:var(--ink-2);line-height:1.5;margin-bottom:8px;}
+  .order-cat-qty label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--ink-2);margin-bottom:4px;}
+  .order-cat-qty input{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:7px 8px;font-size:13px;}
+  .order-empty, .product-empty{color:var(--ink-2);font-size:12px;font-style:italic;padding:10px 0;}
   .tasks-note{text-align:right;font-size:11px;font-style:italic;color:var(--ink-2);margin-top:12px;line-height:1.4;}
   .task-table .col-del{width:34px;}
   .task-table .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
@@ -657,28 +692,87 @@
 
 <div class="overlay" id="tasksOverlay">
   <div class="modal" style="max-width:980px;">
-    <h2 id="tasksModalTitle">Marque</h2>
-    <div class="sub" id="tasksModalSub"></div>
-    <div class="task-table-wrap">
-    <table class="task-table">
-      <thead><tr>
-        <th class="col-check">Fait</th>
-        <th class="col-nom">Nom</th>
-        <th class="col-blank">Blank</th>
-        <th class="col-taille">Taille</th>
-        <th class="col-couleur">Couleur</th>
-        <th class="col-impression">Impression</th>
-        <th class="col-qty">Qté</th>
-        <th class="col-remarque">Remarque</th>
-        <th class="col-mockup">Mockup</th>
-        <th class="col-del"></th>
-      </tr></thead>
-      <tbody id="tasksTableBody"></tbody>
-    </table>
+    <div class="tasks-modal-header">
+      <div>
+        <h2 id="tasksModalTitle">Marque</h2>
+        <div class="sub" id="tasksModalSub"></div>
+      </div>
+      <div class="tasks-modal-nav">
+        <button type="button" class="btn btn-ghost btn-sm" id="btnShowNewProduct">+ Nouveau produit</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnShowNewOrder">+ Nouvelle commande</button>
+      </div>
     </div>
-    <input type="file" id="taskMockupInput" accept="image/*" style="display:none;">
-    <button type="button" class="btn btn-ghost btn-sm" id="btnAddTaskRow" style="margin-top:10px;">+ Ajouter une ligne</button>
-    <div class="tasks-note">Seuls les modèles qui ont déjà été réalisés précédemment peuvent être inscrits dans le tableau, pour SAMPLER, RDV en boutique.</div>
+
+    <div id="tasksViewDefault">
+      <div class="task-table-wrap">
+      <table class="task-table">
+        <thead><tr>
+          <th class="col-check">Fait</th>
+          <th class="col-nom">Nom</th>
+          <th class="col-blank">Blank</th>
+          <th class="col-taille">Taille</th>
+          <th class="col-couleur">Couleur</th>
+          <th class="col-impression">Impression</th>
+          <th class="col-qty">Qté</th>
+          <th class="col-remarque">Remarque</th>
+          <th class="col-mockup">Mockup</th>
+          <th class="col-del"></th>
+        </tr></thead>
+        <tbody id="tasksTableBody"></tbody>
+      </table>
+      </div>
+      <input type="file" id="taskMockupInput" accept="image/*" style="display:none;">
+      <button type="button" class="btn btn-ghost btn-sm" id="btnAddTaskRow" style="margin-top:10px;">+ Ajouter une ligne</button>
+      <div class="tasks-note">Seuls les modèles qui ont déjà été réalisés précédemment peuvent être inscrits dans le tableau, pour SAMPLER, RDV en boutique.</div>
+    </div>
+
+    <div id="tasksViewNewProduct" style="display:none;">
+      <div class="product-form">
+        <div class="product-form-grid">
+          <div>
+            <label for="prodNom">Nom du produit</label>
+            <input type="text" id="prodNom" placeholder="Ex. T-shirt col rond logo dos">
+          </div>
+          <div>
+            <label for="prodCouleurs">Couleurs</label>
+            <input type="text" id="prodCouleurs" placeholder="Ex. Noir, Blanc">
+          </div>
+          <div>
+            <label for="prodImpression">Type d'impression</label>
+            <select id="prodImpression"></select>
+          </div>
+          <div>
+            <label for="prodBlank">Blank</label>
+            <select id="prodBlank"></select>
+            <input type="text" id="prodBlankOther" style="display:none;margin-top:5px;" placeholder="Préciser le blank">
+          </div>
+          <div class="full">
+            <label for="prodRemarque">Remarque</label>
+            <textarea id="prodRemarque" placeholder="Notes sur ce produit…"></textarea>
+          </div>
+          <div class="full">
+            <label>Images du produit (5 max)</label>
+            <div class="product-img-row" id="prodImgRow"></div>
+            <input type="file" id="prodImgInput" accept="image/*" style="display:none;">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div class="left"><button type="button" class="btn btn-ghost btn-sm" id="btnBackFromProduct">← Retour</button></div>
+          <div class="right"><button type="button" class="btn btn-primary" id="btnSaveProduct">Enregistrer le produit</button></div>
+        </div>
+      </div>
+      <div class="products-catalog" id="productsCatalog"></div>
+    </div>
+
+    <div id="tasksViewNewOrder" style="display:none;">
+      <div class="hint" style="margin-bottom:10px;">Choisis une quantité pour chaque produit à commander, puis valide.</div>
+      <div class="order-catalog" id="orderCatalog"></div>
+      <div class="modal-actions">
+        <div class="left"><button type="button" class="btn btn-ghost btn-sm" id="btnBackFromOrder">← Retour</button></div>
+        <div class="right"><button type="button" class="btn btn-primary" id="btnCreateOrderFromCatalog">Créer la commande</button></div>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <div class="left"></div>
       <div class="right">
@@ -1867,6 +1961,9 @@ $('#btnList').addEventListener('click', ()=>{
 let brands = [];
 let currentEditingBrandId = null;
 let currentTasksBrandId = null;
+let currentBrandProducts = [];
+let currentProductImages = [];
+let currentEditProductId = null;
 let currentTasks = [];
 let brandsLoaded = false;
 
@@ -2026,7 +2123,9 @@ async function openTasksModal(brandId){
   $('#tasksModalTitle').textContent = b.name;
   $('#tasksModalSub').textContent = 'Commandes à produire pour cette marque';
   currentTasks = await loadBrandTasks(brandId);
+  currentBrandProducts = await loadBrandProducts(brandId);
   renderTasksTable();
+  showTasksView('default');
   $('#tasksOverlay').classList.add('open');
 }
 function closeTasksModal(){
@@ -2034,8 +2133,228 @@ function closeTasksModal(){
   currentTasksBrandId = null;
   renderBrands();
 }
+function showTasksView(view){
+  $('#tasksViewDefault').style.display = view==='default' ? 'block' : 'none';
+  $('#tasksViewNewProduct').style.display = view==='newProduct' ? 'block' : 'none';
+  $('#tasksViewNewOrder').style.display = view==='newOrder' ? 'block' : 'none';
+}
+
+/* ---------- Catalogue produits (par marque) ---------- */
+async function loadBrandProducts(brandId){
+  if(!db) return [];
+  try{
+    const snap = await withTimeout(db.collection('brands').doc(brandId).collection('products').get(), 10000);
+    return snap.docs.map(d=>d.data());
+  }catch(e){ return []; }
+}
+async function saveProductDoc(brandId, product){
+  if(!db) return { ok:false, error:'Firebase non configuré' };
+  try{
+    await withTimeout(db.collection('brands').doc(brandId).collection('products').doc(product.id).set(product), 10000);
+    return { ok:true };
+  }catch(e){ return { ok:false, error: e && e.message ? e.message : 'inconnue' }; }
+}
+async function deleteProductDoc(brandId, productId){
+  if(!db) return;
+  try{ await withTimeout(db.collection('brands').doc(brandId).collection('products').doc(productId).delete(), 10000); }catch(e){}
+}
+async function saveProductImages(brandId, productId, images){
+  if(!storageRef) return images;
+  for(let i=0;i<images.length;i++){
+    const im = images[i];
+    if(im && im.file){
+      try{
+        const path = `brands/${brandId}/products/${productId}/img_${Date.now()}_${i}`;
+        const url = await uploadImageFile(im.file, path);
+        images[i] = { name: im.name, url, path };
+      }catch(e){}
+    }
+  }
+  return images;
+}
+
+function productMetaLine(p){
+  const bits = [];
+  if(p.couleurs) bits.push(p.couleurs);
+  if(p.impression) bits.push(p.impression);
+  const blankLabel = p.blank === 'Autre' ? p.blankOther : p.blank;
+  if(blankLabel) bits.push(blankLabel);
+  return bits.join(' · ');
+}
+
+function renderProductImgRow(){
+  const boxes = currentProductImages.map((im,i)=>`
+    <div class="product-img-slot filled" data-i="${i}">
+      <img src="${im.url}" alt="">
+      <button type="button" class="rm" data-i="${i}">×</button>
+    </div>`).join('');
+  const addBox = currentProductImages.length < 5 ? `<div class="product-img-slot" id="prodImgAddBox"><div class="plus">+</div></div>` : '';
+  $('#prodImgRow').innerHTML = boxes + addBox;
+  $('#prodImgRow').querySelectorAll('.rm').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const idx = Number(btn.dataset.i);
+      const im = currentProductImages[idx];
+      if(im && im.pendingFile && im.url && im.url.startsWith('blob:')) URL.revokeObjectURL(im.url);
+      currentProductImages.splice(idx,1);
+      renderProductImgRow();
+    });
+  });
+  const addBoxEl = document.getElementById('prodImgAddBox');
+  if(addBoxEl) addBoxEl.addEventListener('click', ()=> $('#prodImgInput').click());
+}
+$('#prodImgInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file || currentProductImages.length >= 5) return;
+  currentProductImages.push({ name:file.name, file, url:URL.createObjectURL(file), path:null, pendingFile:true });
+  renderProductImgRow();
+});
+$('#prodBlank').addEventListener('change', (e)=>{
+  $('#prodBlankOther').style.display = e.target.value === 'Autre' ? 'block' : 'none';
+});
+
+function renderProductsCatalog(){
+  if(!currentBrandProducts.length){
+    $('#productsCatalog').innerHTML = '<div class="product-empty">Aucun produit créé pour cette marque pour l\'instant.</div>';
+    return;
+  }
+  $('#productsCatalog').innerHTML = currentBrandProducts.map(p=>`
+    <div class="product-card" data-id="${p.id}">
+      ${p.images && p.images[0] ? `<img class="product-card-img" src="${p.images[0].url}" alt="">` : `<div class="product-card-img"></div>`}
+      <div class="product-card-name">${p.nom || '(sans nom)'}</div>
+      <div class="product-card-meta">${productMetaLine(p)}</div>
+      <div class="product-card-actions">
+        <button type="button" class="edit-prod">Modifier</button>
+        <button type="button" class="danger del-prod">Supprimer</button>
+      </div>
+    </div>`).join('');
+  $('#productsCatalog').querySelectorAll('.edit-prod').forEach(btn=>{
+    btn.addEventListener('click', ()=> openProductForEdit(btn.closest('.product-card').dataset.id));
+  });
+  $('#productsCatalog').querySelectorAll('.del-prod').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.closest('.product-card').dataset.id;
+      const ok = await askConfirm('Supprimer ce produit du catalogue ? Les commandes déjà créées à partir de lui ne seront pas affectées.');
+      if(!ok) return;
+      await deleteProductDoc(currentTasksBrandId, id);
+      currentBrandProducts = currentBrandProducts.filter(p=>p.id!==id);
+      renderProductsCatalog();
+      showToast('Produit supprimé');
+    });
+  });
+}
+function resetProductForm(){
+  currentEditProductId = null;
+  $('#prodNom').value = '';
+  $('#prodCouleurs').value = '';
+  $('#prodImpression').value = TASK_PRINT_METHODS.filter(m=>m)[0] || '';
+  $('#prodBlank').value = BLANK_OPTIONS[0];
+  $('#prodBlankOther').value = '';
+  $('#prodBlankOther').style.display = 'none';
+  $('#prodRemarque').value = '';
+  currentProductImages = [];
+  renderProductImgRow();
+  $('#btnSaveProduct').textContent = 'Enregistrer le produit';
+  renderProductsCatalog();
+}
+function openProductForEdit(id){
+  const p = currentBrandProducts.find(x=>x.id===id);
+  if(!p) return;
+  currentEditProductId = id;
+  $('#prodNom').value = p.nom || '';
+  $('#prodCouleurs').value = p.couleurs || '';
+  $('#prodImpression').value = p.impression || '';
+  $('#prodBlank').value = p.blank || BLANK_OPTIONS[0];
+  $('#prodBlankOther').value = p.blankOther || '';
+  $('#prodBlankOther').style.display = p.blank === 'Autre' ? 'block' : 'none';
+  $('#prodRemarque').value = p.remarque || '';
+  currentProductImages = JSON.parse(JSON.stringify(p.images || []));
+  renderProductImgRow();
+  $('#btnSaveProduct').textContent = 'Mettre à jour le produit';
+  showTasksView('newProduct');
+}
+$('#btnShowNewProduct').addEventListener('click', ()=>{ resetProductForm(); showTasksView('newProduct'); });
+$('#btnBackFromProduct').addEventListener('click', ()=> showTasksView('default'));
+$('#btnSaveProduct').addEventListener('click', async ()=>{
+  const nom = $('#prodNom').value.trim();
+  if(!nom){ showToast('Le nom du produit est obligatoire.'); return; }
+  const id = currentEditProductId || ('prod_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
+  const btn = $('#btnSaveProduct');
+  btn.disabled = true; btn.textContent = 'Enregistrement…';
+  const images = await saveProductImages(currentTasksBrandId, id, currentProductImages);
+  const existing = currentBrandProducts.find(p=>p.id===id);
+  const product = {
+    id, nom,
+    couleurs: $('#prodCouleurs').value.trim(),
+    impression: $('#prodImpression').value,
+    blank: $('#prodBlank').value,
+    blankOther: $('#prodBlank').value === 'Autre' ? $('#prodBlankOther').value.trim() : '',
+    remarque: $('#prodRemarque').value.trim(),
+    images,
+    createdAt: existing ? existing.createdAt : new Date().toISOString()
+  };
+  const result = await saveProductDoc(currentTasksBrandId, product);
+  btn.disabled = false;
+  if(!result.ok){ showToast('Erreur : ' + (result.error||'inconnue')); btn.textContent = currentEditProductId ? 'Mettre à jour le produit' : 'Enregistrer le produit'; return; }
+  const idx = currentBrandProducts.findIndex(p=>p.id===id);
+  if(idx > -1) currentBrandProducts[idx] = product; else currentBrandProducts.push(product);
+  const wasEditing = !!currentEditProductId;
+  resetProductForm();
+  showToast(wasEditing ? 'Produit mis à jour' : 'Produit créé');
+});
+
+/* ---------- Nouvelle commande depuis le catalogue ---------- */
+function renderOrderCatalog(){
+  if(!currentBrandProducts.length){
+    $('#orderCatalog').innerHTML = '<div class="order-empty">Aucun produit dans le catalogue. Crée d\'abord un produit dans l\'onglet "+ Nouveau produit".</div>';
+    return;
+  }
+  $('#orderCatalog').innerHTML = currentBrandProducts.map(p=>`
+    <div class="order-cat-card" data-id="${p.id}">
+      ${p.images && p.images[0] ? `<img class="order-cat-img" src="${p.images[0].url}" alt="">` : `<div class="order-cat-img"></div>`}
+      <div class="order-cat-name">${p.nom || '(sans nom)'}</div>
+      <div class="order-cat-meta">${productMetaLine(p)}</div>
+      <div class="order-cat-qty"><label>Quantité</label><input type="number" min="0" class="order-cat-qty-input" value="0"></div>
+    </div>`).join('');
+}
+$('#btnShowNewOrder').addEventListener('click', ()=>{ renderOrderCatalog(); showTasksView('newOrder'); });
+$('#btnBackFromOrder').addEventListener('click', ()=> showTasksView('default'));
+$('#btnCreateOrderFromCatalog').addEventListener('click', async ()=>{
+  const cards = $('#orderCatalog').querySelectorAll('.order-cat-card');
+  const toCreate = [];
+  cards.forEach(card=>{
+    const qty = Number(card.querySelector('.order-cat-qty-input').value) || 0;
+    if(qty > 0){
+      const p = currentBrandProducts.find(x=>x.id===card.dataset.id);
+      if(p) toCreate.push({ product:p, qty });
+    }
+  });
+  if(!toCreate.length){ showToast('Renseigne au moins une quantité.'); return; }
+  const btn = $('#btnCreateOrderFromCatalog');
+  btn.disabled = true; btn.textContent = 'Création…';
+  for(const { product, qty } of toCreate){
+    const task = {
+      id: 'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      nom: product.nom, blank: product.blank, blankOther: product.blankOther || '',
+      taille: '', couleur: product.couleurs || '', impression: product.impression || '',
+      quantity: qty, remarque: product.remarque || '',
+      mockup: (product.images||[]).slice(0,4),
+      done:false, createdAt:new Date().toISOString()
+    };
+    currentTasks.push(task);
+    await saveTaskDoc(currentTasksBrandId, task);
+  }
+  await updateBrandSummary();
+  btn.disabled = false; btn.textContent = 'Créer la commande';
+  renderTasksTable();
+  showTasksView('default');
+  showToast(`${toCreate.length} produit(s) ajouté(s) à la commande`);
+});
 const TASK_SIZES = ['', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
 const TASK_PRINT_METHODS = ['', 'Sérigraphie', 'Broderie', 'DTF (transfert numérique)', 'DTG', 'Flocage', 'Sublimation', 'Vinyle transfert', 'Autre'];
+$('#prodImpression').innerHTML = TASK_PRINT_METHODS.filter(m=>m).map(m=>`<option value="${m}">${m}</option>`).join('');
+$('#prodBlank').innerHTML = BLANK_OPTIONS.map(b=>`<option value="${b}">${b||'—'}</option>`).join('');
 
 function renderTasksTable(){
   $('#tasksTableBody').innerHTML = currentTasks.map(t=>`
@@ -2175,10 +2494,6 @@ async function handleTaskMockupFile(taskId, file){
 async function removeMockupImage(taskId, index){
   const task = currentTasks.find(t=>t.id===taskId);
   if(!task || !task.mockup) return;
-  const im = task.mockup[index];
-  if(im && im.path && storageRef){
-    try{ await storageRef.child(im.path).delete(); }catch(e){}
-  }
   task.mockup.splice(index,1);
   renderTasksTable();
   await saveTaskDoc(currentTasksBrandId, task);
