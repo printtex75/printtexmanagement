@@ -638,7 +638,7 @@
         </div>
         <div class="full hint" id="paymentHint"></div>
         <div class="full">
-          <label class="check-inline" style="font-size:13px;"><input type="checkbox" id="toCheckOnReceipt"> À voir à réception</label>
+          <label class="check-inline" style="font-size:13px;justify-content:flex-end;gap:4px;width:100%;"><input type="checkbox" id="toCheckOnReceipt"> Prix à déterminer lors de réception</label>
         </div>
 
         <div class="full">
@@ -1252,7 +1252,7 @@ function tagCardHTML(o){
     <div class="badge-row">
       ${o.priority==='haute' ? '<span class="badge pri-haute">Priorité haute</span>' : ''}
       ${o.priority==='basse' ? '<span class="badge pri-basse">Priorité basse</span>' : ''}
-      ${o.toCheckOnReceipt ? '<span class="badge pri-haute">À voir à réception</span>' : ''}
+      ${o.toCheckOnReceipt ? '<span class="badge pri-haute">Prix à déterminer lors de réception</span>' : ''}
       ${paymentBadge(o)}
     </div>
     ${deadlineBadge(o)}
