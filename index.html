@@ -182,15 +182,14 @@
   .product-card-actions button:hover{color:var(--ink);text-decoration:underline;}
   .product-card-actions button.danger:hover{color:var(--thread);}
 
-  .order-catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .order-catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
   .order-cat-card{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:12px;}
   .order-cat-img{width:100%;aspect-ratio:1/1;border-radius:6px;object-fit:cover;background:var(--canvas);margin-bottom:8px;}
   .order-cat-name{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:13px;color:var(--ink);margin-bottom:3px;}
   .order-cat-meta{font-size:11px;color:var(--ink-2);line-height:1.5;margin-bottom:8px;}
-  .order-cat-row{display:flex;gap:8px;}
-  .order-cat-taille, .order-cat-qty{flex:1;}
-  .order-cat-taille label, .order-cat-qty label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--ink-2);margin-bottom:4px;}
-  .order-cat-taille select, .order-cat-qty input{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:7px 8px;font-size:13px;}
+  .order-cat-sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .order-cat-size-cell label{display:block;font-size:9px;font-weight:600;text-transform:uppercase;color:var(--ink-2);margin-bottom:3px;text-align:center;}
+  .order-cat-size-cell input{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:6px 4px;font-size:12px;text-align:center;}
   .order-empty, .product-empty{color:var(--ink-2);font-size:12px;font-style:italic;padding:10px 0;}
   .tasks-note{text-align:right;font-size:11px;font-style:italic;color:var(--ink-2);margin-top:12px;line-height:1.4;}
   .task-table .col-del{width:34px;}
@@ -2328,9 +2327,12 @@ function renderOrderCatalog(){
       ${p.images && p.images[0] ? `<img class="order-cat-img" src="${p.images[0].url}" alt="">` : `<div class="order-cat-img"></div>`}
       <div class="order-cat-name">${p.nom || '(sans nom)'}</div>
       <div class="order-cat-meta">${productMetaLine(p)}</div>
-      <div class="order-cat-row">
-        <div class="order-cat-taille"><label>Taille</label><select class="order-cat-taille-input">${TASK_SIZES.map(s=>`<option value="${s}">${s||'—'}</option>`).join('')}</select></div>
-        <div class="order-cat-qty"><label>Quantité</label><input type="number" min="0" class="order-cat-qty-input" value="0"></div>
+      <div class="order-cat-sizes">
+        ${TASK_SIZES.filter(s=>s).map(s=>`
+          <div class="order-cat-size-cell">
+            <label>${s}</label>
+            <input type="number" min="0" class="order-cat-size-input" data-size="${s}" placeholder="0">
+          </div>`).join('')}
       </div>
     </div>`).join('');
 }
@@ -2340,12 +2342,12 @@ $('#btnCreateOrderFromCatalog').addEventListener('click', async ()=>{
   const cards = $('#orderCatalog').querySelectorAll('.order-cat-card');
   const toCreate = [];
   cards.forEach(card=>{
-    const qty = Number(card.querySelector('.order-cat-qty-input').value) || 0;
-    if(qty > 0){
-      const p = currentBrandProducts.find(x=>x.id===card.dataset.id);
-      const taille = card.querySelector('.order-cat-taille-input').value;
-      if(p) toCreate.push({ product:p, qty, taille });
-    }
+    const p = currentBrandProducts.find(x=>x.id===card.dataset.id);
+    if(!p) return;
+    card.querySelectorAll('.order-cat-size-input').forEach(input=>{
+      const qty = Number(input.value) || 0;
+      if(qty > 0) toCreate.push({ product:p, qty, taille: input.dataset.size });
+    });
   });
   if(!toCreate.length){ showToast('Renseigne au moins une quantité.'); return; }
   const btn = $('#btnCreateOrderFromCatalog');
