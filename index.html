@@ -2748,11 +2748,11 @@ function showAuthGate(){
   orders = []; brands = []; brandsLoaded = false;
 }
 async function findBrandByOwner(uid){
-  if(!db) return null;
+  if(!db) return { brand:null, error:'Firebase non configuré' };
   try{
     const snap = await withTimeout(db.collection('brands').where('ownerUid','==',uid).get(), 10000);
-    return snap.docs.length ? snap.docs[0].data() : null;
-  }catch(e){ return null; }
+    return { brand: snap.docs.length ? snap.docs[0].data() : null, error:null };
+  }catch(e){ return { brand:null, error: e && e.message ? e.message : 'inconnue' }; }
 }
 async function showBrandPortal(brand){
   document.body.classList.add('role-brand');
@@ -2862,7 +2862,13 @@ if(auth){
       showApp();
       loadOrders();
     }else{
-      const brand = await findBrandByOwner(user.uid);
+      const { brand, error } = await findBrandByOwner(user.uid);
+      if(error){
+        showToast("Erreur de connexion : " + error);
+        console.error('Erreur findBrandByOwner:', error);
+        await auth.signOut();
+        return;
+      }
       if(!brand){
         showToast("Aucune marque associée à ce compte.");
         await auth.signOut();
