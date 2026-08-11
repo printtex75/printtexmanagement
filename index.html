@@ -637,6 +637,9 @@
           <input type="number" id="depositAmount" min="0" step="0.01" placeholder="Ex. 100">
         </div>
         <div class="full hint" id="paymentHint"></div>
+        <div class="full">
+          <label class="check-inline" style="font-size:13px;"><input type="checkbox" id="toCheckOnReceipt"> À voir à réception</label>
+        </div>
 
         <div class="full">
           <div class="extra-imgs-label"><label style="margin:0;">Images supplémentaires (croquis, références, coloris…)</label></div>
@@ -1249,6 +1252,7 @@ function tagCardHTML(o){
     <div class="badge-row">
       ${o.priority==='haute' ? '<span class="badge pri-haute">Priorité haute</span>' : ''}
       ${o.priority==='basse' ? '<span class="badge pri-basse">Priorité basse</span>' : ''}
+      ${o.toCheckOnReceipt ? '<span class="badge pri-haute">À voir à réception</span>' : ''}
       ${paymentBadge(o)}
     </div>
     ${deadlineBadge(o)}
@@ -1620,6 +1624,7 @@ async function openModal(id){
     $('#priority').value = o.priority || 'normale';
     $('#priceAmount').value = o.priceAmount || '';
     $('#depositAmount').value = o.depositAmount || '';
+    $('#toCheckOnReceipt').checked = !!o.toCheckOnReceipt;
     $('#notes').value = o.notes || '';
     updatePaymentHint(); updateStartHint(); updateHistory();
     $('#btnDelete').style.display = 'inline-block';
@@ -1729,6 +1734,7 @@ $('#btnSave').addEventListener('click', async (e)=>{
       priority: $('#priority').value,
       priceAmount: $('#priceAmount').value,
       depositAmount: $('#depositAmount').value,
+      toCheckOnReceipt: $('#toCheckOnReceipt').checked,
       notes: $('#notes').value.trim(),
       thumbnails,
       imageCount,
