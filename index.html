@@ -114,6 +114,13 @@
   .oi-cell input[type=text], .oi-cell input[type=number], .oi-cell select{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:8px 9px;font-size:13px;background:#fff;color:var(--charcoal);}
   .oi-cell input.oi-product-other{margin-top:5px;}
   .oi-card .del-item{background:none;border:none;color:var(--thread);cursor:pointer;font-size:16px;padding:6px 4px;align-self:flex-end;}
+  .oi-sizes-row{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
+  .oi-sizes-label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin-bottom:6px;}
+  .oi-total-badge{color:var(--thread);font-family:'JetBrains Mono',monospace;}
+  .oi-sizes-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:520px;}
+  .oi-size-cell label{display:block;font-size:9px;font-weight:600;text-transform:uppercase;color:var(--ink-2);margin-bottom:3px;text-align:center;}
+  .oi-size-cell input{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:6px 3px;font-size:12px;text-align:center;}
+  @media (max-width:640px){ .oi-sizes-grid{grid-template-columns:repeat(4,1fr);max-width:none;} }
   .oi-slots-row{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
   .oi-slots-label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin-bottom:6px;}
   .oi-slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-width:520px;}
@@ -1129,7 +1136,8 @@ function itemLabel(it){
   const blankLabel = it.blank === 'Autre' && it.blankOther ? it.blankOther : it.blank;
   const bits = [name];
   if(blankLabel) bits.push('Blank ' + blankLabel);
-  if(it.taille) bits.push(it.taille);
+  if(it.sizes && sizesText(it.sizes)) bits.push(sizesText(it.sizes));
+  else if(it.taille) bits.push(it.taille);
   if(it.couleur) bits.push(it.couleur);
   return `${bits.join(' · ')} — ${it.impression} ×${it.quantity}`;
 }
@@ -1404,11 +1412,26 @@ let currentOrderItems = [];
 let activeItemId = null;
 let activeItemSlotKey = null;
 
+function emptySizesMap(){
+  const o = {};
+  TASK_SIZES.filter(s=>s).forEach(s=> o[s]=0);
+  return o;
+}
+function normalizeItemSizes(it){
+  if(it.sizes && Object.keys(it.sizes).length) return it.sizes;
+  const sizes = emptySizesMap();
+  if(it.taille && sizes.hasOwnProperty(it.taille)) sizes[it.taille] = Number(it.quantity)||0;
+  else if(Number(it.quantity)>0) sizes['M'] = Number(it.quantity)||0;
+  return sizes;
+}
 function newOrderItem(){
-  return { id: 'item_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), product:'T-shirt', productOther:'', blank:BLANK_OPTIONS[0], blankOther:'', taille:'', couleur:'', impression:'Sérigraphie', quantity:1, slots: emptySlots() };
+  return { id: 'item_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), product:'T-shirt', productOther:'', blank:BLANK_OPTIONS[0], blankOther:'', sizes: emptySizesMap(), couleur:'', impression:'Sérigraphie', quantity:0, slots: emptySlots() };
 }
 function renderOrderItemsTable(){
-  $('#orderItemsBody').innerHTML = currentOrderItems.map(it=>`
+  $('#orderItemsBody').innerHTML = currentOrderItems.map(it=>{
+    it.sizes = normalizeItemSizes(it);
+    it.quantity = Object.values(it.sizes).reduce((a,b)=>a+(Number(b)||0),0);
+    return `
     <div class="oi-card" data-id="${it.id}">
       <div class="oi-card-row">
         <div class="oi-cell oi-cell-product">
@@ -1421,11 +1444,19 @@ function renderOrderItemsTable(){
           <select class="oi-blank">${BLANK_OPTIONS.map(b=>`<option value="${b}" ${it.blank===b?'selected':''}>${b}</option>`).join('')}</select>
           ${it.blank === 'Autre' ? `<input type="text" class="oi-blank-other" value="${(it.blankOther||'').replace(/"/g,'&quot;')}" placeholder="Préciser le blank">` : ''}
         </div>
-        <div class="oi-cell oi-cell-taille"><label>Taille</label><select class="oi-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${it.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select></div>
         <div class="oi-cell oi-cell-couleur"><label>Couleur</label><input type="text" class="oi-couleur" value="${(it.couleur||'').replace(/"/g,'&quot;')}" placeholder="Ex. Noir"></div>
         <div class="oi-cell oi-cell-impression"><label>Impression</label><select class="oi-impression">${TASK_PRINT_METHODS.filter(m=>m).map(m=>`<option value="${m}" ${it.impression===m?'selected':''}>${m}</option>`).join('')}</select></div>
-        <div class="oi-cell oi-cell-qty"><label>Qté</label><input type="number" class="oi-qty" min="1" value="${it.quantity||1}"></div>
         ${currentOrderItems.length>1 ? '<button type="button" class="del-item">×</button>' : ''}
+      </div>
+      <div class="oi-sizes-row">
+        <label class="oi-sizes-label">Répartition des tailles — quantité totale : <span class="oi-total-badge">${it.quantity}</span></label>
+        <div class="oi-sizes-grid">
+          ${TASK_SIZES.filter(s=>s).map(s=>`
+            <div class="oi-size-cell">
+              <label>${s}</label>
+              <input type="number" min="0" class="oi-size-input" data-size="${s}" value="${it.sizes[s]||''}" placeholder="0">
+            </div>`).join('')}
+        </div>
       </div>
       <div class="oi-slots-row">
         <label class="oi-slots-label">Emplacements du visuel de ce produit</label>
@@ -1443,7 +1474,8 @@ function renderOrderItemsTable(){
           }).join('')}
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   $('#orderItemsBody').querySelectorAll('.oi-card').forEach(card=>{
     const id = card.dataset.id;
@@ -1455,10 +1487,17 @@ function renderOrderItemsTable(){
     card.querySelector('.oi-blank').addEventListener('change', (e)=>{ item.blank = e.target.value; renderOrderItemsTable(); });
     const blankOtherInput = card.querySelector('.oi-blank-other');
     if(blankOtherInput) blankOtherInput.addEventListener('input', (e)=>{ item.blankOther = e.target.value; });
-    card.querySelector('.oi-taille').addEventListener('change', (e)=>{ item.taille = e.target.value; });
     card.querySelector('.oi-couleur').addEventListener('input', (e)=>{ item.couleur = e.target.value; });
     card.querySelector('.oi-impression').addEventListener('change', (e)=>{ item.impression = e.target.value; });
-    card.querySelector('.oi-qty').addEventListener('input', (e)=>{ item.quantity = e.target.value; updateOrderItemsTotal(); });
+    card.querySelectorAll('.oi-size-input').forEach(input=>{
+      input.addEventListener('input', (e)=>{
+        item.sizes[e.target.dataset.size] = Number(e.target.value) || 0;
+        item.quantity = Object.values(item.sizes).reduce((a,b)=>a+(Number(b)||0),0);
+        const badge = card.querySelector('.oi-total-badge');
+        if(badge) badge.textContent = item.quantity;
+        updateOrderItemsTotal();
+      });
+    });
     const delBtn = card.querySelector('.del-item');
     if(delBtn) delBtn.addEventListener('click', ()=>{
       currentOrderItems = currentOrderItems.filter(i=>i.id!==id);
@@ -1632,7 +1671,7 @@ $('#btnSave').addEventListener('click', async (e)=>{
     }
     const invalidQty = currentOrderItems.some(it => !(Number(it.quantity) > 0));
     if(invalidQty){
-      showToast('Chaque produit doit avoir une quantité valide (supérieure à 0).');
+      showToast('Chaque produit doit avoir au moins une taille avec une quantité renseignée.');
       return;
     }
     const items = currentOrderItems.map(it => ({
@@ -1641,10 +1680,10 @@ $('#btnSave').addEventListener('click', async (e)=>{
       productOther: it.product === 'Autre' ? (it.productOther||'').trim() : '',
       blank: it.blank || '',
       blankOther: it.blank === 'Autre' ? (it.blankOther||'').trim() : '',
-      taille: it.taille || '',
+      sizes: { ...it.sizes },
       couleur: (it.couleur||'').trim(),
       impression: it.impression,
-      quantity: Number(it.quantity) || 1
+      quantity: Number(it.quantity) || 0
     }));
     const totalQuantity = items.reduce((sum,it)=> sum + it.quantity, 0);
     const id = currentEditId || ('ord_' + Date.now() + '_' + Math.random().toString(36).slice(2,7));
