@@ -163,6 +163,59 @@
   .task-mockup-dl{width:34px;height:34px;border:1px solid var(--line-strong);border-radius:5px;background:var(--canvas-2);color:var(--ink-2);font-size:14px;cursor:pointer;line-height:1;}
   .task-mockup-dl:hover{border-color:var(--ink);color:var(--ink);background:#fff;}
 
+  .task-cards-list{display:flex;flex-direction:column;gap:10px;}
+  .task-card{
+    display:flex;align-items:flex-start;gap:12px;
+    background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  }
+  .task-card.done{opacity:0.55;}
+  .task-card.done .task-nom{text-decoration:line-through;}
+  .task-thumb-wrap{position:relative;flex-shrink:0;}
+  .task-thumb{
+    width:56px;height:56px;border-radius:8px;background:#fff;border:1px solid var(--line-strong);
+    display:flex;align-items:center;justify-content:center;color:var(--line-strong);cursor:pointer;overflow:hidden;position:relative;
+  }
+  .task-thumb:hover{border-color:var(--ink);}
+  .task-thumb img{width:100%;height:100%;object-fit:cover;}
+  .task-thumb-count{position:absolute;bottom:0;right:0;background:rgba(35,50,74,0.8);color:#fff;font-size:9px;padding:1px 4px;border-radius:4px 0 0 0;}
+  .task-thumb-add{
+    position:absolute;bottom:-6px;right:-6px;width:20px;height:20px;border-radius:50%;
+    background:var(--ink);color:#fff;border:2px solid var(--canvas-2);font-size:12px;cursor:pointer;line-height:1;
+  }
+  .task-thumb-add:hover{background:var(--thread);}
+  .task-card-body{flex:1;min-width:0;}
+  .task-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+  .task-title-row input.task-remarque{
+    width:150px;flex-shrink:0;font-size:11px;font-style:italic;color:var(--ink-2);
+    border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:#fff;
+  }
+  .task-title-row input.task-nom{
+    flex:1;min-width:140px;font-family:'Oswald',sans-serif;font-size:14px;text-transform:uppercase;
+    letter-spacing:0.2px;border:1px solid transparent;border-radius:6px;padding:5px 6px;background:transparent;color:var(--ink);
+  }
+  .task-title-row input.task-nom:hover, .task-title-row input.task-nom:focus{border-color:var(--line-strong);background:#fff;}
+  .task-date-badge{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-2);white-space:nowrap;margin-left:auto;}
+  .task-meta-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .task-meta-row select, .task-meta-row input{border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;font-size:12px;background:#fff;color:var(--charcoal);}
+  .task-meta-row .task-taille{width:60px;}
+  .task-meta-row .task-couleur{width:100px;}
+  .task-meta-row .task-blank, .task-meta-row .task-impression{max-width:140px;}
+  .task-blank-other, .task-blank-inline-other{margin-top:4px;}
+  .task-qty-block{flex-shrink:0;text-align:center;width:52px;}
+  .task-qty-block input{width:100%;text-align:center;font-size:17px;font-weight:600;color:var(--ink);border:1px solid transparent;border-radius:6px;padding:4px 2px;background:transparent;font-family:'JetBrains Mono',monospace;}
+  .task-qty-block input:hover, .task-qty-block input:focus{border-color:var(--line-strong);background:#fff;}
+  .task-qty-block .qty-label{font-size:9px;text-transform:uppercase;color:var(--ink-2);}
+  .task-actions-block{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .task-actions-block label{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+  .task-actions-block input[type=checkbox]{width:18px;height:18px;}
+  .task-actions-block .done-label{font-size:9px;text-transform:uppercase;color:var(--ink-2);}
+  .task-actions-block .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
+
+  .mockup-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:10px;}
+  .gallery-item{position:relative;aspect-ratio:1/1;}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid var(--line-strong);}
+  .gallery-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:var(--thread);color:#fff;border:none;font-size:12px;cursor:pointer;line-height:1;}
+
   .tasks-modal-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .tasks-modal-nav{display:flex;gap:8px;flex-wrap:wrap;}
 
@@ -717,24 +770,7 @@
     </div>
 
     <div id="tasksViewDefault">
-      <div class="task-table-wrap">
-      <table class="task-table">
-        <thead><tr>
-          <th class="col-check">Fait</th>
-          <th class="col-date">Soumise le</th>
-          <th class="col-nom">Nom</th>
-          <th class="col-blank">Blank</th>
-          <th class="col-taille">Taille</th>
-          <th class="col-couleur">Couleur</th>
-          <th class="col-impression">Impression</th>
-          <th class="col-qty">Qté</th>
-          <th class="col-remarque">Remarque</th>
-          <th class="col-mockup">Mockup</th>
-          <th class="col-del"></th>
-        </tr></thead>
-        <tbody id="tasksTableBody"></tbody>
-      </table>
-      </div>
+      <div id="tasksTableBody" class="task-cards-list"></div>
       <input type="file" id="taskMockupInput" accept="image/*" style="display:none;">
       <div class="tasks-note">Seuls les modèles qui ont déjà été réalisés précédemment peuvent être inscrits dans le tableau, pour SAMPLER, RDV en boutique.</div>
     </div>
@@ -790,6 +826,21 @@
       <div class="left"></div>
       <div class="right">
         <button type="button" class="btn btn-primary" id="btnTasksClose">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="mockupGalleryOverlay">
+  <div class="modal" style="max-width:640px;">
+    <h2>Visuels du produit</h2>
+    <div class="sub" id="mockupGalleryTaskName"></div>
+    <div class="mockup-gallery-grid" id="mockupGalleryGrid"></div>
+    <div class="modal-actions">
+      <div class="left"><button type="button" class="btn btn-ghost btn-sm" id="btnGalleryAddPhoto">+ Ajouter une photo</button></div>
+      <div class="right">
+        <button type="button" class="btn btn-ghost btn-sm" id="btnGalleryDownloadAll">Télécharger tout</button>
+        <button type="button" class="btn btn-primary" id="btnGalleryClose">Fermer</button>
       </div>
     </div>
   </div>
@@ -2420,90 +2471,96 @@ $('#prodImpression').innerHTML = TASK_PRINT_METHODS.filter(m=>m).map(m=>`<option
 $('#prodBlank').innerHTML = BLANK_OPTIONS.map(b=>`<option value="${b}">${b||'—'}</option>`).join('');
 
 function renderTasksTable(){
-  $('#tasksTableBody').innerHTML = currentTasks.map(t=>`
-    <tr class="${t.done?'done':''}" data-id="${t.id}">
-      <td class="col-check"><input type="checkbox" class="task-done" ${t.done?'checked':''}></td>
-      <td class="col-date">${formatDate(t.createdAt)}</td>
-      <td class="col-nom"><input type="text" class="task-nom" value="${(t.nom||'').replace(/"/g,'&quot;')}" placeholder="Ex. T-shirt col rond"></td>
-      <td class="col-blank">
-        <select class="task-blank">${BLANK_OPTIONS.map(b=>`<option value="${b}" ${t.blank===b?'selected':''}>${b||'—'}</option>`).join('')}</select>
-        ${t.blank === 'Autre' ? `<input type="text" class="task-blank-other" value="${(t.blankOther||'').replace(/"/g,'&quot;')}" placeholder="Préciser">` : ''}
-      </td>
-      <td class="col-taille"><select class="task-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${t.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select></td>
-      <td class="col-couleur"><input type="text" class="task-couleur" value="${(t.couleur||'').replace(/"/g,'&quot;')}" placeholder="Ex. Noir"></td>
-      <td class="col-impression"><select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select></td>
-      <td class="col-qty"><input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0"></td>
-      <td class="col-remarque"><input type="text" class="task-remarque" value="${(t.remarque||'').replace(/"/g,'&quot;')}" placeholder="Notes…"></td>
-      <td class="col-mockup">
-        <div class="task-mockup-thumbs">
-          ${(t.mockup||[]).map((im,i)=>`<div class="task-mockup-thumb"><img src="${im.url}" alt=""><button type="button" class="task-mockup-del" data-i="${i}">×</button></div>`).join('')}
-          ${(t.mockup||[]).length < 4 ? '<button type="button" class="task-mockup-add">+</button>' : ''}
-          ${(t.mockup||[]).length > 0 ? '<button type="button" class="task-mockup-dl" title="Télécharger le mockup">⬇</button>' : ''}
+  if(!currentTasks.length){
+    $('#tasksTableBody').innerHTML = '<div class="order-empty">Aucune commande pour l\'instant.</div>';
+    return;
+  }
+  $('#tasksTableBody').innerHTML = currentTasks.map(t=>{
+    const mockup = t.mockup || [];
+    return `
+    <div class="task-card ${t.done?'done':''}" data-id="${t.id}">
+      <div class="task-thumb-wrap">
+        <div class="task-thumb" data-open-gallery="${t.id}">
+          ${mockup[0] ? `<img src="${mockup[0].url}" alt="">` : '<i class="ti ti-photo-off" style="font-size:20px;" aria-hidden="true"></i>'}
+          ${mockup.length > 1 ? `<span class="task-thumb-count">+${mockup.length-1}</span>` : ''}
         </div>
-      </td>
-      <td class="col-del"><button type="button" class="del-row">×</button></td>
-    </tr>`).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--ink-2);padding:16px;">Aucune ligne pour l\'instant.</td></tr>';
+        <button type="button" class="task-thumb-add" title="Ajouter une photo">+</button>
+      </div>
+      <div class="task-card-body">
+        <div class="task-title-row">
+          <input type="text" class="task-remarque" value="${(t.remarque||'').replace(/"/g,'&quot;')}" placeholder="Remarque…">
+          <input type="text" class="task-nom" value="${(t.nom||'').replace(/"/g,'&quot;')}" placeholder="Ex. T-shirt col rond">
+          <span class="task-date-badge">${formatDate(t.createdAt)}</span>
+        </div>
+        <div class="task-meta-row">
+          <select class="task-blank">${BLANK_OPTIONS.map(b=>`<option value="${b}" ${t.blank===b?'selected':''}>${b||'—'}</option>`).join('')}</select>
+          ${t.blank === 'Autre' ? `<input type="text" class="task-blank-other" value="${(t.blankOther||'').replace(/"/g,'&quot;')}" placeholder="Préciser">` : ''}
+          <select class="task-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${t.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select>
+          <input type="text" class="task-couleur" value="${(t.couleur||'').replace(/"/g,'&quot;')}" placeholder="Couleur">
+          <select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select>
+        </div>
+      </div>
+      <div class="task-qty-block">
+        <input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0">
+        <div class="qty-label">pièces</div>
+      </div>
+      <div class="task-actions-block">
+        <label><input type="checkbox" class="task-done" ${t.done?'checked':''}><span class="done-label">Fait</span></label>
+        <button type="button" class="del-row" title="Supprimer">×</button>
+      </div>
+    </div>`;
+  }).join('');
 
-  $('#tasksTableBody').querySelectorAll('tr[data-id]').forEach(tr=>{
-    const id = tr.dataset.id;
+  $('#tasksTableBody').querySelectorAll('.task-card').forEach(card=>{
+    const id = card.dataset.id;
     const task = currentTasks.find(t=>t.id===id);
-    tr.querySelector('.task-done').addEventListener('change', async (e)=>{
+    card.querySelector('.task-done').addEventListener('change', async (e)=>{
       task.done = e.target.checked;
-      tr.classList.toggle('done', task.done);
+      card.classList.toggle('done', task.done);
       await saveTaskDoc(currentTasksBrandId, task);
       await updateBrandSummary();
     });
-    tr.querySelector('.task-nom').addEventListener('change', async (e)=>{
+    card.querySelector('.task-nom').addEventListener('change', async (e)=>{
       task.nom = e.target.value.trim();
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    tr.querySelector('.task-blank').addEventListener('change', async (e)=>{
+    card.querySelector('.task-blank').addEventListener('change', async (e)=>{
       task.blank = e.target.value;
       renderTasksTable();
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    const blankOtherInput = tr.querySelector('.task-blank-other');
+    const blankOtherInput = card.querySelector('.task-blank-other');
     if(blankOtherInput) blankOtherInput.addEventListener('change', async (e)=>{
       task.blankOther = e.target.value.trim();
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    tr.querySelector('.task-taille').addEventListener('change', async (e)=>{
+    card.querySelector('.task-taille').addEventListener('change', async (e)=>{
       task.taille = e.target.value;
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    tr.querySelector('.task-couleur').addEventListener('change', async (e)=>{
+    card.querySelector('.task-couleur').addEventListener('change', async (e)=>{
       task.couleur = e.target.value.trim();
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    tr.querySelector('.task-impression').addEventListener('change', async (e)=>{
+    card.querySelector('.task-impression').addEventListener('change', async (e)=>{
       task.impression = e.target.value;
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    tr.querySelector('.task-qty').addEventListener('change', async (e)=>{
+    card.querySelector('.task-qty').addEventListener('change', async (e)=>{
       task.quantity = e.target.value;
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    tr.querySelector('.task-remarque').addEventListener('change', async (e)=>{
+    card.querySelector('.task-remarque').addEventListener('change', async (e)=>{
       task.remarque = e.target.value.trim();
       await saveTaskDoc(currentTasksBrandId, task);
     });
-    const mockupAddBtn = tr.querySelector('.task-mockup-add');
-    if(mockupAddBtn) mockupAddBtn.addEventListener('click', ()=>{
+    card.querySelector('.task-thumb').addEventListener('click', ()=> openMockupGallery(id));
+    card.querySelector('.task-thumb-add').addEventListener('click', (e)=>{
+      e.stopPropagation();
       activeMockupTaskId = id;
       $('#taskMockupInput').click();
     });
-    const mockupDlBtn = tr.querySelector('.task-mockup-dl');
-    if(mockupDlBtn) mockupDlBtn.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      await downloadTaskMockups(task);
-    });
-    tr.querySelectorAll('.task-mockup-del').forEach(btn=>{
-      btn.addEventListener('click', async (e)=>{
-        e.stopPropagation();
-        await removeMockupImage(id, Number(btn.dataset.i));
-      });
-    });
-    tr.querySelector('.del-row').addEventListener('click', async ()=>{
+    card.querySelector('.del-row').addEventListener('click', async ()=>{
       currentTasks = currentTasks.filter(t=>t.id!==id);
       renderTasksTable();
       await deleteTaskDoc(currentTasksBrandId, id);
@@ -2511,6 +2568,49 @@ function renderTasksTable(){
     });
   });
 }
+
+/* ---------- Galerie des visuels du produit ---------- */
+let activeGalleryTaskId = null;
+function openMockupGallery(taskId){
+  const task = currentTasks.find(t=>t.id===taskId);
+  if(!task) return;
+  activeGalleryTaskId = taskId;
+  $('#mockupGalleryTaskName').textContent = task.nom || '(sans nom)';
+  renderMockupGallery();
+  $('#mockupGalleryOverlay').classList.add('open');
+}
+function renderMockupGallery(){
+  const task = currentTasks.find(t=>t.id===activeGalleryTaskId);
+  const imgs = task ? (task.mockup||[]) : [];
+  if(!imgs.length){
+    $('#mockupGalleryGrid').innerHTML = '<div class="product-empty">Aucune image pour ce produit.</div>';
+    return;
+  }
+  $('#mockupGalleryGrid').innerHTML = imgs.map((im,i)=>`
+    <div class="gallery-item">
+      <img src="${im.url}" alt="">
+      <button type="button" class="gallery-del" data-i="${i}">×</button>
+    </div>`).join('');
+  $('#mockupGalleryGrid').querySelectorAll('.gallery-del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      await removeMockupImage(activeGalleryTaskId, Number(btn.dataset.i));
+      renderMockupGallery();
+    });
+  });
+}
+$('#btnGalleryClose').addEventListener('click', ()=>{
+  $('#mockupGalleryOverlay').classList.remove('open');
+  activeGalleryTaskId = null;
+  renderTasksTable();
+});
+$('#btnGalleryAddPhoto').addEventListener('click', ()=>{
+  activeMockupTaskId = activeGalleryTaskId;
+  $('#taskMockupInput').click();
+});
+$('#btnGalleryDownloadAll').addEventListener('click', async ()=>{
+  const task = currentTasks.find(t=>t.id===activeGalleryTaskId);
+  if(task) await downloadTaskMockups(task);
+});
 async function updateBrandSummary(){
   const total = currentTasks.length;
   const done = currentTasks.filter(t=>t.done).length;
@@ -2559,6 +2659,7 @@ async function handleTaskMockupFile(taskId, file){
   }
   URL.revokeObjectURL(tempUrl);
   renderTasksTable();
+  if(activeGalleryTaskId === taskId) renderMockupGallery();
 }
 async function removeMockupImage(taskId, index){
   const task = currentTasks.find(t=>t.id===taskId);
