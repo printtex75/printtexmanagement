@@ -736,7 +736,6 @@
       </table>
       </div>
       <input type="file" id="taskMockupInput" accept="image/*" style="display:none;">
-      <button type="button" class="btn btn-ghost btn-sm" id="btnAddTaskRow" style="margin-top:10px;">+ Ajouter une ligne</button>
       <div class="tasks-note">Seuls les modèles qui ont déjà été réalisés précédemment peuvent être inscrits dans le tableau, pour SAMPLER, RDV en boutique.</div>
     </div>
 
@@ -2585,15 +2584,6 @@ $('#taskMockupInput').addEventListener('change', async (e)=>{
   await handleTaskMockupFile(activeMockupTaskId, file);
 });
 
-$('#btnAddTaskRow').addEventListener('click', async ()=>{
-  const task = { id:'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), nom:'', blank:BLANK_OPTIONS[0], blankOther:'', taille:'', couleur:'', impression:'', quantity:'', remarque:'', mockup:[], done:false, createdAt:new Date().toISOString() };
-  currentTasks.push(task);
-  renderTasksTable();
-  await saveTaskDoc(currentTasksBrandId, task);
-  await updateBrandSummary();
-  const lastInput = $('#tasksTableBody').querySelector('tr:last-child .task-nom');
-  if(lastInput) lastInput.focus();
-});
 $('#btnTasksClose').addEventListener('click', closeTasksModal);
 $('#tasksOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tasksOverlay') closeTasksModal(); });
 
