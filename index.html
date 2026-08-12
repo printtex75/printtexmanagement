@@ -195,9 +195,6 @@
   }
   .task-title-row input.task-nom:hover, .task-title-row input.task-nom:focus{border-color:var(--line-strong);background:#fff;}
   .task-date-badge{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-2);white-space:nowrap;margin-left:auto;}
-  .task-qty-inline{display:flex;align-items:center;gap:3px;flex-shrink:0;background:#fff;border:1px solid var(--line-strong);border-radius:6px;padding:2px 6px 2px 2px;}
-  .task-qty-inline input{width:36px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--thread);border:none;padding:3px 2px;background:transparent;}
-  .task-qty-inline .qty-unit{font-size:10px;color:var(--ink-2);text-transform:uppercase;}
   .task-meta-row{display:flex;gap:6px;flex-wrap:wrap;}
   .task-meta-row select, .task-meta-row input{border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;font-size:12px;background:#fff;color:var(--charcoal);}
   .task-meta-row .task-taille{width:60px;}
@@ -2493,10 +2490,6 @@ function renderTasksTable(){
         <div class="task-title-row">
           <input type="text" class="task-remarque" value="${(t.remarque||'').replace(/"/g,'&quot;')}" placeholder="Remarque…">
           <input type="text" class="task-nom" value="${(t.nom||'').replace(/"/g,'&quot;')}" placeholder="Ex. T-shirt col rond">
-          <span class="task-qty-inline">
-            <input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0">
-            <span class="qty-unit">pcs</span>
-          </span>
           <span class="task-date-badge">${formatDate(t.createdAt)}</span>
         </div>
         <div class="task-meta-row">
@@ -2506,6 +2499,10 @@ function renderTasksTable(){
           <input type="text" class="task-couleur" value="${(t.couleur||'').replace(/"/g,'&quot;')}" placeholder="Couleur">
           <select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select>
         </div>
+      </div>
+      <div class="task-qty-block">
+        <input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0">
+        <div class="qty-label">pièces</div>
       </div>
       <div class="task-actions-block">
         <label><input type="checkbox" class="task-done" ${t.done?'checked':''}><span class="done-label">Fait</span></label>
