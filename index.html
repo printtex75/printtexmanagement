@@ -448,7 +448,8 @@
     #printArea .p-imgs figure{margin:0;width:130px;text-align:center;font-size:11px;}
     #printArea .p-imgs img{width:130px;height:130px;object-fit:cover;border:1px solid #999;}
     #printArea table{width:100%;border-collapse:collapse;margin-top:10px;}
-    #printArea td{padding:5px 0;border-bottom:1px solid #ccc;font-size:13px;}
+    #printArea th{text-align:left;padding:6px 8px 6px 0;border-bottom:2px solid #333;font-size:11px;text-transform:uppercase;}
+    #printArea td{padding:6px 8px 6px 0;border-bottom:1px solid #ccc;font-size:13px;}
   }
 
   .auth-gate{position:fixed;inset:0;background:var(--canvas);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
@@ -787,6 +788,7 @@
         </div>
       </div>
       <div class="tasks-modal-nav">
+        <button type="button" class="btn btn-ghost btn-sm" id="btnPrintBrandSummary">🖨 Imprimer le résumé des commandes</button>
         <button type="button" class="btn btn-ghost btn-sm" id="btnShowNewProduct">+ Nouveau produit</button>
         <button type="button" class="btn btn-ghost btn-sm" id="btnShowNewOrder">+ Nouvelle commande</button>
       </div>
@@ -2266,6 +2268,40 @@ $('#tasksModalPhone').addEventListener('change', async (e)=>{
   b.contact = e.target.value.trim();
   await saveBrandDoc(b);
 });
+function printBrandSummary(){
+  const b = brands.find(x=>x.id===currentTasksBrandId);
+  if(!b) return;
+  const todo = currentTasks.filter(t=>!t.done);
+  if(!todo.length){ showToast('Aucune commande à faire pour cette marque.'); return; }
+  const rows = todo.map(t=>{
+    const blankLabel = t.blank === 'Autre' ? (t.blankOther||'') : (t.blank||'—');
+    const ready = Number(t.readyQty)||0;
+    const qty = Number(t.quantity)||0;
+    const statut = t.outOfStock ? 'Rupture de stock' : (ready>0 ? `Partielle (${ready}/${qty})` : 'À faire');
+    return `<tr>
+      <td>${t.nom||'—'}</td>
+      <td>${blankLabel}</td>
+      <td>${t.taille||'—'}</td>
+      <td>${t.couleur||'—'}</td>
+      <td>${t.impression||'—'}</td>
+      <td>${qty}</td>
+      <td>${statut}</td>
+      <td>${t.remarque||''}</td>
+    </tr>`;
+  }).join('');
+  $('#printArea').innerHTML = `
+    <h2>Résumé des commandes à faire — ${b.name}</h2>
+    <div style="font-size:12px;color:#555;margin-bottom:6px;">Imprimé le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})} — ${todo.length} ligne(s) restante(s)</div>
+    <table>
+      <thead><tr>
+        <th>Nom</th><th>Blank</th><th>Taille</th><th>Couleur</th><th>Impression</th><th>Qté</th><th>Statut</th><th>Remarque</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  window.print();
+}
+$('#btnPrintBrandSummary').addEventListener('click', printBrandSummary);
 function closeTasksModal(){
   $('#tasksOverlay').classList.remove('open');
   currentTasksBrandId = null;
