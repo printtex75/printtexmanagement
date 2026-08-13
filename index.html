@@ -93,6 +93,8 @@
     padding:16px;cursor:pointer;box-shadow:var(--shadow);
   }
   .brand-card:hover{border-color:var(--ink);}
+  .brand-card.quiet{opacity:0.5;}
+  .brand-card.quiet:hover{opacity:0.85;}
   .brand-card h3{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:16px;color:var(--ink);margin:0 0 4px;}
   .brand-card .contact{font-size:12px;color:var(--ink-2);margin-bottom:10px;}
   .brand-progress{font-size:11px;color:var(--ink-2);margin-bottom:6px;}
@@ -2147,7 +2149,8 @@ function brandCardHTML(b){
   const total = b.taskTotal || 0;
   const done = b.taskDone || 0;
   const pct = total ? Math.round(done/total*100) : 0;
-  return `<div class="brand-card" data-id="${b.id}">
+  const isQuiet = total === 0 || done === total;
+  return `<div class="brand-card ${isQuiet?'quiet':''}" data-id="${b.id}">
     <h3>${b.name}</h3>
     ${b.contact ? `<div class="contact">${b.contact}</div>` : ''}
     <div class="brand-progress">${done}/${total} commandes faites</div>
