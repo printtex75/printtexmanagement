@@ -213,6 +213,17 @@
   .task-card.out-of-stock{border-color:var(--amber);background:var(--amber-bg);}
   .stock-badge{background:var(--amber);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:3px 8px;border-radius:4px;display:inline-block;margin-top:6px;}
   .task-actions-block .stock-label{color:var(--amber);max-width:64px;text-align:center;line-height:1.2;}
+  .task-progress-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .task-progress-track{flex:1;height:7px;background:var(--canvas);border-radius:99px;overflow:hidden;}
+  .task-progress-fill{height:100%;background:var(--amber);border-radius:99px;transition:width .2s ease;}
+  .task-progress-fill.full{background:var(--green);}
+  .task-progress-label{font-size:10px;color:var(--amber);font-weight:600;white-space:nowrap;}
+  .task-progress-label.full{color:var(--green);}
+  .badge-status{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;letter-spacing:0.3px;font-weight:600;background:var(--canvas);color:var(--ink-2);}
+  .badge-status.pay-paye{background:var(--green-bg);color:var(--green);}
+  .badge-status.pay-partiel{background:var(--amber-bg);color:var(--amber);}
+  .task-ready-label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;text-transform:uppercase;color:var(--ink-2);cursor:default;}
+  .task-ready-label input{width:44px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;border:1px solid var(--line-strong);border-radius:6px;padding:3px 2px;background:#fff;color:var(--charcoal);}
 
   .mockup-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:10px;}
   .gallery-item{position:relative;aspect-ratio:1/1;}
@@ -2471,7 +2482,7 @@ $('#btnCreateOrderFromCatalog').addEventListener('click', async ()=>{
       taille: taille || '', couleur: product.couleurs || '', impression: product.impression || '',
       quantity: qty, remarque: product.remarque || '',
       mockup: (product.images||[]).slice(0,4),
-      done:false, createdAt:new Date().toISOString()
+      done:false, readyQty:0, createdAt:new Date().toISOString()
     };
     currentTasks.push(task);
     await saveTaskDoc(currentTasksBrandId, task);
@@ -2517,13 +2528,21 @@ function renderTasksTable(){
           <select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select>
         </div>
         ${t.outOfStock ? '<div class="stock-badge">Rupture de stock, en attente de réassort</div>' : ''}
+        ${Number(t.quantity)>0 ? `
+        <div class="task-progress-row">
+          <div class="task-progress-track"><div class="task-progress-fill ${t.done?'full':''}" style="width:${Math.min(100, Math.round((Number(t.readyQty)||0)/Number(t.quantity)*100))}%"></div></div>
+          <span class="task-progress-label ${t.done?'full':''}">${Number(t.readyQty)||0} / ${t.quantity} prêtes</span>
+        </div>` : ''}
       </div>
       <div class="task-qty-block">
         <input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0">
         <div class="qty-label">pièces</div>
       </div>
       <div class="task-actions-block">
-        <label><input type="checkbox" class="task-done" ${t.done?'checked':''}><span class="done-label">Fait</span></label>
+        <span class="badge-status ${t.done ? 'pay-paye' : (Number(t.readyQty)>0 ? 'pay-partiel' : '')}">${t.done ? 'Fait' : (Number(t.readyQty)>0 ? 'Partielle' : 'À faire')}</span>
+        <label class="task-ready-label">Prêtes
+          <input type="number" class="task-ready-qty" min="0" max="${t.quantity||0}" value="${t.readyQty||0}">
+        </label>
         <label><input type="checkbox" class="task-outofstock" ${t.outOfStock?'checked':''}><span class="done-label stock-label">Rupture de stock, en attente</span></label>
         <button type="button" class="del-row" title="Supprimer">×</button>
       </div>
@@ -2533,9 +2552,15 @@ function renderTasksTable(){
   $('#tasksTableBody').querySelectorAll('.task-card').forEach(card=>{
     const id = card.dataset.id;
     const task = currentTasks.find(t=>t.id===id);
-    card.querySelector('.task-done').addEventListener('change', async (e)=>{
-      task.done = e.target.checked;
-      card.classList.toggle('done', task.done);
+    card.querySelector('.task-ready-qty').addEventListener('change', async (e)=>{
+      const qty = Number(task.quantity) || 0;
+      let ready = Number(e.target.value) || 0;
+      if(ready < 0) ready = 0;
+      if(qty > 0 && ready > qty) ready = qty;
+      task.readyQty = ready;
+      task.done = qty > 0 && ready >= qty;
+      e.target.value = ready;
+      renderTasksTable();
       await saveTaskDoc(currentTasksBrandId, task);
       await updateBrandSummary();
     });
