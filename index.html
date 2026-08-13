@@ -210,6 +210,9 @@
   .task-actions-block input[type=checkbox]{width:18px;height:18px;}
   .task-actions-block .done-label{font-size:9px;text-transform:uppercase;color:var(--ink-2);}
   .task-actions-block .del-row{background:none;border:none;color:var(--thread);cursor:pointer;font-size:14px;}
+  .task-card.out-of-stock{border-color:var(--amber);background:var(--amber-bg);}
+  .stock-badge{background:var(--amber);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:3px 8px;border-radius:4px;display:inline-block;margin-top:6px;}
+  .task-actions-block .stock-label{color:var(--amber);max-width:64px;text-align:center;line-height:1.2;}
 
   .mockup-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:10px;}
   .gallery-item{position:relative;aspect-ratio:1/1;}
@@ -237,11 +240,6 @@
   .product-card-img{width:100%;aspect-ratio:1/1;border-radius:6px;object-fit:cover;background:var(--canvas);margin-bottom:8px;}
   .product-card-name{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:13px;color:var(--ink);margin-bottom:3px;}
   .product-card-meta{font-size:11px;color:var(--ink-2);line-height:1.5;margin-bottom:8px;}
-  .product-card.out-of-stock{border-color:var(--thread);background:var(--red-bg);}
-  .product-stock-check{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--thread);font-weight:600;margin-bottom:8px;cursor:pointer;line-height:1.3;}
-  .product-stock-check input{width:auto;margin:2px 0 0;flex-shrink:0;}
-  .order-cat-card.out-of-stock{border-color:var(--thread);background:var(--red-bg);}
-  .stock-badge{background:var(--thread);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:3px 8px;border-radius:4px;display:inline-block;margin-bottom:8px;}
   .product-card-actions{display:flex;gap:8px;}
   .product-card-actions button{font-size:11px;font-weight:600;background:none;border:none;color:var(--ink-2);cursor:pointer;}
   .product-card-actions button:hover{color:var(--ink);text-decoration:underline;}
@@ -2332,27 +2330,15 @@ function renderProductsCatalog(){
     return;
   }
   $('#productsCatalog').innerHTML = currentBrandProducts.map(p=>`
-    <div class="product-card ${p.outOfStock?'out-of-stock':''}" data-id="${p.id}">
+    <div class="product-card" data-id="${p.id}">
       ${p.images && p.images[0] ? `<img class="product-card-img" src="${p.images[0].url}" alt="">` : `<div class="product-card-img"></div>`}
       <div class="product-card-name">${p.nom || '(sans nom)'}</div>
       <div class="product-card-meta">${productMetaLine(p)}</div>
-      <label class="product-stock-check"><input type="checkbox" class="stock-check" ${p.outOfStock?'checked':''}> Rupture de stock en attente du produit</label>
       <div class="product-card-actions">
         <button type="button" class="edit-prod">Modifier</button>
         <button type="button" class="danger del-prod">Supprimer</button>
       </div>
     </div>`).join('');
-  $('#productsCatalog').querySelectorAll('.stock-check').forEach(cb=>{
-    cb.addEventListener('change', async (e)=>{
-      const card = cb.closest('.product-card');
-      const id = card.dataset.id;
-      const p = currentBrandProducts.find(x=>x.id===id);
-      if(!p) return;
-      p.outOfStock = e.target.checked;
-      card.classList.toggle('out-of-stock', p.outOfStock);
-      await saveProductDoc(currentTasksBrandId, p);
-    });
-  });
   $('#productsCatalog').querySelectorAll('.edit-prod').forEach(btn=>{
     btn.addEventListener('click', ()=> openProductForEdit(btn.closest('.product-card').dataset.id));
   });
@@ -2435,11 +2421,10 @@ function renderOrderCatalog(){
     return;
   }
   $('#orderCatalog').innerHTML = currentBrandProducts.map(p=>`
-    <div class="order-cat-card ${p.outOfStock?'out-of-stock':''}" data-id="${p.id}">
+    <div class="order-cat-card" data-id="${p.id}">
       ${p.images && p.images[0] ? `<img class="order-cat-img" src="${p.images[0].url}" alt="">` : `<div class="order-cat-img"></div>`}
       <div class="order-cat-name">${p.nom || '(sans nom)'}</div>
       <div class="order-cat-meta">${productMetaLine(p)}</div>
-      ${p.outOfStock ? '<div class="stock-badge">Rupture de stock</div>' : ''}
       <div class="order-cat-sizes">
         ${TASK_SIZES.filter(s=>s).map(s=>`
           <div class="order-cat-size-cell">
@@ -2496,7 +2481,7 @@ function renderTasksTable(){
   $('#tasksTableBody').innerHTML = currentTasks.map(t=>{
     const mockup = t.mockup || [];
     return `
-    <div class="task-card ${t.done?'done':''}" data-id="${t.id}">
+    <div class="task-card ${t.done?'done':''} ${t.outOfStock?'out-of-stock':''}" data-id="${t.id}">
       <div class="task-thumb-wrap">
         <div class="task-thumb" data-open-gallery="${t.id}">
           ${mockup[0] ? `<img src="${mockup[0].url}" alt="">` : '<i class="ti ti-photo-off" style="font-size:20px;" aria-hidden="true"></i>'}
@@ -2517,6 +2502,7 @@ function renderTasksTable(){
           <input type="text" class="task-couleur" value="${(t.couleur||'').replace(/"/g,'&quot;')}" placeholder="Couleur">
           <select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select>
         </div>
+        ${t.outOfStock ? '<div class="stock-badge">Rupture de stock, en attente de réassort</div>' : ''}
       </div>
       <div class="task-qty-block">
         <input type="number" class="task-qty" min="0" value="${t.quantity||''}" placeholder="0">
@@ -2524,6 +2510,7 @@ function renderTasksTable(){
       </div>
       <div class="task-actions-block">
         <label><input type="checkbox" class="task-done" ${t.done?'checked':''}><span class="done-label">Fait</span></label>
+        <label><input type="checkbox" class="task-outofstock" ${t.outOfStock?'checked':''}><span class="done-label stock-label">Rupture de stock, en attente</span></label>
         <button type="button" class="del-row" title="Supprimer">×</button>
       </div>
     </div>`;
@@ -2537,6 +2524,11 @@ function renderTasksTable(){
       card.classList.toggle('done', task.done);
       await saveTaskDoc(currentTasksBrandId, task);
       await updateBrandSummary();
+    });
+    card.querySelector('.task-outofstock').addEventListener('change', async (e)=>{
+      task.outOfStock = e.target.checked;
+      renderTasksTable();
+      await saveTaskDoc(currentTasksBrandId, task);
     });
     card.querySelector('.task-nom').addEventListener('change', async (e)=>{
       task.nom = e.target.value.trim();
