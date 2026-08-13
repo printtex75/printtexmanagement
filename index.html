@@ -221,6 +221,9 @@
 
   .tasks-modal-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .tasks-modal-nav{display:flex;gap:8px;flex-wrap:wrap;}
+  .tasks-modal-phone{display:flex;align-items:center;gap:6px;margin-top:6px;}
+  .tasks-modal-phone span{font-size:13px;}
+  .tasks-modal-phone input{border:1px solid var(--line-strong);border-radius:6px;padding:5px 9px;font-size:12px;background:#fff;color:var(--charcoal);width:220px;}
 
   .product-form{background:var(--canvas);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:18px;}
   .product-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
@@ -765,6 +768,10 @@
       <div>
         <h2 id="tasksModalTitle">Marque</h2>
         <div class="sub" id="tasksModalSub"></div>
+        <div class="tasks-modal-phone">
+          <span>☎</span>
+          <input type="tel" id="tasksModalPhone" placeholder="Numéro à appeler en cas de besoin">
+        </div>
       </div>
       <div class="tasks-modal-nav">
         <button type="button" class="btn btn-ghost btn-sm" id="btnShowNewProduct">+ Nouveau produit</button>
@@ -2232,12 +2239,19 @@ async function openTasksModal(brandId){
   const b = brands.find(x=>x.id===brandId);
   $('#tasksModalTitle').textContent = b.name;
   $('#tasksModalSub').textContent = 'Commandes à produire pour cette marque';
+  $('#tasksModalPhone').value = b.contact || '';
   currentTasks = await loadBrandTasks(brandId);
   currentBrandProducts = await loadBrandProducts(brandId);
   renderTasksTable();
   showTasksView('default');
   $('#tasksOverlay').classList.add('open');
 }
+$('#tasksModalPhone').addEventListener('change', async (e)=>{
+  const b = brands.find(x=>x.id===currentTasksBrandId);
+  if(!b) return;
+  b.contact = e.target.value.trim();
+  await saveBrandDoc(b);
+});
 function closeTasksModal(){
   $('#tasksOverlay').classList.remove('open');
   currentTasksBrandId = null;
@@ -2484,7 +2498,7 @@ function renderTasksTable(){
     <div class="task-card ${t.done?'done':''} ${t.outOfStock?'out-of-stock':''}" data-id="${t.id}">
       <div class="task-thumb-wrap">
         <div class="task-thumb" data-open-gallery="${t.id}">
-          ${mockup[0] ? `<img src="${mockup[0].url}" alt="">` : '<i class="ti ti-photo-off" style="font-size:20px;" aria-hidden="true"></i>'}
+          ${mockup[0] ? `<img src="${mockup[0].url}" alt="">` : '<span style="font-size:20px;">🖼</span>'}
           ${mockup.length > 1 ? `<span class="task-thumb-count">+${mockup.length-1}</span>` : ''}
         </div>
         <button type="button" class="task-thumb-add" title="Ajouter une photo">+</button>
