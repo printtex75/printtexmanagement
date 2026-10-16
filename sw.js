@@ -1,4 +1,4 @@
-const CACHE_NAME = 'printtex-shell-v1';
+const CACHE_NAME = 'printtex-shell-v2';
 const SHELL_FILES = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -24,7 +24,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
 
   event.respondWith(
-    fetch(req)
+    fetch(req, req.mode === 'navigate' ? { cache: 'no-store' } : undefined)
       .then((res) => {
         const resClone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone)).catch(() => {});
