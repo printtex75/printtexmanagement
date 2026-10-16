@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier — Cockpit</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#23324A">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#EFE7D8; --canvas-2:#F7F2E8; --ink:#23324A; --ink-2:#33455F;
+    --thread:#B23B34; --thread-2:#9A2F29; --kraft:#C9A66B; --charcoal:#2A2620;
+    --green:#4B7A5C; --green-bg:#E4EEE6; --amber:#B5791E; --amber-bg:#F5E9D3;
+    --red-bg:#F3DEDB; --line:#D8CBAE; --line-strong:#B9A87F;
+    --shadow: 0 2px 0 rgba(42,38,32,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--canvas);color:var(--charcoal);font-family:'Inter',sans-serif;min-height:100vh;}
+  .wrap{max-width:1400px;margin:0 auto;padding:28px 32px 80px;}
+  @media (max-width:640px){ .wrap{padding:18px 16px 60px;} }
+  header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--charcoal);padding-bottom:18px;margin-bottom:18px;flex-wrap:wrap;gap:16px;}
+  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  h1{font-family:'Oswald',sans-serif;font-weight:600;font-size:30px;letter-spacing:0.5px;margin:0;text-transform:uppercase;color:var(--ink);}
+  .brand-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--thread);border:1px solid var(--thread);padding:2px 8px;border-radius:3px;letter-spacing:0.5px;text-transform:uppercase;}
+  .nav a{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-2);text-decoration:none;border:1px solid var(--line-strong);padding:8px 14px;border-radius:6px;background:var(--canvas-2);}
+  .nav a:hover{color:var(--ink);border-color:var(--ink);}
+  .now{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-2);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
+  .panel{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column;gap:12px;}
+  .panel.span2{grid-column:span 2;}
+  @media (max-width:720px){ .panel.span2{grid-column:span 1;} }
+  .ph{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .ph h2{font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;margin:0;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink);}
+  .ph .src{font-size:10px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.6px;}
+  .ph .stamp{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);}
+  .ph .stamp.stale{color:var(--amber);}
+  .kpis{display:flex;flex-wrap:wrap;gap:8px;}
+  .kpi{display:inline-flex;align-items:baseline;gap:6px;padding:5px 11px;border-radius:6px;background:var(--canvas);border:1px solid var(--line);font-size:12px;color:var(--ink-2);}
+  .kpi b{font-family:'Oswald',sans-serif;font-size:18px;color:var(--ink);line-height:1;}
+  .kpi.crit{background:var(--red-bg);border-color:var(--thread);color:var(--thread-2);} .kpi.crit b{color:var(--thread);}
+  .kpi.warn{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);} .kpi.warn b{color:var(--amber);}
+  .kpi.ok{background:var(--green-bg);border-color:var(--green);color:var(--green);} .kpi.ok b{color:var(--green);}
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+  li{display:grid;grid-template-columns:4px 1fr;gap:12px;align-items:start;padding:8px 0;border-top:1px solid var(--line);}
+  li:first-child{border-top:0;}
+  li .bar{height:100%;min-height:1.4em;border-radius:2px;background:var(--line-strong);}
+  li.crit .bar{background:var(--thread);} li.warn .bar{background:var(--amber);} li.ok .bar{background:var(--green);}
+  li .t{font-weight:600;font-size:14px;color:var(--ink);} li .s{color:var(--ink-2);font-size:13px;}
+  li .m{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);margin-top:2px;}
+  .empty{color:var(--ink-2);font-size:13px;padding:10px 12px;border:1px dashed var(--line-strong);border-radius:8px;}
+  .gauge{height:10px;border-radius:5px;background:var(--canvas);border:1px solid var(--line);overflow:hidden;}
+  .gauge i{display:block;height:100%;background:var(--ink);transition:width .4s;}
+  .gauge.warn i{background:var(--amber);} .gauge.crit i{background:var(--thread);}
+  .gl{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);}
+  .foot{margin-top:18px;font-size:12px;color:var(--ink-2);}
+
+  #authGate{display:none;max-width:420px;margin:80px auto;background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:28px;text-align:center;}
+  #authGate button{font-family:'Oswald',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;background:var(--ink);color:#fff;border:none;padding:12px 22px;border-radius:6px;cursor:pointer;margin-top:14px;}
+  #authError{color:var(--thread-2);font-size:12px;margin-top:10px;}
+  #appRoot{display:none;}
+  @media (prefers-reduced-motion:reduce){ .gauge i{transition:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="authGate">
+    <h1 style="font-size:22px">Cockpit</h1>
+    <p style="font-size:13px;color:var(--ink-2)">Réservé à l'atelier. Connecte-toi avec le compte Google Printtex.</p>
+    <button id="btnLogin">Se connecter</button>
+    <div id="authError"></div>
+  </div>
+
+  <div id="appRoot">
+    <header>
+      <div class="brand"><h1>Cockpit</h1><span class="brand-tag">Vue du matin</span><span class="now" id="now"></span></div>
+      <nav class="nav"><a href="index.html">← Suivi des commandes</a></nav>
+    </header>
+
+    <div class="grid">
+      <section class="panel span2">
+        <div class="ph"><h2>Commandes à expédier</h2><span class="src">Shopify · 8 h 22</span><span class="stamp" id="st-shopify"></span></div>
+        <div class="kpis" id="k-shopify"></div>
+        <ul id="l-shopify"></ul>
+        <div class="empty" id="e-shopify">Pas encore de données. L'alerte Shopify du matin remplira ce panneau : commandes en retard, à expédier aujourd'hui, retraits à relancer.</div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>À répondre</h2><span class="src">Outlook · 7 h 15</span><span class="stamp" id="st-outlook"></span></div>
+        <div class="kpis" id="k-outlook"></div>
+        <ul id="l-outlook"></ul>
+        <div class="empty" id="e-outlook">Pas encore de données. Le tri Outlook du matin listera ici les clients qui attendent une réponse.</div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>Charge de la semaine</h2><span class="stamp" id="st-quota"></span></div>
+        <div class="gauge" id="g-quota"><i style="width:0%"></i></div>
+        <div class="gl"><span id="q-used">—</span><span id="q-cap">capacité non renseignée</span></div>
+        <ul id="l-quota"></ul>
+        <div class="empty" id="e-quota">Capacité hebdo et pièces engagées : à renseigner.</div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>Factures &amp; Gmail</h2><span class="src">Gmail · 7 h 51</span><span class="stamp" id="st-factures"></span></div>
+        <div class="kpis" id="k-factures"></div>
+        <ul id="l-factures"></ul>
+        <div class="empty" id="e-factures">Pas encore de données. Chaque matin : factures transférées à Pennylane, celles à télécharger à la main, conversations rangées.</div>
+      </section>
+    </div>
+    <p class="foot">Lecture seule. Collection Firestore <code>cockpit</code> (documents shopify, outlook, factures, quota), séparée des commandes et des marques.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-firestore-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-auth-compat.min.js"></script>
+<script>
+if(typeof firebase === 'undefined'){
+  ['app','firestore','auth'].forEach(function(n){
+    document.write('<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-'+n+'-compat.js"><\/script>');
+  });
+}
+</script>
+<script>
+(function(){
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBElBwDqwtR1jTIs_n2iyjM4juuwAJfTck",
+    authDomain: "printtex-commande.firebaseapp.com",
+    projectId: "printtex-commande",
+    storageBucket: "printtex-commande.firebasestorage.app",
+    messagingSenderId: "240429387217",
+    appId: "1:240429387217:web:d49c2842305faeb821e4f0"
+  };
+  const ADMIN_EMAIL = "printtex75@gmail.com";
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const fmt = (d, o) => new Intl.DateTimeFormat("fr-FR", Object.assign({timeZone:"Europe/Paris"}, o)).format(d);
+  $("now").textContent = fmt(new Date(), {weekday:"long", day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"});
+
+  function stamp(id, iso){
+    const el = $("st-"+id); if(!iso){ el.textContent=""; return; }
+    const d = new Date(iso), h = (Date.now()-d)/36e5;
+    el.textContent = "maj " + fmt(d, {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"});
+    el.classList.toggle("stale", h > 30);
+  }
+  function kpis(id, items){ $("k-"+id).innerHTML = items.filter(Boolean).map(i => `<span class="kpi ${i.cls||""}"><b>${esc(i.n)}</b>${esc(i.l)}</span>`).join(""); }
+  function list(id, rows){
+    $("l-"+id).innerHTML = rows.map(r => `<li class="${r.cls||""}"><span class="bar"></span><div><div class="t">${esc(r.t)}</div>${r.s?`<div class="s">${esc(r.s)}</div>`:""}${r.m?`<div class="m">${esc(r.m)}</div>`:""}</div></li>`).join("");
+    $("e-"+id).style.display = "none";
+  }
+  const orderRow = (o, cls, tag) => ({cls, t:`${o.num||""} · ${o.client||""}`, s:[tag, o.articles].filter(Boolean).join(" — "), m:[o.montant && o.montant+" €", o.date].filter(Boolean).join("  ·  ")});
+
+  const R = {
+    shopify(d){
+      const late=d.enRetard||[], today=d.aExpedier||[], pick=d.retraitARelancer||[], ano=d.anomalies||[];
+      kpis("shopify", [{n:late.length,l:"en retard",cls:late.length?"crit":"ok"},{n:today.length,l:"à expédier aujourd'hui",cls:today.length?"warn":""},{n:pick.length,l:"retraits à relancer"},d.recentes!=null&&{n:d.recentes,l:"récentes dans les délais",cls:"ok"}]);
+      list("shopify", [...late.map(o=>orderRow(o,"crit","En retard")), ...today.map(o=>orderRow(o,"warn","À expédier aujourd'hui")), ...pick.map(o=>orderRow(o,"","Prêt au retrait, client à relancer")), ...ano.map(o=>orderRow(o,"","Anomalie à vérifier"))]);
+      stamp("shopify", d.updatedAt);
+    },
+    outlook(d){
+      const r=d.aRepondre||[], nc=d.nonClasse||[];
+      kpis("outlook", [{n:r.length,l:"à répondre",cls:r.length?"crit":"ok"},d.production!=null&&{n:d.production,l:"en production",cls:"warn"},d.spam!=null&&{n:d.spam,l:"spam"},d.interne!=null&&{n:d.interne,l:"interne"}]);
+      list("outlook", [...r.map(x=>({cls:x.urgent?"crit":"warn", t:x.objet||"(sans objet)", s:x.de, m:[x.attente, x.urgent&&"URGENT"].filter(Boolean).join("  ·  ")})), ...nc.map(x=>({t:x.objet||String(x), s:x.de, m:"non classé"}))]);
+      stamp("outlook", d.updatedAt);
+    },
+    quota(d){
+      const u=+d.utilise||0, c=+d.capacite||0, p=c?Math.min(100,Math.round(100*u/c)):0, g=$("g-quota");
+      g.querySelector("i").style.width = p+"%"; g.className = "gauge"+(p>=100?" crit":p>=80?" warn":"");
+      $("q-used").textContent = `${u} ${d.unite||"pièces"} engagées${c?" · "+p+" %":""}`;
+      $("q-cap").textContent = c ? `capacité ${c} ${d.unite||"pièces"}${d.semaine?" · "+d.semaine:""}` : "capacité non renseignée";
+      list("quota", (d.dossiers||[]).map(x=>({t:x.nom, s:x.detail, m:[x.pieces&&x.pieces+" pcs", x.echeance].filter(Boolean).join("  ·  "), cls:x.cls||""})));
+      stamp("quota", d.updatedAt);
+    },
+    factures(d){
+      const man=d.manuelles||[];
+      kpis("factures", [{n:d.transferees??0,l:"transférées à Pennylane",cls:"ok"},{n:man.length,l:"à télécharger à la main",cls:man.length?"warn":""},d.rangees!=null&&{n:d.rangees,l:"conversations rangées"},d.aRepondre!=null&&{n:d.aRepondre,l:"clients Gmail sans réponse",cls:d.aRepondre?"crit":""}]);
+      list("factures", [...man.map(x=>({cls:"warn", t:typeof x==="string"?x:x.fournisseur, s:typeof x==="string"?"PDF à récupérer sur l'espace client":x.detail})), ...(d.alertes||[]).map(x=>({cls:"crit", t:x, s:"signalé par la tâche Gmail"}))]);
+      stamp("factures", d.updatedAt);
+    }
+  };
+
+  let db=null, auth=null;
+  try{ firebase.initializeApp(FIREBASE_CONFIG); db=firebase.firestore(); db.settings({experimentalForceLongPolling:true}); auth=firebase.auth(); }
+  catch(e){ console.error("Erreur init Firebase", e); }
+
+  function subscribe(){
+    Object.keys(R).forEach(k => {
+      db.collection("cockpit").doc(k).onSnapshot(s => { if(s.exists) R[k](s.data()); }, e => console.error("cockpit/"+k, e));
+    });
+  }
+  $("btnLogin").addEventListener("click", async () => {
+    $("authError").textContent = "";
+    try{ await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    catch(e){ $("authError").textContent = "Connexion impossible : " + (e && e.message ? e.message : "inconnue"); }
+  });
+  if(auth){
+    auth.onAuthStateChanged(user => {
+      if(user && user.email && user.email.toLowerCase() === ADMIN_EMAIL){
+        $("authGate").style.display="none"; $("appRoot").style.display="block"; subscribe();
+      }else{
+        if(user) auth.signOut();
+        $("appRoot").style.display="none"; $("authGate").style.display="block";
+      }
+    });
+  }else{ $("authGate").style.display="block"; $("authError").textContent="Chargement impossible (réseau ou bloqueur de contenu)."; }
+})();
+</script>
+</body>
+</html>
