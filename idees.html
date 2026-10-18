@@ -106,7 +106,13 @@
   .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
   .box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;}
   .box h3{font-family:var(--display);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--muted);font-weight:700;}
-  .box.pour h3{color:var(--ok);} .box.contre h3{color:var(--crit);} .box.rep h3{color:var(--warn);} .box.cond h3{color:var(--info);}
+  .box.pc h3{color:var(--ink);} .box.mieux h3{color:var(--ok);} .box.cond h3{color:var(--info);}
+  .box ul.pc{list-style:none;padding-left:0;}
+  .box ul.pc li{padding-left:20px;position:relative;}
+  .box ul.pc li::before{position:absolute;left:0;top:0;font-family:var(--mono);font-weight:600;}
+  .box ul.pc li.plus::before{content:"+";color:var(--ok);} .box ul.pc li.moins::before{content:"–";color:var(--crit);}
+  .vrai{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-strong);}
+  .vrai p{margin:0;}
   .box ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;}
   .box li{overflow-wrap:anywhere;}
   .note{border-radius:8px;padding:10px 12px;font-size:13.5px;border-left:3px solid var(--line-strong);background:var(--bg);}
@@ -418,17 +424,18 @@ Idées déjà dans leur boîte (id, titre, ce que ça change, statut) :
 ${JSON.stringify(existantes)}
 
 Donne un retour franc et court, comme un associé expérimenté qui veut les aider à trancher, pas comme un consultant qui ménage tout le monde. Appuie-toi sur ce qu'un petit atelier vit vraiment : temps de saisie, erreurs, clients qui attendent, trésorerie, charge de production. Si l'idée recoupe une fonction qui existe déjà ou une idée de la boîte, dis-le clairement.
+Contrainte absolue : ne propose jamais une solution qui coûte de l'argent (service payant, abonnement, prestataire) ni qui exige un serveur. Tout doit être faisable dans leur page web et leur Firebase actuels. Si l'idée telle qu'écrite coûterait de l'argent, trouve la version gratuite qui atteint le même but, et dis-le.
 
 Réponds UNIQUEMENT avec un objet JSON de cette forme exacte, sans texte autour :
 {
  "titre": "6 mots max, ce que l'on obtient",
- "resume": "1 à 2 phrases : ce que l'idée change et pour quel résultat",
+ "probleme_reel": "1 à 2 phrases : le vrai problème derrière l'idée, ce que l'associé cherche à obtenir au fond",
  "verdict": "oui" | "oui_mais" | "plus_tard" | "non",
  "verdict_raison": "2 à 3 phrases : ton avis, pourquoi il faut le faire ou pas, et à quelle condition s'il y en a une",
- "pour": ["2 à 4 raisons concrètes de le faire"],
- "contre": ["1 à 4 raisons concrètes de ne pas le faire, ou ce qui cloche dans l'idée telle qu'elle est décrite"],
- "repercussions": ["2 à 4 répercussions concrètes si c'est mis en place : sur le quotidien de l'atelier, sur les clients ou les marques, sur les données existantes, sur le reste de l'application"],
- "conditions": ["2 à 5 choses qu'il faudrait faire ou décider pour que ça fonctionne vraiment : règles à fixer, données à saisir, cas particuliers à prévoir, habitudes à changer"],
+ "pour": ["2 à 3 raisons concrètes de le faire"],
+ "contre": ["1 à 3 raisons concrètes de ne pas le faire, ou ce qui cloche dans l'idée telle qu'elle est décrite"],
+ "mieux": ["2 à 4 façons de mieux formuler ou mieux réaliser l'idée : la version qui ne coûte rien, qui s'appuie sur ce qui existe déjà dans l'outil, et qui règle le vrai problème"],
+ "conditions": ["2 à 5 étapes concrètes pour que ça fonctionne vraiment, dans l'ordre : règles à fixer, données à saisir, cas particuliers, habitudes à changer"],
  "effort": "petit" | "moyen" | "gros",
  "questions": ["0 à 2 questions courtes si quelque chose d'important n'est pas précisé"],
  "similaires": [{"id": "id exact d'une idée de la boîte", "raison": "en quoi elle recoupe celle-ci"}]
@@ -484,8 +491,8 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
   function listUl(items){ return el("ul", null, (items || []).map(x => el("li", null, String(x)))); }
   function normaliserAnalyse(a, selfId){
     return {
-      titre:String(a.titre||""), resume:String(a.resume||""), verdict:VERDICTS[a.verdict] ? a.verdict : "oui_mais", verdict_raison:String(a.verdict_raison||""),
-      pour:(a.pour||[]).map(String), contre:(a.contre||[]).map(String), repercussions:(a.repercussions||[]).map(String),
+      titre:String(a.titre||""), probleme_reel:String(a.probleme_reel||a.resume||""), verdict:VERDICTS[a.verdict] ? a.verdict : "oui_mais", verdict_raison:String(a.verdict_raison||""),
+      pour:(a.pour||[]).map(String), contre:(a.contre||[]).map(String), mieux:(a.mieux||a.repercussions||[]).map(String),
       conditions:(a.conditions||[]).map(String), effort:EFFORTS[a.effort] ? a.effort : null, questions:(a.questions||[]).map(String),
       similaires:(a.similaires||[]).filter(x => x && x.id !== selfId && S.ideas.some(i => i.id === x.id)).map(x => ({id:String(x.id), raison:String(x.raison||"")})),
       date:new Date().toISOString()
@@ -565,9 +572,9 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     const a = i.analyse;
     let md = `## ${i.titre}\n\n**Proposé par** ${i.auteurNom||"un associé"} le ${fmtDate(i.createdAt)}\n**Partie** : ${i.zone}  ·  **Priorité** : ${PRIO[i.priorite] ? PRIO[i.priorite].label : i.priorite}  ·  **Statut** : ${STATUTS[i.statut] ? STATUTS[i.statut].label : i.statut}\n\n### Ce que ça change\n${i.change||"—"}\n\n### Ce que ça arrange\n${i.probleme||"—"}\n\n### Dans quel but\n${i.but||"—"}\n`;
     if(a){
-      md += `\n### Avis de Claude : ${VERDICTS[a.verdict]||""}\n${a.verdict_raison||""}\n`;
+      md += `\n### Avis de Claude : ${VERDICTS[a.verdict]||""}\n${a.verdict_raison||""}\n` + ((a.probleme_reel||a.resume) ? `\n**Le vrai problème** : ${a.probleme_reel||a.resume}\n` : "");
       const sec = (t, arr) => (arr && arr.length) ? `\n**${t}**\n${arr.map(x => "- " + x).join("\n")}\n` : "";
-      md += sec("Pour", a.pour) + sec("Contre", a.contre) + sec("Répercussions", a.repercussions) + sec("Pour que ça marche", a.conditions);
+      md += sec("Pour", a.pour) + sec("Contre", a.contre) + sec("Comment le faire mieux", (a.mieux&&a.mieux.length)?a.mieux:a.repercussions) + sec("Pour que ça marche vraiment", a.conditions);
     }
     return md;
   }
@@ -611,11 +618,14 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"En attente de l'avis de Claude"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse maintenant") : el("span",null,"Claude passe toutes les heures entre 8 h et 20 h. Son avis s'affichera ici, puis le chef tranche.")));
     if(a){
       const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
-      body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null, el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
+      const vrai = a.probleme_reel || a.resume;
+      body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""),
+        vrai ? el("div",{class:"vrai"}, el("span",{class:"eyebrow"},"Le vrai problème"), el("p",null,vrai)) : null,
+        el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
+      const pc = el("ul",{class:"pc"}, (a.pour||[]).map(x => el("li",{class:"plus"},String(x))), (a.contre||[]).map(x => el("li",{class:"moins"},String(x))));
       body.append(el("div",{class:"cols"},
-        el("div",{class:"box pour"}, el("h3",null,"Pourquoi le faire"), listUl(a.pour)),
-        el("div",{class:"box contre"}, el("h3",null,"Pourquoi ne pas le faire"), listUl(a.contre)),
-        el("div",{class:"box rep"}, el("h3",null,"Ce que ça causerait"), listUl(a.repercussions)),
+        el("div",{class:"box pc"}, el("h3",null,"Pour et contre"), pc),
+        el("div",{class:"box mieux"}, el("h3",null,"Comment le faire mieux"), listUl(a.mieux && a.mieux.length ? a.mieux : a.repercussions)),
         el("div",{class:"box cond"}, el("h3",null,"Pour que ça marche vraiment"), listUl(a.conditions))));
       if((a.questions||[]).length) body.append(el("div",{class:"note info"}, el("strong",null,"À préciser"), listUl(a.questions)));
       const sims = (a.similaires||[]).map(s => ({...s, idea:S.ideas.find(x => x.id === s.id)})).filter(s => s.idea);
