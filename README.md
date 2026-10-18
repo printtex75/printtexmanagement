@@ -53,3 +53,60 @@ Tout push sur la branche `main` déclenche un redéploiement automatique de GitH
 ## Sécurité
 
 Les valeurs dans `FIREBASE_CONFIG` (apiKey, projectId, etc.) ne sont **pas des secrets** — c'est la configuration standard côté client de Firebase. La vraie protection vient des règles Firestore/Storage (consultables et modifiables dans la console Firebase → Firestore Database / Storage → onglet "Règles").
+
+## Travailler à deux
+
+Le projet est développé par deux associés. Pour éviter que deux personnes codent la même chose en même temps (et que les deux versions se marchent dessus dans `index.html`), on suit ces règles.
+
+### La boîte à idées dans l'outil : `idees.html`
+
+La page **Boîte à idées** (lien dans la navigation de l'application, ou directement `idees.html`) est l'endroit où les deux associés déposent leurs idées. Même connexion que le reste de l'outil (email/mot de passe ou Google), même projet Firebase, collection Firestore `idees`.
+
+1. **Trois questions** pour décrire l'idée : ce que ça change concrètement, ce que ça arrange, dans quel but. On envoie, l'idée est tout de suite dans la liste commune.
+2. **Claude analyse dès l'envoi**, depuis le navigateur, et écrit son avis sous l'idée dans la minute : verdict (à faire / oui mais / plus tard / à ne pas faire), pourquoi le faire, pourquoi ne pas le faire, ce que ça causerait comme répercussions, ce qu'il faudrait pour que ça marche vraiment, taille du chantier, idées déjà dans la boîte qui recoupent celle-ci. L'analyse est enregistrée avec l'idée. Si la clé n'était pas là au moment de l'envoi, l'analyse se fait dès qu'elle est ajoutée.
+3. **Le chef décide.** Depuis sa session Claude Code, il reçoit un mini résumé des nouvelles idées analysées et répond « OK » ou « Non ». Tant qu'il n'a pas dit OK, rien n'est lancé. Sur OK, Claude code l'idée sur une branche `idee-…` et propose une pull request vers `main` ; le chef relit et fusionne.
+4. Dans la liste : statuts, « Je suis d'accord », « Je m'en occupe » (une seule personne par idée), discussion sous chaque idée.
+
+**Mise en place (une fois) :**
+
+1. **Ajouter l'associé** dans la constante `ASSOCIES` de `idees.html` (email en minuscules).
+2. **Autoriser les collections `idees` et `config`** dans la console Firebase → Firestore Database → Règles, en ajoutant dans le bloc `match /databases/{database}/documents` :
+   ```
+   match /idees/{id} {
+     allow read, write: if request.auth != null
+       && request.auth.token.email in ['printtex75@gmail.com', 'EMAIL_DE_L_ASSOCIE'];
+   }
+   match /config/{id} {
+     allow read, write: if request.auth != null
+       && request.auth.token.email in ['printtex75@gmail.com', 'EMAIL_DE_L_ASSOCIE'];
+   }
+   ```
+3. **Clé Claude partagée** : le chef crée une clé sur console.anthropic.com et la colle une fois dans la page via le bouton « ⚙ Claude ». Elle est enregistrée dans Firestore (`config/claude`), lisible uniquement par les deux comptes associés, jamais dans le code. Chaque analyse coûte quelques centimes sur cette clé.
+4. **Lecture par la session du chef** : pour que Claude lise les idées depuis Claude Code (résumé, lancement sur OK), une clé de compte de service Firebase est placée dans les réglages de l'environnement cloud, variable `FIREBASE_SERVICE_ACCOUNT` (contenu du fichier JSON généré dans la console Firebase → Paramètres du projet → Comptes de service). Le script `scripts/idees-firestore.mjs` s'en sert.
+
+### Les idées : libres à l'entrée, tranchées à deux
+
+- **Toute idée passe par la boîte à idées** (`idees.html`). Ouvrir une idée est libre, pour les deux, à tout moment. GitHub reste en coulisses pour le code (branches, pull requests) ; les associés n'ont pas besoin d'y aller.
+- **Avant d'ouvrir une issue, on cherche** dans la liste si une idée proche existe déjà. Si oui, on la commente au lieu d'en créer une nouvelle.
+- Une idée suit ces étiquettes :
+  - `idée` + `à discuter` : nouvelle, pas encore tranchée (mis automatiquement par le modèle)
+  - `validé` : accepté à deux, peut être codé
+  - `refusé` : écarté après discussion (on garde l'issue fermée pour mémoire)
+  - `en cours` : quelqu'un est dessus
+  - `terminé` : fusionné dans `main` et en ligne
+- **On ne passe jamais une idée en `validé` seul.** Un point rapide par semaine suffit pour trancher la pile des `à discuter`.
+
+### Le code : une issue = une personne = une branche
+
+1. **On ne code jamais sans issue `validé`.** C'est le filtre contre les doublons.
+2. **On s'assigne l'issue avant de commencer** et on met l'étiquette `en cours`. Si l'autre voit une issue assignée, il ne la touche pas : il commente s'il a quelque chose à dire.
+3. **Une branche par sujet, au nom de la personne**, par exemple `prenom/relances-clients`. On la crée **depuis `main` à jour**.
+4. **Petit et court.** Une fonctionnalité par branche, fusionnée dès qu'elle marche. Une branche qui traîne plusieurs jours diverge de `main` et finit en conflit.
+5. **Pull request + relecture de l'autre avant de fusionner dans `main`**, parce que `main` déploie le site en ligne immédiatement. La relecture sert aussi à repérer un « tiens, ça existe déjà ».
+6. Après fusion : étiquette `terminé`, issue fermée, branche supprimée.
+
+### Avec Claude
+
+- Chacun utilise ses propres conversations et sessions Claude Code, sur sa propre branche.
+- Pour coder une issue, on donne son numéro à Claude (« implémente l'issue #12 ») : il part du besoin écrit, pas d'une consigne orale qui peut diverger de ce que l'autre a compris.
+- Les instructions partagées du projet Claude ne se modifient qu'avec l'accord des deux.
