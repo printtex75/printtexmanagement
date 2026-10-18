@@ -19,8 +19,19 @@ import { createSign } from "node:crypto";
 
 const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
 if (!raw) { console.error("FIREBASE_SERVICE_ACCOUNT manquante dans l'environnement."); process.exit(2); }
-let sa;
-try { sa = JSON.parse(raw); } catch { console.error("FIREBASE_SERVICE_ACCOUNT n'est pas un JSON valide."); process.exit(2); }
+// Le champ « Variables d'environnement » peut avoir modifié les retours à la ligne ou les guillemets :
+// on lit le JSON tel quel si possible, sinon on extrait les trois champs utiles à la main.
+function parseServiceAccount(txt) {
+  let t = txt.trim();
+  if ((t.startsWith("'") && t.endsWith("'")) || (t.startsWith('"') && t.endsWith('"'))) t = t.slice(1, -1);
+  try { const j = JSON.parse(t); if (j.private_key && j.client_email) return j; } catch {}
+  const field = (k) => (t.match(new RegExp('"' + k + '"\\s*:\\s*"([^"]+)"')) || [])[1];
+  const pk = t.match(/-----BEGIN PRIVATE KEY-----[\s\S]*?-----END PRIVATE KEY-----/);
+  if (!pk || !field("client_email")) return null;
+  return { project_id: field("project_id") || "printtex-commande", client_email: field("client_email"), private_key: pk[0].replace(/\\n/g, "\n") };
+}
+const sa = parseServiceAccount(raw);
+if (!sa) { console.error("FIREBASE_SERVICE_ACCOUNT est illisible : il faut le contenu complet du fichier JSON du compte de service."); process.exit(2); }
 const PROJECT = sa.project_id;
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 
