@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier — Boîte à idées</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#23324A">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#EFE7D8; --canvas-2:#F7F2E8; --ink:#23324A; --ink-2:#33455F;
+    --thread:#B23B34; --thread-2:#9A2F29; --kraft:#C9A66B; --charcoal:#2A2620;
+    --green:#4B7A5C; --green-bg:#E4EEE6; --amber:#B5791E; --amber-bg:#F5E9D3;
+    --blue:#2F5BA8; --blue-bg:#E1E8F5; --violet:#6B4FA3; --violet-bg:#EAE3F5;
+    --red-bg:#F3DEDB; --grey-bg:#E8E3D9; --line:#D8CBAE; --line-strong:#B9A87F;
+    --shadow: 0 2px 0 rgba(42,38,32,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--canvas);color:var(--charcoal);font-family:'Inter',sans-serif;min-height:100vh;font-size:14px;line-height:1.5;}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 32px 80px;}
+  @media (max-width:640px){ .wrap{padding:18px 16px 60px;} }
+  header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--charcoal);padding-bottom:18px;margin-bottom:18px;flex-wrap:wrap;gap:16px;}
+  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  h1{font-family:'Oswald',sans-serif;font-weight:600;font-size:30px;letter-spacing:0.5px;margin:0;text-transform:uppercase;color:var(--ink);}
+  h2{font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;margin:0;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink);}
+  .brand-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--thread);border:1px solid var(--thread);padding:2px 8px;border-radius:3px;letter-spacing:0.5px;text-transform:uppercase;}
+  .nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .nav a,.nav button{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-2);text-decoration:none;border:1px solid var(--line-strong);padding:8px 14px;border-radius:6px;background:var(--canvas-2);cursor:pointer;}
+  .nav a:hover,.nav button:hover{color:var(--ink);border-color:var(--ink);}
+  .who{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-2);}
+
+  .panel{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:18px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;margin-bottom:20px;}
+  .sub{color:var(--ink-2);font-size:13px;margin:0;}
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--ink-2);margin-bottom:5px;font-weight:600;}
+  label small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-2);}
+  input[type=text],input[type=email],input[type=password],textarea,select{width:100%;font:inherit;color:var(--charcoal);background:#fff;border:1px solid var(--line-strong);border-radius:6px;padding:9px 11px;}
+  textarea{resize:vertical;min-height:64px;}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  .field{display:flex;flex-direction:column;}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .row.end{justify-content:flex-end;}
+  .grow{flex:1 1 auto;min-width:0;}
+  .btn{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;background:var(--canvas-2);color:var(--ink);border:1px solid var(--line-strong);padding:9px 16px;border-radius:6px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{border-color:var(--ink);}
+  .btn-primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn-primary:hover{background:var(--ink-2);}
+  .btn-ghost{background:transparent;border-color:transparent;color:var(--ink-2);}
+  .btn-ghost:hover{border-color:var(--line-strong);color:var(--ink);}
+  .btn-sm{padding:6px 10px;font-size:12px;}
+  .btn-danger{color:var(--thread-2);}
+  .btn:disabled{opacity:.55;cursor:default;}
+  .status{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;min-height:20px;}
+  .status.busy::before{content:"";width:12px;height:12px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--ink);animation:spin .8s linear infinite;flex:none;}
+  .status.err{color:var(--thread-2);}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){ .status.busy::before{animation:none;} }
+
+  /* Analyse */
+  .analyse{border-top:1px dashed var(--line-strong);padding-top:16px;display:flex;flex-direction:column;gap:14px;}
+  .verdict{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:8px;border:1px solid var(--line);background:#fff;}
+  .verdict .v{font-family:'Oswald',sans-serif;font-size:22px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:6px 12px;border-radius:6px;white-space:nowrap;}
+  .verdict.oui .v{background:var(--green-bg);color:var(--green);} .verdict.oui_mais .v{background:var(--amber-bg);color:var(--amber);}
+  .verdict.plus_tard .v{background:var(--blue-bg);color:var(--blue);} .verdict.non .v{background:var(--red-bg);color:var(--thread-2);}
+  .verdict p{margin:0;}
+  .verdict .eff{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);margin-top:6px;}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+  .box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0;}
+  .box h3{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;color:var(--ink-2);font-weight:600;}
+  .box.pour h3{color:var(--green);} .box.contre h3{color:var(--thread-2);} .box.rep h3{color:var(--amber);} .box.cond h3{color:var(--blue);}
+  .box ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;}
+  .box li{overflow-wrap:anywhere;}
+  .note{border-radius:8px;padding:10px 12px;font-size:13px;border-left:3px solid var(--line-strong);background:#fff;}
+  .note.warn{border-left-color:var(--amber);background:var(--amber-bg);}
+  .note.info{border-left-color:var(--blue);background:var(--blue-bg);}
+  .note strong{display:block;margin-bottom:4px;}
+  .note ul{margin:0;padding-left:18px;}
+  .link{background:none;border:0;padding:0;font:inherit;color:var(--blue);text-decoration:underline;cursor:pointer;}
+
+  /* Liste */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 12px;}
+  .tab{font-family:'Oswald',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;border:1px solid var(--line);background:var(--canvas-2);border-radius:999px;padding:5px 12px;cursor:pointer;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center;}
+  .tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .tab .n{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.8;}
+  .list{display:flex;flex-direction:column;gap:10px;}
+  .empty{color:var(--ink-2);font-size:13px;padding:18px;border:1px dashed var(--line-strong);border-radius:8px;text-align:center;}
+  .card{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;}
+  .card.target{outline:2px solid var(--ink);}
+  .card-head{display:grid;grid-template-columns:4px 1fr auto;gap:12px;padding:12px 14px;width:100%;background:none;border:0;text-align:left;cursor:pointer;font:inherit;color:inherit;}
+  .card-head:hover{background:#fff;}
+  .stripe{border-radius:2px;background:var(--line-strong);}
+  .card-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;color:var(--ink);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
+  .chip{font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;letter-spacing:0.3px;}
+  .chip.warn{background:var(--amber-bg);color:var(--amber);} .chip.ok{background:var(--green-bg);color:var(--green);}
+  .chip.info{background:var(--blue-bg);color:var(--blue);} .chip.done{background:var(--violet-bg);color:var(--violet);}
+  .chip.off{background:var(--grey-bg);color:var(--ink-2);} .chip.crit{background:var(--red-bg);color:var(--thread-2);}
+  .chip.plain{background:var(--grey-bg);color:var(--ink-2);font-weight:500;}
+  .meta{font-size:12px;color:var(--ink-2);margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 12px;}
+  .meta time{font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .caret{color:var(--ink-2);align-self:center;transition:transform .15s;}
+  .card[open] .caret{transform:rotate(180deg);}
+  .card-body{border-top:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:14px;}
+  .block p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;}
+  .accords{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .actions select{width:auto;padding:6px 10px;font-size:13px;}
+  .comments{display:flex;flex-direction:column;gap:8px;}
+  .comment{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+  .comment b{color:var(--ink);} .comment time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);margin-left:6px;}
+  .comment p{margin:4px 0 0;overflow-wrap:anywhere;}
+  .cform{display:flex;gap:8px;} .cform input{flex:1;}
+
+  /* Auth & réglages */
+  #authGate{display:none;max-width:420px;margin:60px auto;background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:28px;}
+  #authGate h1{font-size:22px;margin-bottom:6px;}
+  .auth-error{color:var(--thread-2);font-size:12px;margin-top:10px;min-height:16px;}
+  .divider{display:flex;align-items:center;gap:10px;color:var(--ink-2);font-size:12px;margin:12px 0;} .divider::before,.divider::after{content:"";flex:1;border-top:1px solid var(--line);}
+  #appRoot{display:none;}
+  #settings{display:none;}
+  #settings.open{display:flex;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--charcoal);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:calc(100% - 32px);}
+  .toast.show{opacity:1;}
+  .foot{margin-top:18px;font-size:12px;color:var(--ink-2);}
+  code{font-family:'JetBrains Mono',monospace;font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="authGate">
+    <h1>Boîte à idées</h1>
+    <p class="sub">Réservée aux associés Printtex. Connecte-toi avec ton compte habituel.</p>
+    <form id="authForm" novalidate style="margin-top:14px;">
+      <label for="authEmail">Email</label>
+      <input type="email" id="authEmail" placeholder="ton@email.com" autocomplete="username">
+      <label for="authPassword" style="margin-top:10px;">Mot de passe</label>
+      <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+      <button type="submit" class="btn btn-primary" id="btnLogin" style="width:100%;margin-top:14px;">Se connecter</button>
+    </form>
+    <div class="divider"><span>ou</span></div>
+    <button type="button" class="btn" id="btnGoogle" style="width:100%;">Se connecter avec Google</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+
+  <div id="appRoot">
+    <header>
+      <div class="brand"><h1>Boîte à idées</h1><span class="brand-tag">À deux</span><span class="who" id="who"></span></div>
+      <nav class="nav">
+        <a href="index.html">← Suivi des commandes</a>
+        <button type="button" id="btnSettings" title="Clé Claude">⚙ Claude</button>
+        <button type="button" id="btnLogout">Déconnexion</button>
+      </nav>
+    </header>
+
+    <section class="panel" id="settings">
+      <h2>Analyse par Claude</h2>
+      <p class="sub">L'analyse appelle l'API Claude directement depuis ton navigateur, avec ta propre clé. La clé reste sur cet appareil (elle n'est ni enregistrée dans Firebase, ni dans le code). Crée-la sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>, rubrique « API keys ».</p>
+      <div class="field"><label for="apiKey">Clé API Claude</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
+      <div class="row end">
+        <div class="status grow" id="settingsStatus"></div>
+        <button type="button" class="btn btn-ghost" id="btnKeyForget">Oublier la clé</button>
+        <button type="button" class="btn btn-primary" id="btnKeySave">Enregistrer</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div>
+        <h2>Nouvelle idée</h2>
+        <p class="sub">Décris-la en trois questions. Claude donne ensuite un avis franc : ce que ça apporte, ce que ça casse, ce qu'il faudrait pour que ça marche, et s'il faut le faire. Puis l'idée part dans la liste commune.</p>
+      </div>
+      <div class="field"><label for="f-change">Qu'est-ce que ça change concrètement ? <small>· ce que l'outil ferait de nouveau ou autrement</small></label>
+        <textarea id="f-change" placeholder="Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."></textarea></div>
+      <div class="grid2">
+        <div class="field"><label for="f-probleme">Qu'est-ce que ça arrange ? <small>· le problème d'aujourd'hui</small></label>
+          <textarea id="f-probleme" placeholder="Ex : on oublie de relancer, les commandes restent des semaines sur l'étagère."></textarea></div>
+        <div class="field"><label for="f-but">Dans quel but ? <small>· le résultat attendu</small></label>
+          <textarea id="f-but" placeholder="Ex : encaisser plus vite et libérer la place dans l'atelier."></textarea></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="f-zone">Partie de l'application</label><select id="f-zone"></select></div>
+        <div class="field"><label for="f-priorite">Priorité selon toi</label><select id="f-priorite"></select></div>
+      </div>
+      <div class="row">
+        <div class="status grow" id="statutAnalyse"></div>
+        <button type="button" class="btn btn-ghost" id="btnSansAnalyse">Envoyer sans analyse</button>
+        <button type="button" class="btn btn-primary" id="btnAnalyser">Analyser avec Claude</button>
+      </div>
+
+      <div class="analyse" id="analyse" hidden>
+        <div class="field"><label for="f-titre">Titre <small>· proposé par Claude, modifiable</small></label><input type="text" id="f-titre" maxlength="90"></div>
+        <div id="a-verdict"></div>
+        <div id="a-similaires"></div>
+        <div class="cols" id="a-cols"></div>
+        <div id="a-questions"></div>
+        <div class="row end">
+          <div class="status grow" id="statutEnvoi"></div>
+          <button type="button" class="btn btn-ghost" id="btnAnnuler">Annuler</button>
+          <button type="button" class="btn btn-primary" id="btnEnvoyer">Envoyer dans la boîte</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Les idées</h2>
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="list" id="list"><div class="empty">Chargement…</div></div>
+      <p class="foot">Collection Firestore <code>idees</code>, séparée des commandes et des marques. Une idée passe en « Validé » quand les deux associés ont cliqué « Je suis d'accord ».</p>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-firestore-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-auth-compat.min.js"></script>
+<script>
+if(typeof firebase === 'undefined'){
+  ['app','firestore','auth'].forEach(function(n){
+    document.write('<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-'+n+'-compat.js"><\/script>');
+  });
+}
+</script>
+<script>
+(function(){
+  "use strict";
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBElBwDqwtR1jTIs_n2iyjM4juuwAJfTck",
+    authDomain: "printtex-commande.firebaseapp.com",
+    projectId: "printtex-commande",
+    storageBucket: "printtex-commande.firebasestorage.app",
+    messagingSenderId: "240429387217",
+    appId: "1:240429387217:web:d49c2842305faeb821e4f0"
+  };
+  // Les deux associés. Ajouter ici l'email de l'associé (en minuscules), et le même dans les règles Firestore (voir README).
+  const ASSOCIES = ["printtex75@gmail.com"];
+
+  const CLAUDE_MODEL = "claude-opus-5-5";
+  const KEY_STORAGE = "ptx_claude_key";
+  const ZONES = ["Commandes","Marques / portail marque","Vectorizer","Cockpit","Connexion / comptes","Autre"];
+  const PRIO = {urgent:{label:"Ça bloque",cls:"crit"}, bientot:{label:"Bientôt",cls:"warn"}, unjour:{label:"Un jour",cls:"plain"}};
+  const STATUTS = {
+    a_discuter:{label:"À discuter",cls:"warn",color:"var(--amber)"},
+    valide:{label:"Validé",cls:"ok",color:"var(--green)"},
+    en_cours:{label:"En cours",cls:"info",color:"var(--blue)"},
+    termine:{label:"Terminé",cls:"done",color:"var(--violet)"},
+    refuse:{label:"Refusé",cls:"off",color:"var(--line-strong)"}
+  };
+  const VERDICTS = {oui:"À faire", oui_mais:"Oui, mais", plus_tard:"Plus tard", non:"À ne pas faire"};
+  const EFFORTS = {petit:"petit chantier (quelques heures)", moyen:"chantier moyen (quelques jours)", gros:"gros chantier (plusieurs semaines)"};
+
+  const $ = id => document.getElementById(id);
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    if(attrs) for(const k in attrs){
+      if(k === "class") n.className = attrs[k];
+      else if(k.startsWith("on")) n.addEventListener(k.slice(2), attrs[k]);
+      else if(attrs[k] !== null && attrs[k] !== undefined) n.setAttribute(k, attrs[k]);
+    }
+    for(const k of kids.flat()){ if(k === null || k === undefined) continue; n.append(k.nodeType ? k : document.createTextNode(String(k))); }
+    return n;
+  };
+  const fmtDate = iso => { try{ const d = new Date(iso); return d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) + " " + d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+  let toastT; function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 2600); }
+  function setStatus(id, msg, kind){ const n = $(id); n.textContent = msg || ""; n.className = "status grow" + (kind ? " " + kind : ""); }
+  const nomDe = u => (u && (u.displayName || (u.email || "").split("@")[0])) || "quelqu'un";
+
+  const S = { db:null, auth:null, me:null, ideas:[], filter:"all", expanded:new Set(), analysis:null, ctl:null, target:null, unsub:null };
+  try{ S.filter = localStorage.getItem("ptx-idees-filter") || "all"; }catch(e){}
+
+  for(const z of ZONES) $("f-zone").append(el("option",{value:z},z));
+  for(const k in PRIO) $("f-priorite").append(el("option",{value:k},PRIO[k].label));
+
+  /* ---------- Firebase ---------- */
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    S.db = firebase.firestore(); S.db.settings({experimentalForceLongPolling:true});
+    S.auth = firebase.auth();
+  }catch(e){ console.error("Erreur init Firebase", e); }
+
+  const isAssocie = email => !!email && ASSOCIES.includes(email.toLowerCase());
+
+  $("authForm").addEventListener("submit", async ev => {
+    ev.preventDefault(); $("authError").textContent = "";
+    const email = $("authEmail").value.trim().toLowerCase(), pass = $("authPassword").value;
+    if(!email || !pass){ $("authError").textContent = "Email et mot de passe requis."; return; }
+    $("btnLogin").disabled = true;
+    try{ await S.auth.signInWithEmailAndPassword(email, pass); }
+    catch(e){ $("authError").textContent = "Connexion impossible : " + (e && e.message ? e.message : "inconnue"); }
+    finally{ $("btnLogin").disabled = false; }
+  });
+  $("btnGoogle").addEventListener("click", async () => {
+    $("authError").textContent = "";
+    try{ await S.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    catch(e){ $("authError").textContent = "Connexion impossible : " + (e && e.message ? e.message : "inconnue"); }
+  });
+  $("btnLogout").addEventListener("click", () => S.auth.signOut());
+
+  if(S.auth){
+    S.auth.onAuthStateChanged(user => {
+      if(user && isAssocie(user.email)){
+        S.me = user;
+        $("who").textContent = nomDe(user);
+        $("authGate").style.display = "none"; $("appRoot").style.display = "block";
+        loadKey(); subscribe();
+      }else{
+        if(user){ S.auth.signOut(); $("authError").textContent = "Ce compte n'est pas dans la liste des associés."; }
+        if(S.unsub){ S.unsub(); S.unsub = null; }
+        S.me = null; S.ideas = [];
+        $("appRoot").style.display = "none"; $("authGate").style.display = "block";
+      }
+    });
+  }else{ $("authGate").style.display = "block"; $("authError").textContent = "Chargement impossible (réseau ou bloqueur de contenu)."; }
+
+  /* ---------- Clé API ---------- */
+  function getKey(){ try{ return localStorage.getItem(KEY_STORAGE) || ""; }catch(e){ return ""; } }
+  function loadKey(){ $("apiKey").value = getKey(); }
+  $("btnSettings").addEventListener("click", () => { $("settings").classList.toggle("open"); if($("settings").classList.contains("open")) $("apiKey").focus(); });
+  $("btnKeySave").addEventListener("click", () => {
+    const k = $("apiKey").value.trim();
+    if(!k.startsWith("sk-ant-")){ setStatus("settingsStatus","Une clé Claude commence par sk-ant-.","err"); return; }
+    try{ localStorage.setItem(KEY_STORAGE, k); setStatus("settingsStatus","Clé enregistrée sur cet appareil."); setTimeout(()=>$("settings").classList.remove("open"), 900); }
+    catch(e){ setStatus("settingsStatus","Impossible d'enregistrer (navigation privée ?).","err"); }
+  });
+  $("btnKeyForget").addEventListener("click", () => { try{ localStorage.removeItem(KEY_STORAGE); }catch(e){} $("apiKey").value = ""; setStatus("settingsStatus","Clé oubliée."); });
+
+  /* ---------- Analyse Claude ---------- */
+  function lireFormulaire(){
+    return { change:$("f-change").value.trim(), probleme:$("f-probleme").value.trim(), but:$("f-but").value.trim(), zone:$("f-zone").value, priorite:$("f-priorite").value };
+  }
+  function buildPrompt(f){
+    const existantes = S.ideas.slice(0,120).map(i => ({id:i.id, titre:i.titre, change:(i.change||"").slice(0,160), statut:STATUTS[i.statut] ? STATUTS[i.statut].label : i.statut}));
+    return `Tu es le conseiller produit de deux associés qui tiennent Printtex, un atelier de personnalisation textile à Paris (sérigraphie, flocage, broderie pour des marques et des particuliers). Ils gèrent leur activité avec une application web maison, une seule page HTML sur Firebase.
+
+Ce que l'application fait déjà : suivi des commandes clients par statut (en attente de production, en production, prête, livrée, annulée), produits multiples par commande avec emplacements visuels, relances des commandes prêtes depuis N jours, recherche par numéro de commande et archives, quota hebdomadaire de T-shirts avec alerte de capacité, total à encaisser, export comptable mensuel, catalogue de produits par marque avec un portail dédié aux marques inscrites (suivi, galerie d'images, ruptures de stock), vectoriseur d'image vers SVG, page cockpit (vue du matin : Shopify, Outlook, factures), connexion admin et inscription des marques. Tout est en vanilla JS sans build ; chaque ajout alourdit le même fichier.
+
+L'un des associés propose une idée. Voici ce qu'il a écrit :
+- Ce que ça change concrètement : """${f.change}"""
+- Ce que ça arrange (le problème d'aujourd'hui) : """${f.probleme || "(non précisé)"}"""
+- Dans quel but : """${f.but || "(non précisé)"}"""
+- Partie de l'application : ${f.zone}
+- Priorité selon lui : ${PRIO[f.priorite] ? PRIO[f.priorite].label : f.priorite}
+
+Idées déjà dans leur boîte (id, titre, ce que ça change, statut) :
+${JSON.stringify(existantes)}
+
+Donne un retour franc et court, comme un associé expérimenté qui veut les aider à trancher, pas comme un consultant qui ménage tout le monde. Appuie-toi sur ce qu'un petit atelier vit vraiment : temps de saisie, erreurs, clients qui attendent, trésorerie, charge de production. Si l'idée recoupe une fonction qui existe déjà ou une idée de la boîte, dis-le clairement.
+
+Réponds UNIQUEMENT avec un objet JSON de cette forme exacte, sans texte autour :
+{
+ "titre": "6 mots max, ce que l'on obtient",
+ "resume": "1 à 2 phrases : ce que l'idée change et pour quel résultat",
+ "verdict": "oui" | "oui_mais" | "plus_tard" | "non",
+ "verdict_raison": "2 à 3 phrases : ton avis, pourquoi il faut le faire ou pas, et à quelle condition s'il y en a une",
+ "pour": ["2 à 4 raisons concrètes de le faire"],
+ "contre": ["1 à 4 raisons concrètes de ne pas le faire, ou ce qui cloche dans l'idée telle qu'elle est décrite"],
+ "repercussions": ["2 à 4 répercussions concrètes si c'est mis en place : sur le quotidien de l'atelier, sur les clients ou les marques, sur les données existantes, sur le reste de l'application"],
+ "conditions": ["2 à 5 choses qu'il faudrait faire ou décider pour que ça fonctionne vraiment : règles à fixer, données à saisir, cas particuliers à prévoir, habitudes à changer"],
+ "effort": "petit" | "moyen" | "gros",
+ "questions": ["0 à 2 questions courtes si quelque chose d'important n'est pas précisé"],
+ "similaires": [{"id": "id exact d'une idée de la boîte", "raison": "en quoi elle recoupe celle-ci"}]
+}
+Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "similaires" ne contient que des idées qui recouvrent vraiment le même besoin, 3 maximum, sinon []. "effort" estime la taille du chantier dans leur application.`;
+  }
+  function extraireJSON(text){
+    try{ return JSON.parse(text); }catch(e){}
+    const m = text.match(/```(?:json)?\s*([\s\S]*?)```/); if(m){ try{ return JSON.parse(m[1]); }catch(e){} }
+    const a = text.indexOf("{"), b = text.lastIndexOf("}");
+    if(a >= 0 && b > a){ try{ return JSON.parse(text.slice(a, b+1)); }catch(e){} }
+    return null;
+  }
+  async function appelerClaude(prompt, signal){
+    const key = getKey();
+    if(!key) throw {code:"no_key"};
+    let res;
+    try{
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST", signal,
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key": key,
+          "anthropic-version":"2023-06-01",
+          "anthropic-beta":"server-side-fallback-2026-07-01",
+          "anthropic-dangerous-direct-browser-access":"true"
+        },
+        body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 4000, fallbacks: "default", messages: [{role:"user", content: prompt}] })
+      });
+    }catch(e){ if(e && e.name === "AbortError") throw {code:"cancelled"}; throw {code:"network"}; }
+    if(!res.ok){
+      let msg = ""; try{ const j = await res.json(); msg = j && j.error && j.error.message || ""; }catch(e){}
+      throw {code: res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : res.status === 400 ? "bad_request" : "upstream", message: msg, status: res.status};
+    }
+    const data = await res.json();
+    if(data.stop_reason === "refusal") throw {code:"refused"};
+    const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+    const json = extraireJSON(text);
+    if(!json || typeof json !== "object") throw {code:"invalid_json", text};
+    return json;
+  }
+  const copyFor = e => ({
+    no_key:"Ajoute d'abord ta clé Claude (bouton ⚙ Claude en haut). Tu peux aussi envoyer sans analyse.",
+    bad_key:"La clé Claude est refusée. Vérifie-la dans ⚙ Claude.",
+    rate_limited:"Trop de demandes ou crédit épuisé sur ta clé Claude. Réessaie dans un moment.",
+    bad_request:"Requête refusée par l'API : " + (e && e.message || "détail inconnu"),
+    network:"Impossible de joindre l'API Claude (réseau ou bloqueur de contenu).",
+    refused:"Claude n'a pas voulu traiter ce texte. Reformule l'idée.",
+    invalid_json:"La réponse n'était pas exploitable. Réessaie.",
+    cancelled:"Analyse arrêtée."
+  }[e && e.code] || "L'analyse n'a pas abouti. Réessaie, ou envoie sans analyse.");
+
+  function listUl(items){ return el("ul", null, (items || []).map(x => el("li", null, String(x)))); }
+  function afficherAnalyse(a, f){
+    S.analysis = a;
+    $("f-titre").value = a.titre || f.change.slice(0, 70);
+    const v = $("a-verdict"); v.innerHTML = "";
+    const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
+    v.append(el("div",{class:"verdict " + vk},
+      el("span",{class:"v"}, VERDICTS[vk]),
+      el("div",null, el("p",null, a.verdict_raison || ""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null,
+        el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
+    const sim = $("a-similaires"); sim.innerHTML = "";
+    const simOk = (a.similaires || []).map(s => ({...s, idea:S.ideas.find(i => i.id === s.id)})).filter(s => s.idea);
+    if(simOk.length) sim.append(el("div",{class:"note warn"}, el("strong",null,"Attention, une idée proche est déjà dans la boîte"),
+      el("ul",null, simOk.map(s => el("li",null, el("button",{class:"link",type:"button",onclick:()=>focusIdea(s.idea.id)}, s.idea.titre), " · ", STATUTS[s.idea.statut] ? STATUTS[s.idea.statut].label : "", " — ", s.raison || "")))));
+    const cols = $("a-cols"); cols.innerHTML = "";
+    cols.append(
+      el("div",{class:"box pour"}, el("h3",null,"Pourquoi le faire"), listUl(a.pour)),
+      el("div",{class:"box contre"}, el("h3",null,"Pourquoi ne pas le faire, ou ce qui cloche"), listUl(a.contre)),
+      el("div",{class:"box rep"}, el("h3",null,"Ce que ça causerait"), listUl(a.repercussions)),
+      el("div",{class:"box cond"}, el("h3",null,"Pour que ça marche vraiment"), listUl(a.conditions)));
+    const q = $("a-questions"); q.innerHTML = "";
+    if((a.questions || []).length) q.append(el("div",{class:"note info"}, el("strong",null,"Claude aurait besoin de savoir"), listUl(a.questions)));
+    $("analyse").hidden = false;
+    $("analyse").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  async function analyser(){
+    const f = lireFormulaire();
+    if(!f.change){ setStatus("statutAnalyse","Dis d'abord ce que ça change concrètement.","err"); $("f-change").focus(); return; }
+    if(!getKey()){ setStatus("statutAnalyse", copyFor({code:"no_key"}), "err"); $("settings").classList.add("open"); $("apiKey").focus(); return; }
+    const btn = $("btnAnalyser"); btn.disabled = true;
+    setStatus("statutAnalyse","Claude lit l'idée et la compare à ce qui existe… (15 à 60 secondes)","busy");
+    S.ctl = new AbortController();
+    try{
+      const a = await appelerClaude(buildPrompt(f), S.ctl.signal);
+      setStatus("statutAnalyse","Lis l'avis, corrige le titre si besoin, puis envoie.");
+      afficherAnalyse(a, f);
+    }catch(e){
+      setStatus("statutAnalyse", copyFor(e), "err");
+    }finally{ btn.disabled = false; S.ctl = null; }
+  }
+  $("btnAnalyser").addEventListener("click", analyser);
+  $("btnSansAnalyse").addEventListener("click", () => {
+    const f = lireFormulaire();
+    if(!f.change){ setStatus("statutAnalyse","Dis d'abord ce que ça change concrètement.","err"); $("f-change").focus(); return; }
+    S.analysis = null; $("f-titre").value = f.change.slice(0, 70);
+    ["a-verdict","a-similaires","a-cols","a-questions"].forEach(id => $(id).innerHTML = "");
+    $("analyse").hidden = false; $("f-titre").focus();
+    setStatus("statutAnalyse","Sans analyse : donne un titre et envoie.");
+  });
+  $("btnAnnuler").addEventListener("click", () => { $("analyse").hidden = true; S.analysis = null; setStatus("statutAnalyse",""); setStatus("statutEnvoi",""); });
+
+  /* ---------- Envoi ---------- */
+  async function envoyer(){
+    const f = lireFormulaire();
+    const titre = $("f-titre").value.trim();
+    if(!titre){ setStatus("statutEnvoi","Il manque un titre.","err"); $("f-titre").focus(); return; }
+    const now = new Date().toISOString(), a = S.analysis;
+    const doc = {
+      titre, change:f.change, probleme:f.probleme, but:f.but, zone:f.zone, priorite:f.priorite,
+      statut:"a_discuter", auteurUid:S.me.uid, auteurNom:nomDe(S.me), auteurEmail:S.me.email || "",
+      createdAt:now, updatedAt:now, assigneUid:null, assigneNom:null, accords:[], commentaires:[],
+      analyse: a ? {
+        resume:String(a.resume||""), verdict:VERDICTS[a.verdict] ? a.verdict : "oui_mais", verdict_raison:String(a.verdict_raison||""),
+        pour:(a.pour||[]).map(String), contre:(a.contre||[]).map(String), repercussions:(a.repercussions||[]).map(String),
+        conditions:(a.conditions||[]).map(String), effort:EFFORTS[a.effort] ? a.effort : null, questions:(a.questions||[]).map(String),
+        similaires:(a.similaires||[]).filter(s => s && S.ideas.some(i => i.id === s.id)).map(s => ({id:String(s.id), raison:String(s.raison||"")}))
+      } : null
+    };
+    const btn = $("btnEnvoyer"); btn.disabled = true; setStatus("statutEnvoi","Envoi…","busy");
+    try{
+      await S.db.collection("idees").add(doc);
+      ["f-change","f-probleme","f-but"].forEach(id => $(id).value = "");
+      $("analyse").hidden = true; S.analysis = null; setStatus("statutAnalyse",""); setStatus("statutEnvoi","");
+      S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){}
+      toast("Idée envoyée dans la boîte");
+    }catch(e){
+      setStatus("statutEnvoi", e && e.code === "permission-denied" ? "Firestore refuse l'écriture : la collection idees n'est pas encore autorisée dans les règles (voir README)." : "L'envoi a échoué : " + (e && e.message || "inconnu"), "err");
+    }finally{ btn.disabled = false; }
+  }
+  $("btnEnvoyer").addEventListener("click", envoyer);
+
+  /* ---------- Liste ---------- */
+  function subscribe(){
+    if(S.unsub) S.unsub();
+    S.unsub = S.db.collection("idees").orderBy("createdAt","desc").limit(400).onSnapshot(snap => {
+      S.ideas = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      renderList();
+    }, err => { console.error("idees", err); $("list").innerHTML = ""; $("list").append(el("div",{class:"empty"}, err && err.code === "permission-denied" ? "Firestore refuse la lecture : ajoute la règle pour la collection idees (voir README)." : "La liste ne se charge pas : " + (err && err.message || ""))); });
+  }
+  function focusIdea(id){ S.expanded.add(id); S.target = id; S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){} renderList(); const c = $("idea-"+id); if(c) c.scrollIntoView({behavior:"smooth", block:"center"}); }
+  async function update(id, patch){
+    try{ await S.db.collection("idees").doc(id).update({...patch, updatedAt:new Date().toISOString()}); }
+    catch(e){ toast(e && e.code === "permission-denied" ? "Modification refusée par Firestore" : "La modification n'a pas été enregistrée"); }
+  }
+  function markdownFor(i){
+    const a = i.analyse;
+    let md = `## ${i.titre}\n\n**Proposé par** ${i.auteurNom||"un associé"} le ${fmtDate(i.createdAt)}\n**Partie** : ${i.zone}  ·  **Priorité** : ${PRIO[i.priorite] ? PRIO[i.priorite].label : i.priorite}  ·  **Statut** : ${STATUTS[i.statut] ? STATUTS[i.statut].label : i.statut}\n\n### Ce que ça change\n${i.change||"—"}\n\n### Ce que ça arrange\n${i.probleme||"—"}\n\n### Dans quel but\n${i.but||"—"}\n`;
+    if(a){
+      md += `\n### Avis de Claude : ${VERDICTS[a.verdict]||""}\n${a.verdict_raison||""}\n`;
+      const sec = (t, arr) => (arr && arr.length) ? `\n**${t}**\n${arr.map(x => "- " + x).join("\n")}\n` : "";
+      md += sec("Pour", a.pour) + sec("Contre", a.contre) + sec("Répercussions", a.repercussions) + sec("Pour que ça marche", a.conditions);
+    }
+    return md;
+  }
+  async function copyText(t){
+    try{ await navigator.clipboard.writeText(t); toast("Copié, colle-le dans une issue GitHub"); }
+    catch(e){ const ta = el("textarea",{style:"position:absolute;left:-9999px"}, t); document.body.append(ta); ta.select(); try{ document.execCommand("copy"); toast("Copié"); }catch(_){ toast("Copie impossible ici"); } ta.remove(); }
+  }
+  const TABS = [["all","Toutes"],["a_discuter","À discuter"],["valide","Validées"],["en_cours","En cours"],["termine","Terminées"],["refuse","Refusées"]];
+  function renderTabs(){
+    const tabs = $("tabs"); tabs.innerHTML = "";
+    for(const [k,label] of TABS){
+      const n = k === "all" ? S.ideas.length : S.ideas.filter(i => i.statut === k).length;
+      tabs.append(el("button",{class:"tab",type:"button",role:"tab","aria-selected":String(S.filter===k),onclick:()=>{ S.filter = k; try{ localStorage.setItem("ptx-idees-filter",k); }catch(e){} renderList(); }}, label, el("span",{class:"n"}, n)));
+    }
+  }
+  function card(i){
+    const me = S.me.uid, st = STATUTS[i.statut] || STATUTS.a_discuter, open = S.expanded.has(i.id), a = i.analyse;
+    const c = el("article",{class:"card" + (S.target === i.id ? " target" : ""), id:"idea-"+i.id});
+    if(open) c.setAttribute("open","");
+    c.append(el("button",{class:"card-head",type:"button","aria-expanded":String(open),onclick:()=>{ if(open) S.expanded.delete(i.id); else S.expanded.add(i.id); renderList(); }},
+      el("span",{class:"stripe",style:"background:"+st.color}),
+      el("div",null,
+        el("div",{class:"card-title"}, i.titre || "(sans titre)"),
+        el("div",{class:"chips"}, el("span",{class:"chip "+st.cls}, st.label), el("span",{class:"chip plain"}, i.zone || "Autre"),
+          PRIO[i.priorite] ? el("span",{class:"chip "+PRIO[i.priorite].cls}, PRIO[i.priorite].label) : null,
+          a && VERDICTS[a.verdict] ? el("span",{class:"chip " + ({oui:"ok",oui_mais:"warn",plus_tard:"info",non:"crit"}[a.verdict])}, "Claude : " + VERDICTS[a.verdict]) : null,
+          (i.accords||[]).length ? el("span",{class:"chip plain"}, i.accords.length > 1 ? "Accord à deux" : "1 accord sur 2") : null),
+        el("div",{class:"meta"}, el("span",null, i.auteurNom || "quelqu'un"), el("time",{datetime:i.createdAt}, fmtDate(i.createdAt)),
+          i.assigneNom ? el("span",null, "· pris par " + i.assigneNom) : null,
+          (i.commentaires||[]).length ? el("span",null, "· " + i.commentaires.length + (i.commentaires.length > 1 ? " commentaires" : " commentaire")) : null)),
+      el("span",{class:"caret","aria-hidden":"true"}, "▾")));
+    if(!open) return c;
+
+    const body = el("div",{class:"card-body"});
+    const block = (t, txt) => txt ? el("div",{class:"block"}, el("label",null,t), el("p",null,txt)) : null;
+    body.append(el("div",{class:"cols"}, block("Ce que ça change", i.change), block("Ce que ça arrange", i.probleme), block("Dans quel but", i.but)));
+    if(a){
+      const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
+      body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null, el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
+      body.append(el("div",{class:"cols"},
+        el("div",{class:"box pour"}, el("h3",null,"Pourquoi le faire"), listUl(a.pour)),
+        el("div",{class:"box contre"}, el("h3",null,"Pourquoi ne pas le faire"), listUl(a.contre)),
+        el("div",{class:"box rep"}, el("h3",null,"Ce que ça causerait"), listUl(a.repercussions)),
+        el("div",{class:"box cond"}, el("h3",null,"Pour que ça marche vraiment"), listUl(a.conditions))));
+      if((a.questions||[]).length) body.append(el("div",{class:"note info"}, el("strong",null,"À préciser"), listUl(a.questions)));
+      const sims = (a.similaires||[]).map(s => ({...s, idea:S.ideas.find(x => x.id === s.id)})).filter(s => s.idea);
+      if(sims.length) body.append(el("div",{class:"note warn"}, el("strong",null,"Idées proches signalées à l'envoi"), el("ul",null, sims.map(s => el("li",null, el("button",{class:"link",type:"button",onclick:()=>focusIdea(s.idea.id)}, s.idea.titre), " — ", s.raison)))));
+    }
+
+    const accords = i.accords || [], jaccorde = accords.includes(me);
+    body.append(el("div",{class:"accords"},
+      el("span",{class:"grow"}, accords.length >= 2 ? "Validée à deux." : accords.length === 1 ? "Un accord sur deux, il manque l'autre." : "Une idée passe en « Validé » quand vous êtes d'accord tous les deux."),
+      el("button",{class:"btn btn-sm" + (jaccorde ? "" : " btn-primary"),type:"button",onclick:()=>{ const next = jaccorde ? accords.filter(x => x !== me) : [...accords, me]; const patch = {accords:next}; if(next.length >= 2 && i.statut === "a_discuter") patch.statut = "valide"; update(i.id, patch); }}, jaccorde ? "Retirer mon accord" : "Je suis d'accord")));
+
+    const sel = el("select",{"aria-label":"Statut",onchange:e=>update(i.id,{statut:e.target.value})});
+    for(const k in STATUTS) sel.append(el("option",{value:k,selected:i.statut===k?"":null}, STATUTS[k].label));
+    const actions = el("div",{class:"actions"}, sel);
+    if(i.assigneUid !== me && i.statut !== "termine" && i.statut !== "refuse") actions.append(el("button",{class:"btn btn-sm",type:"button",onclick:()=>update(i.id,{assigneUid:me, assigneNom:nomDe(S.me), statut:"en_cours"})}, "Je m'en occupe"));
+    if(i.assigneUid === me && i.statut !== "termine") actions.append(el("button",{class:"btn btn-sm",type:"button",onclick:()=>update(i.id,{assigneUid:null, assigneNom:null, statut:i.statut === "en_cours" ? "valide" : i.statut})}, "Je lâche"));
+    actions.append(el("button",{class:"btn btn-sm btn-ghost",type:"button",onclick:()=>copyText(markdownFor(i))}, "Copier pour GitHub"));
+    const del = el("button",{class:"btn btn-sm btn-ghost btn-danger",type:"button"}, "Supprimer"); let armed = false;
+    del.addEventListener("click", async () => {
+      if(!armed){ armed = true; del.textContent = "Confirmer la suppression"; setTimeout(()=>{ if(armed){ armed = false; del.textContent = "Supprimer"; } }, 4000); return; }
+      try{ await S.db.collection("idees").doc(i.id).delete(); toast("Idée supprimée"); }catch(e){ toast("Suppression impossible"); }
+    });
+    actions.append(del);
+    body.append(actions);
+
+    const com = el("div",{class:"comments"}, el("label",null,"Discussion"));
+    for(const cm of (i.commentaires||[])) com.append(el("div",{class:"comment"}, el("div",null, el("b",null, cm.nom || "quelqu'un"), el("time",{datetime:cm.date}, fmtDate(cm.date))), el("p",null, cm.texte)));
+    const inp = el("input",{type:"text",placeholder:"Répondre, préciser, objecter…",maxlength:"600"});
+    const send = async () => { const t = inp.value.trim(); if(!t) return; inp.value = ""; await update(i.id, {commentaires:[...(i.commentaires||[]), {uid:me, nom:nomDe(S.me), texte:t, date:new Date().toISOString()}]}); };
+    inp.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); send(); } });
+    com.append(el("div",{class:"cform"}, inp, el("button",{class:"btn btn-sm",type:"button",onclick:send}, "Envoyer")));
+    body.append(com);
+    c.append(body);
+    return c;
+  }
+  function renderList(){
+    renderTabs();
+    const list = $("list"); list.innerHTML = "";
+    const shown = S.ideas.filter(i => S.filter === "all" || i.statut === S.filter);
+    if(!shown.length){ list.append(el("div",{class:"empty"}, S.ideas.length ? "Aucune idée dans cette catégorie." : "Rien pour l'instant. Écris la première idée ci-dessus.")); return; }
+    for(const i of shown) list.append(card(i));
+    if(S.target){ const t = S.target; setTimeout(()=>{ if(S.target === t) S.target = null; const c = $("idea-"+t); if(c) c.classList.remove("target"); }, 2500); }
+  }
+})();
+</script>
+</body>
+</html>

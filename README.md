@@ -58,9 +58,29 @@ Les valeurs dans `FIREBASE_CONFIG` (apiKey, projectId, etc.) ne sont **pas des s
 
 Le projet est développé par deux associés. Pour éviter que deux personnes codent la même chose en même temps (et que les deux versions se marchent dessus dans `index.html`), on suit ces règles.
 
+### La boîte à idées dans l'outil : `idees.html`
+
+La page **Boîte à idées** (lien dans la navigation de l'application, ou directement `idees.html`) est l'endroit où les deux associés déposent leurs idées. Même connexion que le reste de l'outil (email/mot de passe ou Google), même projet Firebase, collection Firestore `idees`.
+
+- **Trois questions** pour décrire l'idée : ce que ça change concrètement, ce que ça arrange, dans quel but.
+- **Analyse par Claude** (bouton « Analyser avec Claude ») : un avis tranché (à faire / oui mais / plus tard / à ne pas faire), pourquoi le faire, pourquoi ne pas le faire, ce que ça causerait comme répercussions, ce qu'il faudrait pour que ça marche vraiment, la taille du chantier, et les idées déjà dans la boîte qui recoupent celle-ci. L'analyse est enregistrée avec l'idée.
+- **Liste commune** par statut, avec qui a proposé quoi. Une idée passe en « Validé » quand les deux ont cliqué « Je suis d'accord ». « Je m'en occupe » assigne l'idée à une seule personne, ce qui évite que les deux codent la même chose. Discussion sous chaque idée, et « Copier pour GitHub » pour ouvrir une issue au moment de coder.
+
+**Mise en place (une fois) :**
+
+1. **Ajouter l'associé** dans la constante `ASSOCIES` de `idees.html` (email en minuscules).
+2. **Autoriser la collection `idees`** dans la console Firebase → Firestore Database → Règles, en ajoutant dans le bloc `match /databases/{database}/documents` :
+   ```
+   match /idees/{id} {
+     allow read, write: if request.auth != null
+       && request.auth.token.email in ['printtex75@gmail.com', 'EMAIL_DE_L_ASSOCIE'];
+   }
+   ```
+3. **Clé Claude** : chacun crée sa clé sur console.anthropic.com et la colle dans la page via le bouton « ⚙ Claude ». La clé reste dans le navigateur de l'appareil (localStorage), elle n'est jamais envoyée à Firebase ni mise dans le code. Sans clé, on peut toujours « Envoyer sans analyse ».
+
 ### Les idées : libres à l'entrée, tranchées à deux
 
-- **Toute idée devient une issue GitHub**, créée avec le modèle « 💡 Idée ». Ouvrir une issue est libre, pour les deux, à tout moment, même depuis l'application GitHub sur téléphone.
+- **Toute idée passe d'abord par la boîte à idées** (`idees.html`). Ouvrir une idée est libre, pour les deux, à tout moment. Les issues GitHub (modèle « 💡 Idée ») servent au moment de coder : « Copier pour GitHub » depuis la boîte.
 - **Avant d'ouvrir une issue, on cherche** dans la liste si une idée proche existe déjà. Si oui, on la commente au lieu d'en créer une nouvelle.
 - Une idée suit ces étiquettes :
   - `idée` + `à discuter` : nouvelle, pas encore tranchée (mis automatiquement par le modèle)
