@@ -63,7 +63,7 @@ Le projet est développé par deux associés. Pour éviter que deux personnes co
 La page **Boîte à idées** (lien dans la navigation de l'application, ou directement `idees.html`) est l'endroit où les deux associés déposent leurs idées. Même connexion que le reste de l'outil (email/mot de passe ou Google), même projet Firebase, collection Firestore `idees`.
 
 1. **Trois questions** pour décrire l'idée : ce que ça change concrètement, ce que ça arrange, dans quel but. On envoie, l'idée est tout de suite dans la liste commune.
-2. **Claude analyse dès l'envoi**, depuis le navigateur, et écrit son avis sous l'idée dans la minute : verdict (à faire / oui mais / plus tard / à ne pas faire), pourquoi le faire, pourquoi ne pas le faire, ce que ça causerait comme répercussions, ce qu'il faudrait pour que ça marche vraiment, taille du chantier, idées déjà dans la boîte qui recoupent celle-ci. L'analyse est enregistrée avec l'idée. Si la clé n'était pas là au moment de l'envoi, l'analyse se fait dès qu'elle est ajoutée.
+2. **Claude analyse chaque nouvelle idée** depuis la session Claude Code du chef, toutes les heures de 8 h à 20 h, et écrit son avis sous l'idée : verdict (à faire / oui mais / plus tard / à ne pas faire), pourquoi le faire, pourquoi ne pas le faire, ce que ça causerait comme répercussions, ce qu'il faudrait pour que ça marche vraiment, taille du chantier, idées déjà dans la boîte qui recoupent celle-ci. L'analyse est enregistrée avec l'idée. Facultatif : une clé API Claude collée dans la page (bouton « ⚙ Claude ») donne l'avis dans la minute, à l'usage.
 3. **Le chef décide.** Depuis sa session Claude Code, il reçoit un mini résumé des nouvelles idées analysées et répond « OK » ou « Non ». Tant qu'il n'a pas dit OK, rien n'est lancé. Sur OK, Claude code l'idée sur une branche `idee-…` et propose une pull request vers `main` ; le chef relit et fusionne.
 4. Dans la liste : statuts, « Je suis d'accord », « Je m'en occupe » (une seule personne par idée), discussion sous chaque idée.
 
@@ -81,7 +81,7 @@ La page **Boîte à idées** (lien dans la navigation de l'application, ou direc
        && request.auth.token.email in ['printtex75@gmail.com', 'EMAIL_DE_L_ASSOCIE'];
    }
    ```
-3. **Clé Claude partagée** : le chef crée une clé sur console.anthropic.com et la colle une fois dans la page via le bouton « ⚙ Claude ». Elle est enregistrée dans Firestore (`config/claude`), lisible uniquement par les deux comptes associés, jamais dans le code. Chaque analyse coûte quelques centimes sur cette clé.
+3. **Clé Claude partagée (facultatif)** : sans clé, l'analyse est faite par la session du chef, comprise dans l'abonnement. Avec une clé API collée une fois dans la page (bouton « ⚙ Claude », rangée dans Firestore `config/claude`), l'avis arrive dans la minute, quelques centimes par idée.
 4. **Lecture par la session du chef** : pour que Claude lise les idées depuis Claude Code (résumé, lancement sur OK), une clé de compte de service Firebase est placée dans les réglages de l'environnement cloud, variable `FIREBASE_SERVICE_ACCOUNT` (contenu du fichier JSON généré dans la console Firebase → Paramètres du projet → Comptes de service). Le script `scripts/idees-firestore.mjs` s'en sert.
 
 ### Les idées : libres à l'entrée, tranchées à deux

@@ -169,7 +169,7 @@
 
     <section class="panel" id="settings">
       <h2>Analyse par Claude</h2>
-      <p class="sub">Dès qu'une idée est envoyée, la page appelle l'API Claude depuis le navigateur et range l'analyse sous l'idée. Une seule clé pour les deux associés : enregistrée dans Firestore (<code>config/claude</code>), lisible uniquement par les comptes associés, jamais dans le code. Crée-la sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>, rubrique « API keys ».</p>
+      <p class="sub">Sans clé, Claude passe toutes les heures (8 h à 20 h) depuis la session du chef et écrit son avis sous chaque nouvelle idée : rien à payer en plus de l'abonnement. Facultatif : avec une clé API (payante à l'usage, <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>), l'avis arrive dans la minute. La clé est rangée dans Firestore (<code>config/claude</code>), lisible uniquement par les comptes associés.</p>
       <div class="field"><label for="apiKey">Clé API Claude partagée</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
       <div class="row end">
         <div class="status grow" id="settingsStatus"></div>
@@ -181,7 +181,7 @@
     <section class="panel">
       <div>
         <h2>Nouvelle idée</h2>
-        <p class="sub">Décris-la en trois questions et envoie. L'idée part tout de suite dans la liste commune, et Claude écrit son avis dessous dans la minute : ce que ça apporte, ce que ça casse, ce que ça causerait, ce qu'il faudrait pour que ça marche, et s'il faut le faire.</p>
+        <p class="sub">Décris-la en trois questions et envoie. L'idée part tout de suite dans la liste commune, et Claude écrit son avis dessous au passage suivant (toutes les heures, 8 h à 20 h) : ce que ça apporte, ce que ça casse, ce que ça causerait, ce qu'il faudrait pour que ça marche, et s'il faut le faire. Puis le chef décide.</p>
       </div>
       <div class="field"><label for="f-change">Qu'est-ce que ça change concrètement ? <small>· ce que l'outil ferait de nouveau ou autrement</small></label>
         <textarea id="f-change" placeholder="Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."></textarea></div>
@@ -427,7 +427,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     return json;
   }
   const copyFor = e => ({
-    no_key:"Pas de clé Claude enregistrée (bouton ⚙ Claude en haut). L'idée est bien dans la boîte, l'analyse se fera dès que la clé sera là.",
+    no_key:"Pas de clé Claude sur cette page : l'idée est bien dans la boîte, Claude passera l'analyser dans l'heure.",
     bad_key:"La clé Claude est refusée. Vérifie-la dans ⚙ Claude.",
     rate_limited:"Trop de demandes ou crédit épuisé sur ta clé Claude. Réessaie dans un moment.",
     bad_request:"Requête refusée par l'API : " + (e && e.message || "détail inconnu"),
@@ -486,7 +486,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
       setStatus("statutEnvoi","");
       S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){}
       S.expanded.add(ref.id);
-      toast(getKey() ? "Idée envoyée, Claude l'analyse…" : "Idée envoyée (sans analyse : pas de clé Claude)");
+      toast(getKey() ? "Idée envoyée, Claude l'analyse…" : "Idée envoyée, Claude passera l'analyser dans l'heure");
     }catch(e){
       setStatus("statutEnvoi", e && e.code === "permission-denied" ? "Firestore refuse l'écriture : la collection idees n'est pas encore autorisée dans les règles (voir README)." : "L'envoi a échoué : " + (e && e.message || "inconnu"), "err");
       btn.disabled = false; return;
@@ -564,7 +564,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     if(!a && st2 === "en_cours") body.append(el("div",{class:"status busy"}, "Claude analyse cette idée… (15 à 60 secondes)"));
     else if(!a && st2 === "en_attente") body.append(el("div",{class:"status busy"}, "Analyse en attente…"));
     else if(!a && st2 === "erreur") body.append(el("div",{class:"note warn"}, el("strong",null,"L'analyse n'a pas abouti"), el("span",null, i.analyseErreur || ""), " ", el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Relancer l'analyse")));
-    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"Pas encore d'analyse"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse de Claude") : el("span",null,"Ajoute la clé Claude (bouton ⚙ Claude) pour que les idées soient analysées.")));
+    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"En attente de l'avis de Claude"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse maintenant") : el("span",null,"Claude passe toutes les heures entre 8 h et 20 h : son avis apparaîtra ici, puis le chef tranche.")));
     if(a){
       const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
       body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null, el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
