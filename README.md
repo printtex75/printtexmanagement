@@ -78,6 +78,13 @@ La page **Boîte à idées** (lien dans la navigation de l'application, ou direc
    ```
 3. **Clé Claude** : chacun crée sa clé sur console.anthropic.com et la colle dans la page via le bouton « ⚙ Claude ». La clé reste dans le navigateur de l'appareil (localStorage), elle n'est jamais envoyée à Firebase ni mise dans le code. Sans clé, on peut toujours « Envoyer sans analyse ».
 
+### Le circuit automatique : l'issue, l'analyse de Claude, l'OK du chef
+
+1. **L'associé (ou le chef) ouvre une issue** avec le modèle « 💡 Idée » : ce que ça change, ce que ça arrange, dans quel but. C'est libre, à tout moment, même depuis l'application GitHub sur téléphone.
+2. **Claude passe toutes les deux heures** (8 h à 20 h, heure de Paris) depuis la session Claude Code du chef. Pour chaque nouvelle issue « idée », il lit le code concerné, poste son analyse en commentaire (verdict, pourquoi le faire, pourquoi ne pas le faire, répercussions, ce qu'il faudrait pour que ça marche, taille du chantier, idées ou fonctions déjà existantes) et pose l'étiquette « analysé ».
+3. **Le chef reçoit un mini résumé** dans sa session Claude et répond « OK #n » ou « Non #n ». Tant qu'il n'a pas dit OK, rien n'est lancé.
+4. **Sur OK**, Claude pose les étiquettes « validé » et « lancé », ouvre une session de travail sur la branche `idee-n` et propose une pull request vers `main` qui ferme l'issue. Le chef relit et fusionne. Sur « Non », l'issue est fermée avec l'étiquette « refusé ».
+
 ### Les idées : libres à l'entrée, tranchées à deux
 
 - **Toute idée passe d'abord par la boîte à idées** (`idees.html`). Ouvrir une idée est libre, pour les deux, à tout moment. Les issues GitHub (modèle « 💡 Idée ») servent au moment de coder : « Copier pour GitHub » depuis la boîte.

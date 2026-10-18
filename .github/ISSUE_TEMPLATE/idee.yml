@@ -1,33 +1,34 @@
 name: 💡 Idée
-description: Proposer une nouvelle idée ou amélioration pour Printtex
+description: Proposer une idée pour l'outil Printtex. Claude l'analyse tout seul et le chef décide.
 title: "[Idée] "
 labels: ["idée", "à discuter"]
 body:
   - type: markdown
     attributes:
       value: |
-        Merci ! Avant de continuer, jette un œil à la **liste des issues ouvertes** : si une idée proche existe déjà, commente-la plutôt que d'en ouvrir une nouvelle.
-  - type: checkboxes
-    id: doublon
-    attributes:
-      label: Vérification
-      options:
-        - label: J'ai cherché dans les issues existantes et je n'ai rien trouvé de similaire
-          required: true
+        Décris l'idée en trois questions. Claude passe toutes les deux heures : il poste son analyse en commentaire (pour, contre, répercussions, ce qu'il faudrait pour que ça marche, avis) et prévient le chef, qui décide de lancer ou non. Avant de continuer, jette un œil aux **issues ouvertes** : si une idée proche existe, commente-la plutôt.
   - type: textarea
-    id: probleme
+    id: change
     attributes:
-      label: Le problème ou le besoin
-      description: Qu'est-ce qui manque ou qui gêne aujourd'hui ? Dans quelle situation ?
-      placeholder: "Ex : quand une commande est prête depuis plus de 5 jours, on oublie de relancer le client."
+      label: Qu'est-ce que ça change concrètement ?
+      description: Ce que l'outil ferait de nouveau ou autrement.
+      placeholder: "Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."
     validations:
       required: true
   - type: textarea
-    id: solution
+    id: probleme
     attributes:
-      label: La solution envisagée
-      description: Comment tu imagines la chose. Pas besoin d'être précis, c'est le point de départ de la discussion.
-      placeholder: "Ex : une pastille rouge sur la carte de commande et une liste « à relancer » en haut de l'onglet."
+      label: Qu'est-ce que ça arrange ?
+      description: Le problème d'aujourd'hui, dans quelle situation.
+      placeholder: "Ex : on oublie de relancer, les commandes restent des semaines sur l'étagère."
+    validations:
+      required: true
+  - type: textarea
+    id: but
+    attributes:
+      label: Dans quel but ?
+      description: Le résultat attendu.
+      placeholder: "Ex : encaisser plus vite et libérer la place dans l'atelier."
     validations:
       required: true
   - type: dropdown
