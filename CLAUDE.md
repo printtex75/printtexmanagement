@@ -11,5 +11,5 @@ Application de gestion d'un atelier de personnalisation textile. Lis le README a
 
 ## Branches et validation
 - `main` déploie le site en ligne immédiatement (GitHub Pages). On n'y pousse jamais directement : une branche par sujet, une pull request, relecture avant fusion.
-- Une idée issue de la boîte à idées (issue GitHub étiquetée « idée ») se code sur la branche `idee-<numéro>` et sa PR référence l'issue avec `Closes #<numéro>`.
-- Reste dans le périmètre de l'issue et de son analyse : pas de refonte, pas de dépendance ajoutée.
+- Une idée de la boîte à idées (page `idees.html`, collection Firestore `idees`) se code sur la branche `idee-<id court>` et sa PR s'intitule « Idée : <titre> ». Le chef seul autorise un lancement, depuis sa session Claude Code. Le script `scripts/idees-firestore.mjs` lit et met à jour les idées (variable `FIREBASE_SERVICE_ACCOUNT`).
+- Reste dans le périmètre de l'idée et de son analyse : pas de refonte, pas de dépendance ajoutée.
