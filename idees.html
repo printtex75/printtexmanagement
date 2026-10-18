@@ -11,123 +11,164 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* Même langage visuel que l'artefact « Boîte à idées Printtex » : fond frais, cartes blanches, accent bleu, mode sombre automatique. */
   :root{
-    --canvas:#EFE7D8; --canvas-2:#F7F2E8; --ink:#23324A; --ink-2:#33455F;
-    --thread:#B23B34; --thread-2:#9A2F29; --kraft:#C9A66B; --charcoal:#2A2620;
-    --green:#4B7A5C; --green-bg:#E4EEE6; --amber:#B5791E; --amber-bg:#F5E9D3;
-    --blue:#2F5BA8; --blue-bg:#E1E8F5; --violet:#6B4FA3; --violet-bg:#EAE3F5;
-    --red-bg:#F3DEDB; --grey-bg:#E8E3D9; --line:#D8CBAE; --line-strong:#B9A87F;
-    --shadow: 0 2px 0 rgba(42,38,32,0.06);
+    /* Palette et polices de Printtex Management (index.html), mise en page héritée de l'artefact. */
+    --canvas:#EFE7D8; --canvas-2:#F7F2E8; --ink:#23324A; --ink-2:#33455F; --thread:#B23B34; --thread-2:#9A2F29; --kraft:#C9A66B; --charcoal:#2A2620;
+    --bg:var(--canvas); --surface:var(--canvas-2); --fg:var(--charcoal); --muted:var(--ink-2); --line:#D8CBAE; --line-strong:#B9A87F;
+    --accent:var(--ink); --accent-ink:#FFFFFF; --accent-soft:#E3E7EE;
+    --ok:#4B7A5C; --ok-soft:#E4EEE6; --warn:#B5791E; --warn-soft:#F5E9D3; --crit:var(--thread-2); --crit-soft:#F3DEDB;
+    --info:#2F5BA8; --info-soft:#E1E8F5; --done:#6B4FA3; --done-soft:#EAE3F5; --off:var(--ink-2); --off-soft:#E8E3D9;
+    --display:'Oswald',sans-serif; --body:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
+    --radius:12px; --shadow:0 2px 0 rgba(42,38,32,0.06),0 10px 24px -18px rgba(42,38,32,0.35);
   }
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--canvas);color:var(--charcoal);font-family:'Inter',sans-serif;min-height:100vh;font-size:14px;line-height:1.5;}
-  .wrap{max-width:1100px;margin:0 auto;padding:28px 32px 80px;}
-  @media (max-width:640px){ .wrap{padding:18px 16px 60px;} }
-  header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--charcoal);padding-bottom:18px;margin-bottom:18px;flex-wrap:wrap;gap:16px;}
-  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
-  h1{font-family:'Oswald',sans-serif;font-weight:600;font-size:30px;letter-spacing:0.5px;margin:0;text-transform:uppercase;color:var(--ink);}
-  h2{font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;margin:0;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink);}
-  .brand-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--thread);border:1px solid var(--thread);padding:2px 8px;border-radius:3px;letter-spacing:0.5px;text-transform:uppercase;}
-  .nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  .nav a,.nav button{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-2);text-decoration:none;border:1px solid var(--line-strong);padding:8px 14px;border-radius:6px;background:var(--canvas-2);cursor:pointer;}
-  .nav a:hover,.nav button:hover{color:var(--ink);border-color:var(--ink);}
-  .who{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-2);}
 
-  .panel{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:18px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;margin-bottom:20px;}
-  .sub{color:var(--ink-2);font-size:13px;margin:0;}
-  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--ink-2);margin-bottom:5px;font-weight:600;}
-  label small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-2);}
-  input[type=text],input[type=email],input[type=password],textarea,select{width:100%;font:inherit;color:var(--charcoal);background:#fff;border:1px solid var(--line-strong);border-radius:6px;padding:9px 11px;}
-  textarea{resize:vertical;min-height:64px;}
-  input:focus,textarea:focus,select:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink);}
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;min-height:100vh;}
+  .wrap{max-width:900px;margin:0 auto;padding:20px 24px 80px;}
+  @media (max-width:640px){ .wrap{padding:14px 16px 60px;} }
+  h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;}
+  h1{font-size:26px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--ink);}
+  h1 em{font-style:normal;color:var(--thread);}
+  h2{font-size:18px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink);}
+  p{margin:0;}
+  button,input,select,textarea{font:inherit;color:inherit;}
+  button{cursor:pointer;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  code{font-family:var(--mono);font-size:12px;}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+
+  header{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-bottom:14px;margin-bottom:18px;border-bottom:2px solid var(--charcoal);flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .brand-tag{font-family:var(--mono);font-size:11px;color:var(--thread);border:1px solid var(--thread);padding:2px 8px;border-radius:3px;letter-spacing:0.5px;text-transform:uppercase;}
+  .who{font-family:var(--body);font-size:13px;font-weight:600;color:var(--fg);background:var(--accent-soft);border-radius:999px;padding:4px 12px;}
+  .who:hover{text-decoration:underline;}
+  .nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .nav a,.nav button{font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:7px 12px;border-radius:8px;background:var(--surface);}
+  .nav a:hover,.nav button:hover{color:var(--fg);border-color:var(--fg);}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:14px;margin-bottom:18px;}
+  .sub{color:var(--muted);font-size:13.5px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin-bottom:5px;}
+  label small{font-weight:400;}
+  input[type=text],input[type=email],input[type=password],textarea,select{width:100%;background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;min-width:0;}
+  textarea{resize:vertical;min-height:64px;line-height:1.5;}
+  textarea::placeholder,input::placeholder{color:var(--muted);}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
   .field{display:flex;flex-direction:column;}
   .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
   .row.end{justify-content:flex-end;}
   .grow{flex:1 1 auto;min-width:0;}
-  .btn{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;background:var(--canvas-2);color:var(--ink);border:1px solid var(--line-strong);padding:9px 16px;border-radius:6px;cursor:pointer;white-space:nowrap;}
-  .btn:hover{border-color:var(--ink);}
-  .btn-primary{background:var(--ink);color:#fff;border-color:var(--ink);}
-  .btn-primary:hover{background:var(--ink-2);}
-  .btn-ghost{background:transparent;border-color:transparent;color:var(--ink-2);}
-  .btn-ghost:hover{border-color:var(--line-strong);color:var(--ink);}
-  .btn-sm{padding:6px 10px;font-size:12px;}
-  .btn-danger{color:var(--thread-2);}
+  .btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;padding:9px 14px;font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+  .btn:hover{border-color:var(--fg);}
+  .btn-primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+  .btn-primary:hover{filter:brightness(1.08);border-color:var(--accent);}
+  .btn-ghost{border-color:transparent;background:transparent;color:var(--muted);}
+  .btn-ghost:hover{color:var(--fg);border-color:transparent;background:var(--off-soft);}
+  .btn-sm{padding:6px 10px;font-size:13px;}
+  .btn-danger{color:var(--crit);}
   .btn:disabled{opacity:.55;cursor:default;}
-  .status{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;min-height:20px;}
-  .status.busy::before{content:"";width:12px;height:12px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--ink);animation:spin .8s linear infinite;flex:none;}
-  .status.err{color:var(--thread-2);}
+  .status{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;min-height:20px;}
+  .status.busy::before{content:"";width:12px;height:12px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);animation:spin .8s linear infinite;flex:none;}
+  .status.err{color:var(--crit);}
   @keyframes spin{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion:reduce){ .status.busy::before{animation:none;} }
 
+  /* Composeur */
+  .drop{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px;display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
+  @media (max-width:640px){ .drop{padding:16px;} .go{width:100%;justify-content:center;} }
+  .drop h2{font-size:24px;font-weight:600;letter-spacing:0.4px;}
+  .drop h2 span{color:var(--thread);}
+  .drop textarea.big{font-size:17px;line-height:1.5;min-height:120px;padding:14px 16px;}
+  .drop textarea.big:focus{border-color:var(--ink);}
+  .inline{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;color:var(--muted);}
+  .inline select{width:auto;padding:6px 10px;font-size:13px;background:var(--surface);}
+  details.plus{border-top:1px dashed var(--line-strong);padding-top:10px;}
+  details.plus summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);list-style:none;display:flex;align-items:center;gap:8px;}
+  details.plus summary::-webkit-details-marker{display:none;}
+  details.plus summary::before{content:"+";font-size:18px;line-height:1;color:var(--accent);}
+  details.plus[open] summary::before{content:"–";}
+  details.plus summary:hover{color:var(--fg);}
+  details.plus .plus-body{display:flex;flex-direction:column;gap:12px;margin-top:12px;}
+  .go{font-size:15px;padding:12px 24px;border-radius:10px;background:var(--thread);border-color:var(--thread);} .go:hover{background:var(--thread-2);border-color:var(--thread-2);}
+  .how{display:flex;flex-wrap:wrap;gap:8px;}
+  .how span{font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 10px;}
+  .how b{color:var(--fg);font-weight:600;}
+
   /* Analyse */
-  .analyse{border-top:1px dashed var(--line-strong);padding-top:16px;display:flex;flex-direction:column;gap:14px;}
-  .verdict{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:8px;border:1px solid var(--line);background:#fff;}
-  .verdict .v{font-family:'Oswald',sans-serif;font-size:22px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:6px 12px;border-radius:6px;white-space:nowrap;}
-  .verdict.oui .v{background:var(--green-bg);color:var(--green);} .verdict.oui_mais .v{background:var(--amber-bg);color:var(--amber);}
-  .verdict.plus_tard .v{background:var(--blue-bg);color:var(--blue);} .verdict.non .v{background:var(--red-bg);color:var(--thread-2);}
-  .verdict p{margin:0;}
-  .verdict .eff{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);margin-top:6px;}
-  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
-  .box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0;}
-  .box h3{font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;color:var(--ink-2);font-weight:600;}
-  .box.pour h3{color:var(--green);} .box.contre h3{color:var(--thread-2);} .box.rep h3{color:var(--amber);} .box.cond h3{color:var(--blue);}
+  .verdict{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg);}
+  @media (max-width:480px){ .verdict{grid-template-columns:1fr;} }
+  .verdict .v{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;padding:6px 12px;border-radius:999px;white-space:nowrap;}
+  .verdict.oui .v{background:var(--ok-soft);color:var(--ok);} .verdict.oui_mais .v{background:var(--warn-soft);color:var(--warn);}
+  .verdict.plus_tard .v{background:var(--info-soft);color:var(--info);} .verdict.non .v{background:var(--crit-soft);color:var(--crit);}
+  .verdict .eff{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+  .box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;}
+  .box h3{font-family:var(--display);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--muted);font-weight:700;}
+  .box.pc h3{color:var(--ink);} .box.mieux h3{color:var(--ok);} .box.cond h3{color:var(--info);}
+  .box ul.pc{list-style:none;padding-left:0;}
+  .box ul.pc li{padding-left:20px;position:relative;}
+  .box ul.pc li::before{position:absolute;left:0;top:0;font-family:var(--mono);font-weight:600;}
+  .box ul.pc li.plus::before{content:"+";color:var(--ok);} .box ul.pc li.moins::before{content:"–";color:var(--crit);}
+  .vrai{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-strong);}
+  .vrai p{margin:0;}
   .box ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;}
   .box li{overflow-wrap:anywhere;}
-  .note{border-radius:8px;padding:10px 12px;font-size:13px;border-left:3px solid var(--line-strong);background:#fff;}
-  .note.warn{border-left-color:var(--amber);background:var(--amber-bg);}
-  .note.info{border-left-color:var(--blue);background:var(--blue-bg);}
+  .note{border-radius:8px;padding:10px 12px;font-size:13.5px;border-left:3px solid var(--line-strong);background:var(--bg);}
+  .note.warn{border-left-color:var(--warn);background:var(--warn-soft);}
+  .note.info{border-left-color:var(--info);background:var(--info-soft);}
   .note strong{display:block;margin-bottom:4px;}
   .note ul{margin:0;padding-left:18px;}
-  .link{background:none;border:0;padding:0;font:inherit;color:var(--blue);text-decoration:underline;cursor:pointer;}
+  .link{background:none;border:0;padding:0;font:inherit;color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
 
   /* Liste */
-  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 12px;}
-  .tab{font-family:'Oswald',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;border:1px solid var(--line);background:var(--canvas-2);border-radius:999px;padding:5px 12px;cursor:pointer;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center;}
-  .tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
-  .tab .n{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.8;}
+  .list-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .list-head .n{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;}
+  .tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-family:var(--display);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;}
+  .tab[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg);}
+  .tab .n{font-family:var(--mono);font-size:11px;opacity:.75;}
   .list{display:flex;flex-direction:column;gap:10px;}
-  .empty{color:var(--ink-2);font-size:13px;padding:18px;border:1px dashed var(--line-strong);border-radius:8px;text-align:center;}
-  .card{background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;}
-  .card.target{outline:2px solid var(--ink);}
-  .card-head{display:grid;grid-template-columns:4px 1fr auto;gap:12px;padding:12px 14px;width:100%;background:none;border:0;text-align:left;cursor:pointer;font:inherit;color:inherit;}
-  .card-head:hover{background:#fff;}
-  .stripe{border-radius:2px;background:var(--line-strong);}
-  .card-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;color:var(--ink);}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
-  .chip{font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;letter-spacing:0.3px;}
-  .chip.warn{background:var(--amber-bg);color:var(--amber);} .chip.ok{background:var(--green-bg);color:var(--green);}
-  .chip.info{background:var(--blue-bg);color:var(--blue);} .chip.done{background:var(--violet-bg);color:var(--violet);}
-  .chip.off{background:var(--grey-bg);color:var(--ink-2);} .chip.crit{background:var(--red-bg);color:var(--thread-2);}
-  .chip.plain{background:var(--grey-bg);color:var(--ink-2);font-weight:500;}
-  .meta{font-size:12px;color:var(--ink-2);margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 12px;}
-  .meta time{font-family:'JetBrains Mono',monospace;font-size:11px;}
-  .caret{color:var(--ink-2);align-self:center;transition:transform .15s;}
+  .empty{color:var(--muted);font-size:14px;padding:26px 18px;border:1px dashed var(--line-strong);border-radius:var(--radius);text-align:center;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+  .card.target{outline:2px solid var(--accent);}
+  .card-head{display:grid;grid-template-columns:4px 1fr auto;gap:12px;padding:12px 14px;width:100%;background:none;border:0;text-align:left;font:inherit;color:inherit;}
+  .card-head:hover{background:var(--bg);}
+  .stripe{border-radius:2px;background:var(--line-strong);margin:2px 0;}
+  .card-title{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.3;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .chip{font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;line-height:1.5;white-space:nowrap;}
+  .chip.warn{background:var(--warn-soft);color:var(--warn);} .chip.ok{background:var(--ok-soft);color:var(--ok);}
+  .chip.info{background:var(--info-soft);color:var(--info);} .chip.done{background:var(--done-soft);color:var(--done);}
+  .chip.off{background:var(--off-soft);color:var(--off);} .chip.crit{background:var(--crit-soft);color:var(--crit);}
+  .chip.plain{background:var(--off-soft);color:var(--muted);font-weight:500;}
+  .meta{font-size:13px;color:var(--muted);margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 12px;}
+  .meta time{font-family:var(--mono);font-size:12px;}
+  .caret{color:var(--muted);align-self:center;transition:transform .15s;}
   .card[open] .caret{transform:rotate(180deg);}
   .card-body{border-top:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:14px;}
   .block p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;}
-  .accords{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;}
+  .accords{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--bg);border-radius:8px;padding:10px 12px;font-size:14px;}
   .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
-  .actions select{width:auto;padding:6px 10px;font-size:13px;}
+  .actions select{width:auto;padding:6px 10px;font-size:13px;background:var(--surface);}
   .comments{display:flex;flex-direction:column;gap:8px;}
-  .comment{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
-  .comment b{color:var(--ink);} .comment time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);margin-left:6px;}
+  .comment{font-size:14px;background:var(--bg);border-radius:8px;padding:8px 10px;}
+  .comment b{color:var(--fg);} .comment time{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:6px;}
   .comment p{margin:4px 0 0;overflow-wrap:anywhere;}
   .cform{display:flex;gap:8px;} .cform input{flex:1;}
 
-  /* Auth & réglages */
-  #authGate{display:none;max-width:420px;margin:60px auto;background:var(--canvas-2);border:1px solid var(--line);border-radius:10px;padding:28px;}
-  #authGate h1{font-size:22px;margin-bottom:6px;}
-  .auth-error{color:var(--thread-2);font-size:12px;margin-top:10px;min-height:16px;}
-  .divider{display:flex;align-items:center;gap:10px;color:var(--ink-2);font-size:12px;margin:12px 0;} .divider::before,.divider::after{content:"";flex:1;border-top:1px solid var(--line);}
+  /* Connexion & réglages */
+  #authGate{display:none;max-width:420px;margin:60px auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;}
+  #authGate h1{margin-bottom:6px;}
+  .auth-error{color:var(--crit);font-size:12px;margin-top:10px;min-height:16px;}
+  .divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:12px 0;} .divider::before,.divider::after{content:"";flex:1;border-top:1px solid var(--line);}
   #appRoot{display:none;}
   #settings{display:none;}
   #settings.open{display:flex;}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--charcoal);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:calc(100% - 32px);}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:calc(100% - 32px);box-shadow:var(--shadow);}
   .toast.show{opacity:1;}
-  .foot{margin-top:18px;font-size:12px;color:var(--ink-2);}
-  code{font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .foot{margin-top:18px;font-size:12px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -150,17 +191,17 @@
 
   <div id="appRoot">
     <header>
-      <div class="brand"><h1>Boîte à idées</h1><span class="brand-tag">À deux</span><button type="button" class="who" id="who" title="Changer de prénom" style="background:none;border:0;cursor:pointer;padding:0;"></button></div>
+      <div class="brand"><h1>Boîte à <em>idées</em></h1><span class="brand-tag">Printtex · à deux</span><button type="button" class="who" id="who" title="Changer de prénom" style="border:0;cursor:pointer;"></button></div>
       <nav class="nav">
         <a href="index.html">← Suivi des commandes</a>
-        <button type="button" id="btnSettings" title="Clé Claude">⚙ Claude</button>
+        <button type="button" id="btnSettings" title="Avis de Claude : réglages">⚙</button>
         <button type="button" id="btnLogout">Déconnexion</button>
       </nav>
     </header>
 
     <section class="panel" id="prenomPanel" style="display:none;">
-      <h2>C'est qui ?</h2>
-      <p class="sub">Vous partagez le même compte, alors dis-moi ton prénom une fois : il sera mis sur tes idées et tes commentaires, et retenu sur cet appareil.</p>
+      <h2>Qui parle ?</h2>
+      <p class="sub">Vous partagez le même compte. Donne ton prénom une fois, il sera sur tes idées et tes commentaires, et retenu sur cet appareil.</p>
       <div class="row">
         <input type="text" id="prenomInput" placeholder="Ton prénom" maxlength="30" style="max-width:260px;">
         <button type="button" class="btn btn-primary" id="btnPrenom">C'est moi</button>
@@ -168,9 +209,9 @@
     </section>
 
     <section class="panel" id="settings">
-      <h2>Analyse par Claude</h2>
-      <p class="sub">Dès qu'une idée est envoyée, la page appelle l'API Claude depuis le navigateur et range l'analyse sous l'idée. Une seule clé pour les deux associés : enregistrée dans Firestore (<code>config/claude</code>), lisible uniquement par les comptes associés, jamais dans le code. Crée-la sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>, rubrique « API keys ».</p>
-      <div class="field"><label for="apiKey">Clé API Claude partagée</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
+      <h2>Avis de Claude</h2>
+      <p class="sub">Par défaut, Claude passe toutes les heures de 8 h à 20 h et écrit son avis sous chaque nouvelle idée, compris dans l'abonnement. Si un jour vous voulez l'avis dans la minute, collez ici une clé API (payante à l'usage, <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>). Elle est rangée dans Firestore, visible uniquement par vous deux.</p>
+      <div class="field"><label for="apiKey">Clé API Claude (facultatif)</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
       <div class="row end">
         <div class="status grow" id="settingsStatus"></div>
         <button type="button" class="btn btn-ghost" id="btnKeyForget">Oublier la clé</button>
@@ -178,35 +219,44 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="drop">
       <div>
-        <h2>Nouvelle idée</h2>
-        <p class="sub">Décris-la en trois questions et envoie. L'idée part tout de suite dans la liste commune, et Claude écrit son avis dessous dans la minute : ce que ça apporte, ce que ça casse, ce que ça causerait, ce qu'il faudrait pour que ça marche, et s'il faut le faire.</p>
+        <h2>Une idée ? <span>Balance.</span></h2>
+        <p class="sub">Pas besoin de bien l'écrire. Dis ce que ça changerait dans l'outil, Claude fait le tri, le chef tranche.</p>
       </div>
-      <div class="field"><label for="f-change">Qu'est-ce que ça change concrètement ? <small>· ce que l'outil ferait de nouveau ou autrement</small></label>
-        <textarea id="f-change" placeholder="Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."></textarea></div>
-      <div class="grid2">
-        <div class="field"><label for="f-probleme">Qu'est-ce que ça arrange ? <small>· le problème d'aujourd'hui</small></label>
-          <textarea id="f-probleme" placeholder="Ex : on oublie de relancer, les commandes restent des semaines sur l'étagère."></textarea></div>
-        <div class="field"><label for="f-but">Dans quel but ? <small>· le résultat attendu</small></label>
-          <textarea id="f-but" placeholder="Ex : encaisser plus vite et libérer la place dans l'atelier."></textarea></div>
+      <textarea id="f-change" class="big" placeholder="Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."></textarea>
+      <div class="inline">
+        <span>Ça touche</span><select id="f-zone" aria-label="Partie de l'application"></select>
+        <span>Urgence</span><select id="f-priorite" aria-label="Priorité"></select>
       </div>
-      <div class="grid2">
-        <div class="field"><label for="f-zone">Partie de l'application</label><select id="f-zone"></select></div>
-        <div class="field"><label for="f-priorite">Priorité selon toi</label><select id="f-priorite"></select></div>
-      </div>
-      <div class="field"><label for="f-titre">Titre <small>· facultatif, Claude en propose un sinon</small></label><input type="text" id="f-titre" maxlength="90" placeholder="Ex : Liste des commandes à relancer"></div>
-      <div class="row end">
-        <div class="status grow" id="statutEnvoi"></div>
-        <button type="button" class="btn btn-primary" id="btnEnvoyer">Envoyer dans la boîte</button>
+      <details class="plus">
+        <summary>Préciser, si tu veux</summary>
+        <div class="plus-body">
+          <div class="grid2">
+            <div class="field"><label for="f-probleme">Ça arrange quoi aujourd'hui ?</label>
+              <textarea id="f-probleme" placeholder="Ex : on oublie de relancer, les commandes restent des semaines sur l'étagère."></textarea></div>
+            <div class="field"><label for="f-but">Pour obtenir quoi ?</label>
+              <textarea id="f-but" placeholder="Ex : encaisser plus vite et libérer la place dans l'atelier."></textarea></div>
+          </div>
+          <div class="field"><label for="f-titre">Un titre, sinon Claude en trouve un</label><input type="text" id="f-titre" maxlength="90" placeholder="Ex : Liste des commandes à relancer"></div>
+        </div>
+      </details>
+      <div class="row">
+        <div class="how grow">
+          <span><b>1.</b> Tu balances</span>
+          <span><b>2.</b> Claude donne son avis sous l'idée</span>
+          <span><b>3.</b> Le chef dit go ou pas</span>
+        </div>
+        <div class="status" id="statutEnvoi"></div>
+        <button type="button" class="btn btn-primary go" id="btnEnvoyer">Dans la boîte →</button>
       </div>
     </section>
 
     <section>
-      <h2>Les idées</h2>
+      <div class="list-head"><h2>Dans la boîte</h2><span class="n" id="listCount"></span></div>
       <div class="tabs" id="tabs" role="tablist"></div>
       <div class="list" id="list"><div class="empty">Chargement…</div></div>
-      <p class="foot">Collection Firestore <code>idees</code>, séparée des commandes et des marques. Une idée passe en « Validé » quand les deux associés ont cliqué « Je suis d'accord ».</p>
+      <p class="foot">Une idée passe en « Validé » quand vous avez cliqué « Je suis d'accord » tous les deux. « Je m'en occupe » la réserve à une seule personne.</p>
     </section>
   </div>
 </div>
@@ -285,7 +335,7 @@ if(typeof firebase === 'undefined'){
   try{ S.filter = localStorage.getItem("ptx-idees-filter") || "all"; }catch(e){}
 
   for(const z of ZONES) $("f-zone").append(el("option",{value:z},z));
-  for(const k in PRIO) $("f-priorite").append(el("option",{value:k},PRIO[k].label));
+  for(const k in PRIO) $("f-priorite").append(el("option",{value:k, selected:k==="bientot"?"":null},PRIO[k].label));
 
   /* ---------- Firebase ---------- */
   try{
@@ -374,17 +424,18 @@ Idées déjà dans leur boîte (id, titre, ce que ça change, statut) :
 ${JSON.stringify(existantes)}
 
 Donne un retour franc et court, comme un associé expérimenté qui veut les aider à trancher, pas comme un consultant qui ménage tout le monde. Appuie-toi sur ce qu'un petit atelier vit vraiment : temps de saisie, erreurs, clients qui attendent, trésorerie, charge de production. Si l'idée recoupe une fonction qui existe déjà ou une idée de la boîte, dis-le clairement.
+Contrainte absolue : ne propose jamais une solution qui coûte de l'argent (service payant, abonnement, prestataire) ni qui exige un serveur. Tout doit être faisable dans leur page web et leur Firebase actuels. Si l'idée telle qu'écrite coûterait de l'argent, trouve la version gratuite qui atteint le même but, et dis-le.
 
 Réponds UNIQUEMENT avec un objet JSON de cette forme exacte, sans texte autour :
 {
  "titre": "6 mots max, ce que l'on obtient",
- "resume": "1 à 2 phrases : ce que l'idée change et pour quel résultat",
+ "probleme_reel": "1 à 2 phrases : le vrai problème derrière l'idée, ce que l'associé cherche à obtenir au fond",
  "verdict": "oui" | "oui_mais" | "plus_tard" | "non",
  "verdict_raison": "2 à 3 phrases : ton avis, pourquoi il faut le faire ou pas, et à quelle condition s'il y en a une",
- "pour": ["2 à 4 raisons concrètes de le faire"],
- "contre": ["1 à 4 raisons concrètes de ne pas le faire, ou ce qui cloche dans l'idée telle qu'elle est décrite"],
- "repercussions": ["2 à 4 répercussions concrètes si c'est mis en place : sur le quotidien de l'atelier, sur les clients ou les marques, sur les données existantes, sur le reste de l'application"],
- "conditions": ["2 à 5 choses qu'il faudrait faire ou décider pour que ça fonctionne vraiment : règles à fixer, données à saisir, cas particuliers à prévoir, habitudes à changer"],
+ "pour": ["2 à 3 raisons concrètes de le faire"],
+ "contre": ["1 à 3 raisons concrètes de ne pas le faire, ou ce qui cloche dans l'idée telle qu'elle est décrite"],
+ "mieux": ["2 à 4 façons de mieux formuler ou mieux réaliser l'idée : la version qui ne coûte rien, qui s'appuie sur ce qui existe déjà dans l'outil, et qui règle le vrai problème"],
+ "conditions": ["2 à 5 étapes concrètes pour que ça fonctionne vraiment, dans l'ordre : règles à fixer, données à saisir, cas particuliers, habitudes à changer"],
  "effort": "petit" | "moyen" | "gros",
  "questions": ["0 à 2 questions courtes si quelque chose d'important n'est pas précisé"],
  "similaires": [{"id": "id exact d'une idée de la boîte", "raison": "en quoi elle recoupe celle-ci"}]
@@ -427,7 +478,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     return json;
   }
   const copyFor = e => ({
-    no_key:"Pas de clé Claude enregistrée (bouton ⚙ Claude en haut). L'idée est bien dans la boîte, l'analyse se fera dès que la clé sera là.",
+    no_key:"Pas de clé Claude sur cette page : l'idée est bien dans la boîte, Claude passera l'analyser dans l'heure.",
     bad_key:"La clé Claude est refusée. Vérifie-la dans ⚙ Claude.",
     rate_limited:"Trop de demandes ou crédit épuisé sur ta clé Claude. Réessaie dans un moment.",
     bad_request:"Requête refusée par l'API : " + (e && e.message || "détail inconnu"),
@@ -440,8 +491,8 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
   function listUl(items){ return el("ul", null, (items || []).map(x => el("li", null, String(x)))); }
   function normaliserAnalyse(a, selfId){
     return {
-      titre:String(a.titre||""), resume:String(a.resume||""), verdict:VERDICTS[a.verdict] ? a.verdict : "oui_mais", verdict_raison:String(a.verdict_raison||""),
-      pour:(a.pour||[]).map(String), contre:(a.contre||[]).map(String), repercussions:(a.repercussions||[]).map(String),
+      titre:String(a.titre||""), probleme_reel:String(a.probleme_reel||a.resume||""), verdict:VERDICTS[a.verdict] ? a.verdict : "oui_mais", verdict_raison:String(a.verdict_raison||""),
+      pour:(a.pour||[]).map(String), contre:(a.contre||[]).map(String), mieux:(a.mieux||a.repercussions||[]).map(String),
       conditions:(a.conditions||[]).map(String), effort:EFFORTS[a.effort] ? a.effort : null, questions:(a.questions||[]).map(String),
       similaires:(a.similaires||[]).filter(x => x && x.id !== selfId && S.ideas.some(i => i.id === x.id)).map(x => ({id:String(x.id), raison:String(x.raison||"")})),
       date:new Date().toISOString()
@@ -470,7 +521,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
   /* ---------- Envoi ---------- */
   async function envoyer(){
     const f = lireFormulaire();
-    if(!f.change){ setStatus("statutEnvoi","Dis d'abord ce que ça change concrètement.","err"); $("f-change").focus(); return; }
+    if(!f.change){ setStatus("statutEnvoi","Écris ton idée d'abord.","err"); $("f-change").focus(); return; }
     const now = new Date().toISOString();
     const doc = {
       titre:f.titre || f.change.slice(0, 70), titreManuel:!!f.titre, change:f.change, probleme:f.probleme, but:f.but, zone:f.zone, priorite:f.priorite,
@@ -486,7 +537,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
       setStatus("statutEnvoi","");
       S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){}
       S.expanded.add(ref.id);
-      toast(getKey() ? "Idée envoyée, Claude l'analyse…" : "Idée envoyée (sans analyse : pas de clé Claude)");
+      toast(getKey() ? "Dans la boîte. Claude regarde…" : "Dans la boîte. Claude passe dans l'heure.");
     }catch(e){
       setStatus("statutEnvoi", e && e.code === "permission-denied" ? "Firestore refuse l'écriture : la collection idees n'est pas encore autorisée dans les règles (voir README)." : "L'envoi a échoué : " + (e && e.message || "inconnu"), "err");
       btn.disabled = false; return;
@@ -521,9 +572,9 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     const a = i.analyse;
     let md = `## ${i.titre}\n\n**Proposé par** ${i.auteurNom||"un associé"} le ${fmtDate(i.createdAt)}\n**Partie** : ${i.zone}  ·  **Priorité** : ${PRIO[i.priorite] ? PRIO[i.priorite].label : i.priorite}  ·  **Statut** : ${STATUTS[i.statut] ? STATUTS[i.statut].label : i.statut}\n\n### Ce que ça change\n${i.change||"—"}\n\n### Ce que ça arrange\n${i.probleme||"—"}\n\n### Dans quel but\n${i.but||"—"}\n`;
     if(a){
-      md += `\n### Avis de Claude : ${VERDICTS[a.verdict]||""}\n${a.verdict_raison||""}\n`;
+      md += `\n### Avis de Claude : ${VERDICTS[a.verdict]||""}\n${a.verdict_raison||""}\n` + ((a.probleme_reel||a.resume) ? `\n**Le vrai problème** : ${a.probleme_reel||a.resume}\n` : "");
       const sec = (t, arr) => (arr && arr.length) ? `\n**${t}**\n${arr.map(x => "- " + x).join("\n")}\n` : "";
-      md += sec("Pour", a.pour) + sec("Contre", a.contre) + sec("Répercussions", a.repercussions) + sec("Pour que ça marche", a.conditions);
+      md += sec("Pour", a.pour) + sec("Contre", a.contre) + sec("Comment le faire mieux", (a.mieux&&a.mieux.length)?a.mieux:a.repercussions) + sec("Pour que ça marche vraiment", a.conditions);
     }
     return md;
   }
@@ -558,20 +609,23 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     if(!open) return c;
 
     const body = el("div",{class:"card-body"});
-    const block = (t, txt) => txt ? el("div",{class:"block"}, el("label",null,t), el("p",null,txt)) : null;
+    const block = (t, txt) => txt ? el("div",{class:"block"}, el("span",{class:"eyebrow"},t), el("p",null,txt)) : null;
     body.append(el("div",{class:"cols"}, block("Ce que ça change", i.change), block("Ce que ça arrange", i.probleme), block("Dans quel but", i.but)));
     const st2 = i.analyseStatut || (a ? "ok" : "sans_cle");
     if(!a && st2 === "en_cours") body.append(el("div",{class:"status busy"}, "Claude analyse cette idée… (15 à 60 secondes)"));
-    else if(!a && st2 === "en_attente") body.append(el("div",{class:"status busy"}, "Analyse en attente…"));
+    else if(!a && st2 === "en_attente") body.append(el("div",{class:"status busy"}, "Claude va regarder…"));
     else if(!a && st2 === "erreur") body.append(el("div",{class:"note warn"}, el("strong",null,"L'analyse n'a pas abouti"), el("span",null, i.analyseErreur || ""), " ", el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Relancer l'analyse")));
-    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"Pas encore d'analyse"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse de Claude") : el("span",null,"Ajoute la clé Claude (bouton ⚙ Claude) pour que les idées soient analysées.")));
+    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"En attente de l'avis de Claude"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse maintenant") : el("span",null,"Claude passe toutes les heures entre 8 h et 20 h. Son avis s'affichera ici, puis le chef tranche.")));
     if(a){
       const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
-      body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null, el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
+      const vrai = a.probleme_reel || a.resume;
+      body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""),
+        vrai ? el("div",{class:"vrai"}, el("span",{class:"eyebrow"},"Le vrai problème"), el("p",null,vrai)) : null,
+        el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
+      const pc = el("ul",{class:"pc"}, (a.pour||[]).map(x => el("li",{class:"plus"},String(x))), (a.contre||[]).map(x => el("li",{class:"moins"},String(x))));
       body.append(el("div",{class:"cols"},
-        el("div",{class:"box pour"}, el("h3",null,"Pourquoi le faire"), listUl(a.pour)),
-        el("div",{class:"box contre"}, el("h3",null,"Pourquoi ne pas le faire"), listUl(a.contre)),
-        el("div",{class:"box rep"}, el("h3",null,"Ce que ça causerait"), listUl(a.repercussions)),
+        el("div",{class:"box pc"}, el("h3",null,"Pour et contre"), pc),
+        el("div",{class:"box mieux"}, el("h3",null,"Comment le faire mieux"), listUl(a.mieux && a.mieux.length ? a.mieux : a.repercussions)),
         el("div",{class:"box cond"}, el("h3",null,"Pour que ça marche vraiment"), listUl(a.conditions))));
       if((a.questions||[]).length) body.append(el("div",{class:"note info"}, el("strong",null,"À préciser"), listUl(a.questions)));
       const sims = (a.similaires||[]).map(s => ({...s, idea:S.ideas.find(x => x.id === s.id)})).filter(s => s.idea);
@@ -598,7 +652,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     actions.append(del);
     body.append(actions);
 
-    const com = el("div",{class:"comments"}, el("label",null,"Discussion"));
+    const com = el("div",{class:"comments"}, el("span",{class:"eyebrow"},"Discussion"));
     for(const cm of (i.commentaires||[])) com.append(el("div",{class:"comment"}, el("div",null, el("b",null, cm.nom || "quelqu'un"), el("time",{datetime:cm.date}, fmtDate(cm.date))), el("p",null, cm.texte)));
     const inp = el("input",{type:"text",placeholder:"Répondre, préciser, objecter…",maxlength:"600"});
     const send = async () => { const t = inp.value.trim(); if(!t) return; inp.value = ""; await update(i.id, {commentaires:[...(i.commentaires||[]), {uid:me, nom:nomDe(S.me), texte:t, date:new Date().toISOString()}]}); };
@@ -612,7 +666,8 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     renderTabs();
     const list = $("list"); list.innerHTML = "";
     const shown = S.ideas.filter(i => S.filter === "all" || i.statut === S.filter);
-    if(!shown.length){ list.append(el("div",{class:"empty"}, S.ideas.length ? "Aucune idée dans cette catégorie." : "Rien pour l'instant. Écris la première idée ci-dessus.")); return; }
+    $("listCount").textContent = S.ideas.length ? S.ideas.length + (S.ideas.length > 1 ? " idées" : " idée") : "";
+    if(!shown.length){ list.append(el("div",{class:"empty"}, S.ideas.length ? "Rien dans cette catégorie." : "La boîte est vide. La première idée est pour toi.")); return; }
     for(const i of shown) list.append(card(i));
     if(S.target){ const t = S.target; setTimeout(()=>{ if(S.target === t) S.target = null; const c = $("idea-"+t); if(c) c.classList.remove("target"); }, 2500); }
   }

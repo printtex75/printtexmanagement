@@ -9,6 +9,7 @@
 //
 // Usage :
 //   node scripts/idees-firestore.mjs list                 # toutes les idées (JSON)
+//   node scripts/idees-firestore.mjs a_analyser           # sans analyse (à analyser par la session du chef)
 //   node scripts/idees-firestore.mjs nouvelles            # analysées, pas encore résumées au chef
 //   node scripts/idees-firestore.mjs get <id>
 //   node scripts/idees-firestore.mjs set <id> '<json>'    # fusionne les champs donnés dans le document
@@ -107,6 +108,7 @@ try {
   const token = await accessToken();
   switch (cmd) {
     case "list": print(await listAll(token)); break;
+    case "a_analyser": print((await listAll(token)).filter((i) => !i.analyse && i.statut !== "refuse")); break;
     case "nouvelles": print((await listAll(token)).filter((i) => i.analyse && !i.resumeChef)); break;
     case "get": print(await getOne(token, id)); break;
     case "set": print(await merge(token, id, { ...JSON.parse(arg), updatedAt: now() })); break;
