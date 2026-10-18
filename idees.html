@@ -127,6 +127,31 @@
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--charcoal);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:calc(100% - 32px);}
   .toast.show{opacity:1;}
   .foot{margin-top:18px;font-size:12px;color:var(--ink-2);}
+
+  /* Composeur « boîte à idées » */
+  .drop{background:var(--canvas-2);border:2px solid var(--charcoal);border-radius:14px;padding:22px 24px;box-shadow:4px 4px 0 var(--charcoal);display:flex;flex-direction:column;gap:14px;margin-bottom:26px;}
+  @media (max-width:640px){ .drop{padding:16px;box-shadow:3px 3px 0 var(--charcoal);} .go{width:100%;justify-content:center;text-align:center;} }
+  .drop h2{font-size:26px;letter-spacing:0.3px;}
+  .drop h2 span{color:var(--thread);}
+  .drop .sub{font-size:14px;}
+  .drop textarea.big{font-size:17px;line-height:1.5;min-height:120px;padding:14px 16px;border-width:2px;border-color:var(--line-strong);background:#fff;}
+  .drop textarea.big:focus{border-color:var(--ink);}
+  .inline{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;color:var(--ink-2);}
+  .inline select{width:auto;padding:6px 10px;font-size:13px;}
+  details.plus{border-top:1px dashed var(--line-strong);padding-top:10px;}
+  details.plus summary{cursor:pointer;font-family:'Oswald',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-2);list-style:none;display:flex;align-items:center;gap:8px;}
+  details.plus summary::-webkit-details-marker{display:none;}
+  details.plus summary::before{content:"+";font-size:18px;line-height:1;color:var(--thread);}
+  details.plus[open] summary::before{content:"–";}
+  details.plus summary:hover{color:var(--ink);}
+  details.plus .plus-body{display:flex;flex-direction:column;gap:12px;margin-top:12px;}
+  .go{font-size:16px;padding:12px 26px;background:var(--thread);border-color:var(--thread);color:#fff;}
+  .go:hover{background:var(--thread-2);}
+  .how{display:flex;flex-wrap:wrap;gap:8px;}
+  .how span{font-size:12px;color:var(--ink-2);background:var(--canvas);border:1px solid var(--line);border-radius:999px;padding:4px 10px;}
+  .how b{color:var(--ink);font-weight:600;}
+  .list-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .list-head .n{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-2);}
   code{font-family:'JetBrains Mono',monospace;font-size:12px;}
 </style>
 </head>
@@ -153,14 +178,14 @@
       <div class="brand"><h1>Boîte à idées</h1><span class="brand-tag">À deux</span><button type="button" class="who" id="who" title="Changer de prénom" style="background:none;border:0;cursor:pointer;padding:0;"></button></div>
       <nav class="nav">
         <a href="index.html">← Suivi des commandes</a>
-        <button type="button" id="btnSettings" title="Clé Claude">⚙ Claude</button>
+        <button type="button" id="btnSettings" title="Avis de Claude : réglages">⚙</button>
         <button type="button" id="btnLogout">Déconnexion</button>
       </nav>
     </header>
 
     <section class="panel" id="prenomPanel" style="display:none;">
-      <h2>C'est qui ?</h2>
-      <p class="sub">Vous partagez le même compte, alors dis-moi ton prénom une fois : il sera mis sur tes idées et tes commentaires, et retenu sur cet appareil.</p>
+      <h2>Qui parle ?</h2>
+      <p class="sub">Vous partagez le même compte. Donne ton prénom une fois, il sera sur tes idées et tes commentaires, et retenu sur cet appareil.</p>
       <div class="row">
         <input type="text" id="prenomInput" placeholder="Ton prénom" maxlength="30" style="max-width:260px;">
         <button type="button" class="btn btn-primary" id="btnPrenom">C'est moi</button>
@@ -168,9 +193,9 @@
     </section>
 
     <section class="panel" id="settings">
-      <h2>Analyse par Claude</h2>
-      <p class="sub">Sans clé, Claude passe toutes les heures (8 h à 20 h) depuis la session du chef et écrit son avis sous chaque nouvelle idée : rien à payer en plus de l'abonnement. Facultatif : avec une clé API (payante à l'usage, <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>), l'avis arrive dans la minute. La clé est rangée dans Firestore (<code>config/claude</code>), lisible uniquement par les comptes associés.</p>
-      <div class="field"><label for="apiKey">Clé API Claude partagée</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
+      <h2>Avis de Claude</h2>
+      <p class="sub">Par défaut, Claude passe toutes les heures de 8 h à 20 h et écrit son avis sous chaque nouvelle idée, compris dans l'abonnement. Si un jour vous voulez l'avis dans la minute, collez ici une clé API (payante à l'usage, <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>). Elle est rangée dans Firestore, visible uniquement par vous deux.</p>
+      <div class="field"><label for="apiKey">Clé API Claude (facultatif)</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
       <div class="row end">
         <div class="status grow" id="settingsStatus"></div>
         <button type="button" class="btn btn-ghost" id="btnKeyForget">Oublier la clé</button>
@@ -178,35 +203,44 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="drop">
       <div>
-        <h2>Nouvelle idée</h2>
-        <p class="sub">Décris-la en trois questions et envoie. L'idée part tout de suite dans la liste commune, et Claude écrit son avis dessous au passage suivant (toutes les heures, 8 h à 20 h) : ce que ça apporte, ce que ça casse, ce que ça causerait, ce qu'il faudrait pour que ça marche, et s'il faut le faire. Puis le chef décide.</p>
+        <h2>Une idée ? <span>Balance.</span></h2>
+        <p class="sub">Pas besoin de bien l'écrire. Dis ce que ça changerait dans l'outil, Claude fait le tri, le chef tranche.</p>
       </div>
-      <div class="field"><label for="f-change">Qu'est-ce que ça change concrètement ? <small>· ce que l'outil ferait de nouveau ou autrement</small></label>
-        <textarea id="f-change" placeholder="Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."></textarea></div>
-      <div class="grid2">
-        <div class="field"><label for="f-probleme">Qu'est-ce que ça arrange ? <small>· le problème d'aujourd'hui</small></label>
-          <textarea id="f-probleme" placeholder="Ex : on oublie de relancer, les commandes restent des semaines sur l'étagère."></textarea></div>
-        <div class="field"><label for="f-but">Dans quel but ? <small>· le résultat attendu</small></label>
-          <textarea id="f-but" placeholder="Ex : encaisser plus vite et libérer la place dans l'atelier."></textarea></div>
+      <textarea id="f-change" class="big" placeholder="Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."></textarea>
+      <div class="inline">
+        <span>Ça touche</span><select id="f-zone" aria-label="Partie de l'application"></select>
+        <span>Urgence</span><select id="f-priorite" aria-label="Priorité"></select>
       </div>
-      <div class="grid2">
-        <div class="field"><label for="f-zone">Partie de l'application</label><select id="f-zone"></select></div>
-        <div class="field"><label for="f-priorite">Priorité selon toi</label><select id="f-priorite"></select></div>
-      </div>
-      <div class="field"><label for="f-titre">Titre <small>· facultatif, Claude en propose un sinon</small></label><input type="text" id="f-titre" maxlength="90" placeholder="Ex : Liste des commandes à relancer"></div>
-      <div class="row end">
-        <div class="status grow" id="statutEnvoi"></div>
-        <button type="button" class="btn btn-primary" id="btnEnvoyer">Envoyer dans la boîte</button>
+      <details class="plus">
+        <summary>Préciser, si tu veux</summary>
+        <div class="plus-body">
+          <div class="grid2">
+            <div class="field"><label for="f-probleme">Ça arrange quoi aujourd'hui ?</label>
+              <textarea id="f-probleme" placeholder="Ex : on oublie de relancer, les commandes restent des semaines sur l'étagère."></textarea></div>
+            <div class="field"><label for="f-but">Pour obtenir quoi ?</label>
+              <textarea id="f-but" placeholder="Ex : encaisser plus vite et libérer la place dans l'atelier."></textarea></div>
+          </div>
+          <div class="field"><label for="f-titre">Un titre, sinon Claude en trouve un</label><input type="text" id="f-titre" maxlength="90" placeholder="Ex : Liste des commandes à relancer"></div>
+        </div>
+      </details>
+      <div class="row">
+        <div class="how grow">
+          <span><b>1.</b> Tu balances</span>
+          <span><b>2.</b> Claude donne son avis sous l'idée</span>
+          <span><b>3.</b> Le chef dit go ou pas</span>
+        </div>
+        <div class="status" id="statutEnvoi"></div>
+        <button type="button" class="btn btn-primary go" id="btnEnvoyer">Dans la boîte →</button>
       </div>
     </section>
 
     <section>
-      <h2>Les idées</h2>
+      <div class="list-head"><h2>Dans la boîte</h2><span class="n" id="listCount"></span></div>
       <div class="tabs" id="tabs" role="tablist"></div>
       <div class="list" id="list"><div class="empty">Chargement…</div></div>
-      <p class="foot">Collection Firestore <code>idees</code>, séparée des commandes et des marques. Une idée passe en « Validé » quand les deux associés ont cliqué « Je suis d'accord ».</p>
+      <p class="foot">Une idée passe en « Validé » quand vous avez cliqué « Je suis d'accord » tous les deux. « Je m'en occupe » la réserve à une seule personne.</p>
     </section>
   </div>
 </div>
@@ -285,7 +319,7 @@ if(typeof firebase === 'undefined'){
   try{ S.filter = localStorage.getItem("ptx-idees-filter") || "all"; }catch(e){}
 
   for(const z of ZONES) $("f-zone").append(el("option",{value:z},z));
-  for(const k in PRIO) $("f-priorite").append(el("option",{value:k},PRIO[k].label));
+  for(const k in PRIO) $("f-priorite").append(el("option",{value:k, selected:k==="bientot"?"":null},PRIO[k].label));
 
   /* ---------- Firebase ---------- */
   try{
@@ -470,7 +504,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
   /* ---------- Envoi ---------- */
   async function envoyer(){
     const f = lireFormulaire();
-    if(!f.change){ setStatus("statutEnvoi","Dis d'abord ce que ça change concrètement.","err"); $("f-change").focus(); return; }
+    if(!f.change){ setStatus("statutEnvoi","Écris ton idée d'abord.","err"); $("f-change").focus(); return; }
     const now = new Date().toISOString();
     const doc = {
       titre:f.titre || f.change.slice(0, 70), titreManuel:!!f.titre, change:f.change, probleme:f.probleme, but:f.but, zone:f.zone, priorite:f.priorite,
@@ -486,7 +520,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
       setStatus("statutEnvoi","");
       S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){}
       S.expanded.add(ref.id);
-      toast(getKey() ? "Idée envoyée, Claude l'analyse…" : "Idée envoyée, Claude passera l'analyser dans l'heure");
+      toast(getKey() ? "Dans la boîte. Claude regarde…" : "Dans la boîte. Claude passe dans l'heure.");
     }catch(e){
       setStatus("statutEnvoi", e && e.code === "permission-denied" ? "Firestore refuse l'écriture : la collection idees n'est pas encore autorisée dans les règles (voir README)." : "L'envoi a échoué : " + (e && e.message || "inconnu"), "err");
       btn.disabled = false; return;
@@ -562,9 +596,9 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     body.append(el("div",{class:"cols"}, block("Ce que ça change", i.change), block("Ce que ça arrange", i.probleme), block("Dans quel but", i.but)));
     const st2 = i.analyseStatut || (a ? "ok" : "sans_cle");
     if(!a && st2 === "en_cours") body.append(el("div",{class:"status busy"}, "Claude analyse cette idée… (15 à 60 secondes)"));
-    else if(!a && st2 === "en_attente") body.append(el("div",{class:"status busy"}, "Analyse en attente…"));
+    else if(!a && st2 === "en_attente") body.append(el("div",{class:"status busy"}, "Claude va regarder…"));
     else if(!a && st2 === "erreur") body.append(el("div",{class:"note warn"}, el("strong",null,"L'analyse n'a pas abouti"), el("span",null, i.analyseErreur || ""), " ", el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Relancer l'analyse")));
-    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"En attente de l'avis de Claude"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse maintenant") : el("span",null,"Claude passe toutes les heures entre 8 h et 20 h : son avis apparaîtra ici, puis le chef tranche.")));
+    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"En attente de l'avis de Claude"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse maintenant") : el("span",null,"Claude passe toutes les heures entre 8 h et 20 h. Son avis s'affichera ici, puis le chef tranche.")));
     if(a){
       const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
       body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null, el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
@@ -612,7 +646,8 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     renderTabs();
     const list = $("list"); list.innerHTML = "";
     const shown = S.ideas.filter(i => S.filter === "all" || i.statut === S.filter);
-    if(!shown.length){ list.append(el("div",{class:"empty"}, S.ideas.length ? "Aucune idée dans cette catégorie." : "Rien pour l'instant. Écris la première idée ci-dessus.")); return; }
+    $("listCount").textContent = S.ideas.length ? S.ideas.length + (S.ideas.length > 1 ? " idées" : " idée") : "";
+    if(!shown.length){ list.append(el("div",{class:"empty"}, S.ideas.length ? "Rien dans cette catégorie." : "La boîte est vide. La première idée est pour toi.")); return; }
     for(const i of shown) list.append(card(i));
     if(S.target){ const t = S.target; setTimeout(()=>{ if(S.target === t) S.target = null; const c = $("idea-"+t); if(c) c.classList.remove("target"); }, 2500); }
   }
