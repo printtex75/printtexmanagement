@@ -160,8 +160,8 @@
 
     <section class="panel" id="settings">
       <h2>Analyse par Claude</h2>
-      <p class="sub">L'analyse appelle l'API Claude directement depuis ton navigateur, avec ta propre clé. La clé reste sur cet appareil (elle n'est ni enregistrée dans Firebase, ni dans le code). Crée-la sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>, rubrique « API keys ».</p>
-      <div class="field"><label for="apiKey">Clé API Claude</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
+      <p class="sub">Dès qu'une idée est envoyée, la page appelle l'API Claude depuis le navigateur et range l'analyse sous l'idée. Une seule clé pour les deux associés : enregistrée dans Firestore (<code>config/claude</code>), lisible uniquement par les comptes associés, jamais dans le code. Crée-la sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>, rubrique « API keys ».</p>
+      <div class="field"><label for="apiKey">Clé API Claude partagée</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
       <div class="row end">
         <div class="status grow" id="settingsStatus"></div>
         <button type="button" class="btn btn-ghost" id="btnKeyForget">Oublier la clé</button>
@@ -172,7 +172,7 @@
     <section class="panel">
       <div>
         <h2>Nouvelle idée</h2>
-        <p class="sub">Décris-la en trois questions. Claude donne ensuite un avis franc : ce que ça apporte, ce que ça casse, ce qu'il faudrait pour que ça marche, et s'il faut le faire. Puis l'idée part dans la liste commune.</p>
+        <p class="sub">Décris-la en trois questions et envoie. L'idée part tout de suite dans la liste commune, et Claude écrit son avis dessous dans la minute : ce que ça apporte, ce que ça casse, ce que ça causerait, ce qu'il faudrait pour que ça marche, et s'il faut le faire.</p>
       </div>
       <div class="field"><label for="f-change">Qu'est-ce que ça change concrètement ? <small>· ce que l'outil ferait de nouveau ou autrement</small></label>
         <textarea id="f-change" placeholder="Ex : une liste « à relancer » en haut des commandes, avec les commandes prêtes depuis plus de 5 jours et le téléphone du client."></textarea></div>
@@ -186,23 +186,10 @@
         <div class="field"><label for="f-zone">Partie de l'application</label><select id="f-zone"></select></div>
         <div class="field"><label for="f-priorite">Priorité selon toi</label><select id="f-priorite"></select></div>
       </div>
-      <div class="row">
-        <div class="status grow" id="statutAnalyse"></div>
-        <button type="button" class="btn btn-ghost" id="btnSansAnalyse">Envoyer sans analyse</button>
-        <button type="button" class="btn btn-primary" id="btnAnalyser">Analyser avec Claude</button>
-      </div>
-
-      <div class="analyse" id="analyse" hidden>
-        <div class="field"><label for="f-titre">Titre <small>· proposé par Claude, modifiable</small></label><input type="text" id="f-titre" maxlength="90"></div>
-        <div id="a-verdict"></div>
-        <div id="a-similaires"></div>
-        <div class="cols" id="a-cols"></div>
-        <div id="a-questions"></div>
-        <div class="row end">
-          <div class="status grow" id="statutEnvoi"></div>
-          <button type="button" class="btn btn-ghost" id="btnAnnuler">Annuler</button>
-          <button type="button" class="btn btn-primary" id="btnEnvoyer">Envoyer dans la boîte</button>
-        </div>
+      <div class="field"><label for="f-titre">Titre <small>· facultatif, Claude en propose un sinon</small></label><input type="text" id="f-titre" maxlength="90" placeholder="Ex : Liste des commandes à relancer"></div>
+      <div class="row end">
+        <div class="status grow" id="statutEnvoi"></div>
+        <button type="button" class="btn btn-primary" id="btnEnvoyer">Envoyer dans la boîte</button>
       </div>
     </section>
 
@@ -241,7 +228,7 @@ if(typeof firebase === 'undefined'){
   const ASSOCIES = ["printtex75@gmail.com"];
 
   const CLAUDE_MODEL = "claude-opus-5-5";
-  const KEY_STORAGE = "ptx_claude_key";
+  const KEY_STORAGE = "ptx_claude_key"; // secours local si Firestore ne donne pas la clé
   const ZONES = ["Commandes","Marques / portail marque","Vectorizer","Cockpit","Connexion / comptes","Autre"];
   const PRIO = {urgent:{label:"Ça bloque",cls:"crit"}, bientot:{label:"Bientôt",cls:"warn"}, unjour:{label:"Un jour",cls:"plain"}};
   const STATUTS = {
@@ -270,7 +257,7 @@ if(typeof firebase === 'undefined'){
   function setStatus(id, msg, kind){ const n = $(id); n.textContent = msg || ""; n.className = "status grow" + (kind ? " " + kind : ""); }
   const nomDe = u => (u && (u.displayName || (u.email || "").split("@")[0])) || "quelqu'un";
 
-  const S = { db:null, auth:null, me:null, ideas:[], filter:"all", expanded:new Set(), analysis:null, ctl:null, target:null, unsub:null };
+  const S = { db:null, auth:null, me:null, ideas:[], filter:"all", expanded:new Set(), target:null, unsub:null, sharedKey:"", enCours:new Set() };
   try{ S.filter = localStorage.getItem("ptx-idees-filter") || "all"; }catch(e){}
 
   for(const z of ZONES) $("f-zone").append(el("option",{value:z},z));
@@ -307,7 +294,7 @@ if(typeof firebase === 'undefined'){
         S.me = user;
         $("who").textContent = nomDe(user);
         $("authGate").style.display = "none"; $("appRoot").style.display = "block";
-        loadKey(); subscribe();
+        loadKey().then(subscribe);
       }else{
         if(user){ S.auth.signOut(); $("authError").textContent = "Ce compte n'est pas dans la liste des associés."; }
         if(S.unsub){ S.unsub(); S.unsub = null; }
@@ -317,24 +304,37 @@ if(typeof firebase === 'undefined'){
     });
   }else{ $("authGate").style.display = "block"; $("authError").textContent = "Chargement impossible (réseau ou bloqueur de contenu)."; }
 
-  /* ---------- Clé API ---------- */
-  function getKey(){ try{ return localStorage.getItem(KEY_STORAGE) || ""; }catch(e){ return ""; } }
-  function loadKey(){ $("apiKey").value = getKey(); }
+  /* ---------- Clé API partagée (Firestore config/claude) ---------- */
+  function getKey(){ if(S.sharedKey) return S.sharedKey; try{ return localStorage.getItem(KEY_STORAGE) || ""; }catch(e){ return ""; } }
+  async function loadKey(){
+    try{ const snap = await S.db.collection("config").doc("claude").get(); S.sharedKey = snap.exists && snap.data().apiKey || ""; }
+    catch(e){ console.warn("config/claude illisible", e); S.sharedKey = ""; }
+    $("apiKey").value = getKey();
+  }
   $("btnSettings").addEventListener("click", () => { $("settings").classList.toggle("open"); if($("settings").classList.contains("open")) $("apiKey").focus(); });
-  $("btnKeySave").addEventListener("click", () => {
+  $("btnKeySave").addEventListener("click", async () => {
     const k = $("apiKey").value.trim();
     if(!k.startsWith("sk-ant-")){ setStatus("settingsStatus","Une clé Claude commence par sk-ant-.","err"); return; }
-    try{ localStorage.setItem(KEY_STORAGE, k); setStatus("settingsStatus","Clé enregistrée sur cet appareil."); setTimeout(()=>$("settings").classList.remove("open"), 900); }
-    catch(e){ setStatus("settingsStatus","Impossible d'enregistrer (navigation privée ?).","err"); }
+    try{
+      await S.db.collection("config").doc("claude").set({apiKey:k, updatedAt:new Date().toISOString(), updatedBy:S.me.email || ""});
+      S.sharedKey = k; setStatus("settingsStatus","Clé enregistrée pour les deux associés."); setTimeout(()=>$("settings").classList.remove("open"), 900);
+    }catch(e){
+      try{ localStorage.setItem(KEY_STORAGE, k); }catch(_){}
+      setStatus("settingsStatus", e && e.code === "permission-denied" ? "Firestore refuse config/claude (règle manquante, voir README). Clé gardée sur cet appareil seulement." : "Enregistrement impossible : " + (e && e.message || ""), "err");
+    }
   });
-  $("btnKeyForget").addEventListener("click", () => { try{ localStorage.removeItem(KEY_STORAGE); }catch(e){} $("apiKey").value = ""; setStatus("settingsStatus","Clé oubliée."); });
+  $("btnKeyForget").addEventListener("click", async () => {
+    try{ localStorage.removeItem(KEY_STORAGE); }catch(e){}
+    try{ await S.db.collection("config").doc("claude").delete(); }catch(e){}
+    S.sharedKey = ""; $("apiKey").value = ""; setStatus("settingsStatus","Clé oubliée.");
+  });
 
   /* ---------- Analyse Claude ---------- */
   function lireFormulaire(){
-    return { change:$("f-change").value.trim(), probleme:$("f-probleme").value.trim(), but:$("f-but").value.trim(), zone:$("f-zone").value, priorite:$("f-priorite").value };
+    return { titre:$("f-titre").value.trim(), change:$("f-change").value.trim(), probleme:$("f-probleme").value.trim(), but:$("f-but").value.trim(), zone:$("f-zone").value, priorite:$("f-priorite").value };
   }
-  function buildPrompt(f){
-    const existantes = S.ideas.slice(0,120).map(i => ({id:i.id, titre:i.titre, change:(i.change||"").slice(0,160), statut:STATUTS[i.statut] ? STATUTS[i.statut].label : i.statut}));
+  function buildPrompt(f, selfId){
+    const existantes = S.ideas.filter(i => i.id !== selfId).slice(0,120).map(i => ({id:i.id, titre:i.titre, change:(i.change||"").slice(0,160), statut:STATUTS[i.statut] ? STATUTS[i.statut].label : i.statut}));
     return `Tu es le conseiller produit de deux associés qui tiennent Printtex, un atelier de personnalisation textile à Paris (sérigraphie, flocage, broderie pour des marques et des particuliers). Ils gèrent leur activité avec une application web maison, une seule page HTML sur Firebase.
 
 Ce que l'application fait déjà : suivi des commandes clients par statut (en attente de production, en production, prête, livrée, annulée), produits multiples par commande avec emplacements visuels, relances des commandes prêtes depuis N jours, recherche par numéro de commande et archives, quota hebdomadaire de T-shirts avec alerte de capacité, total à encaisser, export comptable mensuel, catalogue de produits par marque avec un portail dédié aux marques inscrites (suivi, galerie d'images, ruptures de stock), vectoriseur d'image vers SVG, page cockpit (vue du matin : Shopify, Outlook, factures), connexion admin et inscription des marques. Tout est en vanilla JS sans build ; chaque ajout alourdit le même fichier.
@@ -403,7 +403,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     return json;
   }
   const copyFor = e => ({
-    no_key:"Ajoute d'abord ta clé Claude (bouton ⚙ Claude en haut). Tu peux aussi envoyer sans analyse.",
+    no_key:"Pas de clé Claude enregistrée (bouton ⚙ Claude en haut). L'idée est bien dans la boîte, l'analyse se fera dès que la clé sera là.",
     bad_key:"La clé Claude est refusée. Vérifie-la dans ⚙ Claude.",
     rate_limited:"Trop de demandes ou crédit épuisé sur ta clé Claude. Réessaie dans un moment.",
     bad_request:"Requête refusée par l'API : " + (e && e.message || "détail inconnu"),
@@ -414,84 +414,61 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
   }[e && e.code] || "L'analyse n'a pas abouti. Réessaie, ou envoie sans analyse.");
 
   function listUl(items){ return el("ul", null, (items || []).map(x => el("li", null, String(x)))); }
-  function afficherAnalyse(a, f){
-    S.analysis = a;
-    $("f-titre").value = a.titre || f.change.slice(0, 70);
-    const v = $("a-verdict"); v.innerHTML = "";
-    const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
-    v.append(el("div",{class:"verdict " + vk},
-      el("span",{class:"v"}, VERDICTS[vk]),
-      el("div",null, el("p",null, a.verdict_raison || ""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null,
-        el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
-    const sim = $("a-similaires"); sim.innerHTML = "";
-    const simOk = (a.similaires || []).map(s => ({...s, idea:S.ideas.find(i => i.id === s.id)})).filter(s => s.idea);
-    if(simOk.length) sim.append(el("div",{class:"note warn"}, el("strong",null,"Attention, une idée proche est déjà dans la boîte"),
-      el("ul",null, simOk.map(s => el("li",null, el("button",{class:"link",type:"button",onclick:()=>focusIdea(s.idea.id)}, s.idea.titre), " · ", STATUTS[s.idea.statut] ? STATUTS[s.idea.statut].label : "", " — ", s.raison || "")))));
-    const cols = $("a-cols"); cols.innerHTML = "";
-    cols.append(
-      el("div",{class:"box pour"}, el("h3",null,"Pourquoi le faire"), listUl(a.pour)),
-      el("div",{class:"box contre"}, el("h3",null,"Pourquoi ne pas le faire, ou ce qui cloche"), listUl(a.contre)),
-      el("div",{class:"box rep"}, el("h3",null,"Ce que ça causerait"), listUl(a.repercussions)),
-      el("div",{class:"box cond"}, el("h3",null,"Pour que ça marche vraiment"), listUl(a.conditions)));
-    const q = $("a-questions"); q.innerHTML = "";
-    if((a.questions || []).length) q.append(el("div",{class:"note info"}, el("strong",null,"Claude aurait besoin de savoir"), listUl(a.questions)));
-    $("analyse").hidden = false;
-    $("analyse").scrollIntoView({behavior:"smooth", block:"start"});
+  function normaliserAnalyse(a, selfId){
+    return {
+      titre:String(a.titre||""), resume:String(a.resume||""), verdict:VERDICTS[a.verdict] ? a.verdict : "oui_mais", verdict_raison:String(a.verdict_raison||""),
+      pour:(a.pour||[]).map(String), contre:(a.contre||[]).map(String), repercussions:(a.repercussions||[]).map(String),
+      conditions:(a.conditions||[]).map(String), effort:EFFORTS[a.effort] ? a.effort : null, questions:(a.questions||[]).map(String),
+      similaires:(a.similaires||[]).filter(x => x && x.id !== selfId && S.ideas.some(i => i.id === x.id)).map(x => ({id:String(x.id), raison:String(x.raison||"")})),
+      date:new Date().toISOString()
+    };
   }
-
-  async function analyser(){
-    const f = lireFormulaire();
-    if(!f.change){ setStatus("statutAnalyse","Dis d'abord ce que ça change concrètement.","err"); $("f-change").focus(); return; }
-    if(!getKey()){ setStatus("statutAnalyse", copyFor({code:"no_key"}), "err"); $("settings").classList.add("open"); $("apiKey").focus(); return; }
-    const btn = $("btnAnalyser"); btn.disabled = true;
-    setStatus("statutAnalyse","Claude lit l'idée et la compare à ce qui existe… (15 à 60 secondes)","busy");
-    S.ctl = new AbortController();
+  // Analyse une idée déjà enregistrée, puis écrit le résultat dans son document.
+  async function analyserIdee(i){
+    if(S.enCours.has(i.id)) return;
+    S.enCours.add(i.id);
+    const ref = S.db.collection("idees").doc(i.id);
     try{
-      const a = await appelerClaude(buildPrompt(f), S.ctl.signal);
-      setStatus("statutAnalyse","Lis l'avis, corrige le titre si besoin, puis envoie.");
-      afficherAnalyse(a, f);
+      if(!getKey()) throw {code:"no_key"};
+      await ref.update({analyseStatut:"en_cours", analyseErreur:null, updatedAt:new Date().toISOString()});
+      const brut = await appelerClaude(buildPrompt(i, i.id));
+      const a = normaliserAnalyse(brut, i.id);
+      const patch = {analyse:a, analyseStatut:"ok", analyseErreur:null, updatedAt:new Date().toISOString()};
+      if(!i.titreManuel && a.titre) patch.titre = a.titre;
+      await ref.update(patch);
     }catch(e){
-      setStatus("statutAnalyse", copyFor(e), "err");
-    }finally{ btn.disabled = false; S.ctl = null; }
+      const msg = copyFor(e);
+      try{ await ref.update({analyseStatut:"erreur", analyseErreur:msg, updatedAt:new Date().toISOString()}); }catch(_){}
+      if(e && e.code === "no_key"){ $("settings").classList.add("open"); }
+    }finally{ S.enCours.delete(i.id); }
   }
-  $("btnAnalyser").addEventListener("click", analyser);
-  $("btnSansAnalyse").addEventListener("click", () => {
-    const f = lireFormulaire();
-    if(!f.change){ setStatus("statutAnalyse","Dis d'abord ce que ça change concrètement.","err"); $("f-change").focus(); return; }
-    S.analysis = null; $("f-titre").value = f.change.slice(0, 70);
-    ["a-verdict","a-similaires","a-cols","a-questions"].forEach(id => $(id).innerHTML = "");
-    $("analyse").hidden = false; $("f-titre").focus();
-    setStatus("statutAnalyse","Sans analyse : donne un titre et envoie.");
-  });
-  $("btnAnnuler").addEventListener("click", () => { $("analyse").hidden = true; S.analysis = null; setStatus("statutAnalyse",""); setStatus("statutEnvoi",""); });
 
   /* ---------- Envoi ---------- */
   async function envoyer(){
     const f = lireFormulaire();
-    const titre = $("f-titre").value.trim();
-    if(!titre){ setStatus("statutEnvoi","Il manque un titre.","err"); $("f-titre").focus(); return; }
-    const now = new Date().toISOString(), a = S.analysis;
+    if(!f.change){ setStatus("statutEnvoi","Dis d'abord ce que ça change concrètement.","err"); $("f-change").focus(); return; }
+    const now = new Date().toISOString();
     const doc = {
-      titre, change:f.change, probleme:f.probleme, but:f.but, zone:f.zone, priorite:f.priorite,
+      titre:f.titre || f.change.slice(0, 70), titreManuel:!!f.titre, change:f.change, probleme:f.probleme, but:f.but, zone:f.zone, priorite:f.priorite,
       statut:"a_discuter", auteurUid:S.me.uid, auteurNom:nomDe(S.me), auteurEmail:S.me.email || "",
       createdAt:now, updatedAt:now, assigneUid:null, assigneNom:null, accords:[], commentaires:[],
-      analyse: a ? {
-        resume:String(a.resume||""), verdict:VERDICTS[a.verdict] ? a.verdict : "oui_mais", verdict_raison:String(a.verdict_raison||""),
-        pour:(a.pour||[]).map(String), contre:(a.contre||[]).map(String), repercussions:(a.repercussions||[]).map(String),
-        conditions:(a.conditions||[]).map(String), effort:EFFORTS[a.effort] ? a.effort : null, questions:(a.questions||[]).map(String),
-        similaires:(a.similaires||[]).filter(s => s && S.ideas.some(i => i.id === s.id)).map(s => ({id:String(s.id), raison:String(s.raison||"")}))
-      } : null
+      analyse:null, analyseStatut:getKey() ? "en_attente" : "sans_cle", analyseErreur:null
     };
     const btn = $("btnEnvoyer"); btn.disabled = true; setStatus("statutEnvoi","Envoi…","busy");
+    let ref;
     try{
-      await S.db.collection("idees").add(doc);
-      ["f-change","f-probleme","f-but"].forEach(id => $(id).value = "");
-      $("analyse").hidden = true; S.analysis = null; setStatus("statutAnalyse",""); setStatus("statutEnvoi","");
+      ref = await S.db.collection("idees").add(doc);
+      ["f-change","f-probleme","f-but","f-titre"].forEach(id => $(id).value = "");
+      setStatus("statutEnvoi","");
       S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){}
-      toast("Idée envoyée dans la boîte");
+      S.expanded.add(ref.id);
+      toast(getKey() ? "Idée envoyée, Claude l'analyse…" : "Idée envoyée (sans analyse : pas de clé Claude)");
     }catch(e){
       setStatus("statutEnvoi", e && e.code === "permission-denied" ? "Firestore refuse l'écriture : la collection idees n'est pas encore autorisée dans les règles (voir README)." : "L'envoi a échoué : " + (e && e.message || "inconnu"), "err");
-    }finally{ btn.disabled = false; }
+      btn.disabled = false; return;
+    }
+    btn.disabled = false;
+    if(getKey()) analyserIdee({id:ref.id, ...doc});
   }
   $("btnEnvoyer").addEventListener("click", envoyer);
 
@@ -501,6 +478,14 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     S.unsub = S.db.collection("idees").orderBy("createdAt","desc").limit(400).onSnapshot(snap => {
       S.ideas = snap.docs.map(d => ({id:d.id, ...d.data()}));
       renderList();
+      if(getKey()){
+        const stale = Date.now() - 5*60*1000;
+        for(const i of S.ideas){
+          if(i.analyse) continue;
+          const st = i.analyseStatut;
+          if(st === "en_attente" || st === "sans_cle" || (st === "en_cours" && new Date(i.updatedAt||0).getTime() < stale)) analyserIdee(i);
+        }
+      }
     }, err => { console.error("idees", err); $("list").innerHTML = ""; $("list").append(el("div",{class:"empty"}, err && err.code === "permission-denied" ? "Firestore refuse la lecture : ajoute la règle pour la collection idees (voir README)." : "La liste ne se charge pas : " + (err && err.message || ""))); });
   }
   function focusIdea(id){ S.expanded.add(id); S.target = id; S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){} renderList(); const c = $("idea-"+id); if(c) c.scrollIntoView({behavior:"smooth", block:"center"}); }
@@ -551,6 +536,11 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     const body = el("div",{class:"card-body"});
     const block = (t, txt) => txt ? el("div",{class:"block"}, el("label",null,t), el("p",null,txt)) : null;
     body.append(el("div",{class:"cols"}, block("Ce que ça change", i.change), block("Ce que ça arrange", i.probleme), block("Dans quel but", i.but)));
+    const st2 = i.analyseStatut || (a ? "ok" : "sans_cle");
+    if(!a && st2 === "en_cours") body.append(el("div",{class:"status busy"}, "Claude analyse cette idée… (15 à 60 secondes)"));
+    else if(!a && st2 === "en_attente") body.append(el("div",{class:"status busy"}, "Analyse en attente…"));
+    else if(!a && st2 === "erreur") body.append(el("div",{class:"note warn"}, el("strong",null,"L'analyse n'a pas abouti"), el("span",null, i.analyseErreur || ""), " ", el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Relancer l'analyse")));
+    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"Pas encore d'analyse"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse de Claude") : el("span",null,"Ajoute la clé Claude (bouton ⚙ Claude) pour que les idées soient analysées.")));
     if(a){
       const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
       body.append(el("div",{class:"verdict "+vk}, el("span",{class:"v"}, VERDICTS[vk]), el("div",null, el("p",null,a.verdict_raison||""), a.resume ? el("p",{style:"margin-top:6px;color:var(--ink-2)"}, a.resume) : null, el("div",{class:"eff"}, "Taille du chantier : " + (EFFORTS[a.effort] || "à estimer")))));
@@ -561,7 +551,8 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
         el("div",{class:"box cond"}, el("h3",null,"Pour que ça marche vraiment"), listUl(a.conditions))));
       if((a.questions||[]).length) body.append(el("div",{class:"note info"}, el("strong",null,"À préciser"), listUl(a.questions)));
       const sims = (a.similaires||[]).map(s => ({...s, idea:S.ideas.find(x => x.id === s.id)})).filter(s => s.idea);
-      if(sims.length) body.append(el("div",{class:"note warn"}, el("strong",null,"Idées proches signalées à l'envoi"), el("ul",null, sims.map(s => el("li",null, el("button",{class:"link",type:"button",onclick:()=>focusIdea(s.idea.id)}, s.idea.titre), " — ", s.raison)))));
+      if(sims.length) body.append(el("div",{class:"note warn"}, el("strong",null,"Idées proches signalées par l'analyse"), el("ul",null, sims.map(s => el("li",null, el("button",{class:"link",type:"button",onclick:()=>focusIdea(s.idea.id)}, s.idea.titre), " — ", s.raison)))));
+      body.append(el("div",{class:"status"}, "Analyse de Claude" + (a.date ? " du " + fmtDate(a.date) : ""), " · ", el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Refaire l'analyse")));
     }
 
     const accords = i.accords || [], jaccorde = accords.includes(me);

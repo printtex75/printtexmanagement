@@ -62,32 +62,31 @@ Le projet est développé par deux associés. Pour éviter que deux personnes co
 
 La page **Boîte à idées** (lien dans la navigation de l'application, ou directement `idees.html`) est l'endroit où les deux associés déposent leurs idées. Même connexion que le reste de l'outil (email/mot de passe ou Google), même projet Firebase, collection Firestore `idees`.
 
-- **Trois questions** pour décrire l'idée : ce que ça change concrètement, ce que ça arrange, dans quel but.
-- **Analyse par Claude** (bouton « Analyser avec Claude ») : un avis tranché (à faire / oui mais / plus tard / à ne pas faire), pourquoi le faire, pourquoi ne pas le faire, ce que ça causerait comme répercussions, ce qu'il faudrait pour que ça marche vraiment, la taille du chantier, et les idées déjà dans la boîte qui recoupent celle-ci. L'analyse est enregistrée avec l'idée.
-- **Liste commune** par statut, avec qui a proposé quoi. Une idée passe en « Validé » quand les deux ont cliqué « Je suis d'accord ». « Je m'en occupe » assigne l'idée à une seule personne, ce qui évite que les deux codent la même chose. Discussion sous chaque idée, et « Copier pour GitHub » pour ouvrir une issue au moment de coder.
+1. **Trois questions** pour décrire l'idée : ce que ça change concrètement, ce que ça arrange, dans quel but. On envoie, l'idée est tout de suite dans la liste commune.
+2. **Claude analyse dès l'envoi**, depuis le navigateur, et écrit son avis sous l'idée dans la minute : verdict (à faire / oui mais / plus tard / à ne pas faire), pourquoi le faire, pourquoi ne pas le faire, ce que ça causerait comme répercussions, ce qu'il faudrait pour que ça marche vraiment, taille du chantier, idées déjà dans la boîte qui recoupent celle-ci. L'analyse est enregistrée avec l'idée. Si la clé n'était pas là au moment de l'envoi, l'analyse se fait dès qu'elle est ajoutée.
+3. **Le chef décide.** Depuis sa session Claude Code, il reçoit un mini résumé des nouvelles idées analysées et répond « OK » ou « Non ». Tant qu'il n'a pas dit OK, rien n'est lancé. Sur OK, Claude code l'idée sur une branche `idee-…` et propose une pull request vers `main` ; le chef relit et fusionne.
+4. Dans la liste : statuts, « Je suis d'accord », « Je m'en occupe » (une seule personne par idée), discussion sous chaque idée.
 
 **Mise en place (une fois) :**
 
 1. **Ajouter l'associé** dans la constante `ASSOCIES` de `idees.html` (email en minuscules).
-2. **Autoriser la collection `idees`** dans la console Firebase → Firestore Database → Règles, en ajoutant dans le bloc `match /databases/{database}/documents` :
+2. **Autoriser les collections `idees` et `config`** dans la console Firebase → Firestore Database → Règles, en ajoutant dans le bloc `match /databases/{database}/documents` :
    ```
    match /idees/{id} {
      allow read, write: if request.auth != null
        && request.auth.token.email in ['printtex75@gmail.com', 'EMAIL_DE_L_ASSOCIE'];
    }
+   match /config/{id} {
+     allow read, write: if request.auth != null
+       && request.auth.token.email in ['printtex75@gmail.com', 'EMAIL_DE_L_ASSOCIE'];
+   }
    ```
-3. **Clé Claude** : chacun crée sa clé sur console.anthropic.com et la colle dans la page via le bouton « ⚙ Claude ». La clé reste dans le navigateur de l'appareil (localStorage), elle n'est jamais envoyée à Firebase ni mise dans le code. Sans clé, on peut toujours « Envoyer sans analyse ».
-
-### Le circuit automatique : l'issue, l'analyse de Claude, l'OK du chef
-
-1. **L'associé (ou le chef) ouvre une issue** avec le modèle « 💡 Idée » : ce que ça change, ce que ça arrange, dans quel but. C'est libre, à tout moment, même depuis l'application GitHub sur téléphone.
-2. **Claude passe toutes les deux heures** (8 h à 20 h, heure de Paris) depuis la session Claude Code du chef. Pour chaque nouvelle issue « idée », il lit le code concerné, poste son analyse en commentaire (verdict, pourquoi le faire, pourquoi ne pas le faire, répercussions, ce qu'il faudrait pour que ça marche, taille du chantier, idées ou fonctions déjà existantes) et pose l'étiquette « analysé ».
-3. **Le chef reçoit un mini résumé** dans sa session Claude et répond « OK #n » ou « Non #n ». Tant qu'il n'a pas dit OK, rien n'est lancé.
-4. **Sur OK**, Claude pose les étiquettes « validé » et « lancé », ouvre une session de travail sur la branche `idee-n` et propose une pull request vers `main` qui ferme l'issue. Le chef relit et fusionne. Sur « Non », l'issue est fermée avec l'étiquette « refusé ».
+3. **Clé Claude partagée** : le chef crée une clé sur console.anthropic.com et la colle une fois dans la page via le bouton « ⚙ Claude ». Elle est enregistrée dans Firestore (`config/claude`), lisible uniquement par les deux comptes associés, jamais dans le code. Chaque analyse coûte quelques centimes sur cette clé.
+4. **Lecture par la session du chef** : pour que Claude lise les idées depuis Claude Code (résumé, lancement sur OK), une clé de compte de service Firebase est placée dans les réglages de l'environnement cloud, variable `FIREBASE_SERVICE_ACCOUNT` (contenu du fichier JSON généré dans la console Firebase → Paramètres du projet → Comptes de service). Le script `scripts/idees-firestore.mjs` s'en sert.
 
 ### Les idées : libres à l'entrée, tranchées à deux
 
-- **Toute idée passe d'abord par la boîte à idées** (`idees.html`). Ouvrir une idée est libre, pour les deux, à tout moment. Les issues GitHub (modèle « 💡 Idée ») servent au moment de coder : « Copier pour GitHub » depuis la boîte.
+- **Toute idée passe par la boîte à idées** (`idees.html`). Ouvrir une idée est libre, pour les deux, à tout moment. GitHub reste en coulisses pour le code (branches, pull requests) ; les associés n'ont pas besoin d'y aller.
 - **Avant d'ouvrir une issue, on cherche** dans la liste si une idée proche existe déjà. Si oui, on la commente au lieu d'en créer une nouvelle.
 - Une idée suit ces étiquettes :
   - `idée` + `à discuter` : nouvelle, pas encore tranchée (mis automatiquement par le modèle)
