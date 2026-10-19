@@ -2,8 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="color-scheme" content="light only">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atelier — Suivi des commandes</title>
+<title>Printtex — Suivi des commandes</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#23324A">
 <meta name="mobile-web-app-capable" content="yes">
@@ -527,6 +528,9 @@
   }
   body.role-brand #tasksOverlay .modal{max-width:100%;box-shadow:none;border:1px solid var(--line);}
   body.role-brand #btnTasksClose{display:none;}
+  .task-nom-ro{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:15px;color:var(--ink);letter-spacing:0.3px;}
+  .task-meta-ro{font-size:13px;color:var(--ink-2);margin-top:4px;}
+  .task-qty-ro{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--ink);text-align:center;}
   @media (max-width:640px){
     .form-grid{grid-template-columns:1fr;}
     .slots-grid{grid-template-columns:repeat(3,1fr);}
@@ -534,17 +538,287 @@
     .wrap{padding:18px 14px 60px;}
     header{flex-direction:column;align-items:flex-start;}
   }
+
+  /* ---------- Charte D2 « noir cuir » (version de test, Karim 18/10) ----------
+     Mêmes repères que le site Printtex : noir chaud, blanc cassé, touche de cuivre, grain cuir, boutons cousus. */
+  :root{
+    --canvas:#FFFFFF; --canvas-2:#FFFFFF; --ink:#141210; --ink-2:#3A332D;
+    --thread:#A8693B; --thread-2:#8A5530; --kraft:#B87A4B; --charcoal:#141210;
+    --line:#E8E8E8; --line-strong:#D4D4D4;
+    --shadow: 0 6px 18px rgba(20,18,16,0.07);
+    --cuir-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .96 0 0 0 0 .9 0 0 0 .13 0'/%3E%3C/filter%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .3 -.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E");
+    --cuir-grave: 0 -1px 0 rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.07);
+    --couture-claire: rgba(247,243,238,0.55);
+    --couture-cuivre: rgba(168,105,59,0.65);
+  }
+  body{background-color:var(--canvas);}
+
+  /* Boutons en cuir cousu : cuir noir grainé, couture pointillée à l'intérieur du bord, relief doux. */
+  .btn{
+    border-radius:12px;padding:11px 20px;letter-spacing:0.2px;position:relative;
+    outline:1px dashed transparent;outline-offset:-5px;
+    transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0) scale(0.98);}
+  .btn-primary{
+    background-color:#141210;background-image:var(--cuir-grain);color:#F7F3EE;
+    outline-color:var(--couture-claire);text-shadow:var(--cuir-grave);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 0 rgba(0,0,0,0.35), 0 8px 20px rgba(20,18,16,0.20);
+  }
+  .btn-primary:hover{background-color:#2B2622;box-shadow:inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -2px 0 rgba(0,0,0,0.35), 0 12px 26px rgba(20,18,16,0.26);}
+  .btn-ghost{
+    background:#FFFFFF;border:1px solid var(--line-strong);color:#141210;outline-color:transparent;
+    box-shadow:0 1px 2px rgba(20,18,16,0.06);
+  }
+  .btn-ghost:hover{background:#F5F5F5;}
+  .btn-sm{border-radius:10px;padding:8px 14px;outline-offset:-4px;}
+  .btn:focus-visible{outline:2px solid var(--thread);outline-offset:2px;}
+
+  /* En-tête : bande de cuir noir avec couture, titres gravés. */
+  header{
+    background-color:#141210;background-image:var(--cuir-grain);color:#F7F3EE;
+    border:none;border-radius:16px;padding:18px 20px;position:relative;
+    box-shadow:0 10px 28px rgba(20,18,16,0.18);
+  }
+  header{flex-direction:column;align-items:stretch;padding:26px 30px;margin-bottom:20px;}
+  header .stats{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;}
+  header .stat{padding:14px 16px;}
+  header .stat .n{font-size:30px;}
+  #buildTag{display:none;}
+  .col{background:#FAFAFA;}
+  header::after{content:"";position:absolute;inset:6px;border:1px dashed var(--couture-claire);border-radius:11px;pointer-events:none;}
+  header h1, header h2, header .title, header .brand-portal-name{color:#F7F3EE;text-shadow:var(--cuir-grave);}
+  header .brand-tag{color:#E0B48C;border-color:rgba(224,180,140,0.6);}
+  header .stat{background:rgba(255,255,255,0.06);border-color:rgba(247,243,238,0.18);}
+  header .stat .n{color:#F7F3EE;}
+  header .stat .l{color:#C9C1B6;}
+  .brand-portal-header{background-color:#141210;background-image:var(--cuir-grain);border-radius:16px;}
+  .brand-portal-name{color:#F7F3EE !important;text-shadow:var(--cuir-grave);}
+
+  /* Surfaces plus douces : coins arrondis, ombres légères. */
+  .modal{border-radius:18px;box-shadow:0 24px 60px rgba(20,18,16,0.22);}
+  .auth-card{border-radius:18px;border-color:var(--line);box-shadow:0 24px 60px rgba(20,18,16,0.14);}
+  .stat, .brand-card, .task-card{border-radius:14px;}
+  .col{border-radius:14px;background:rgba(255,255,255,0.5);}
+  input, select, textarea, .auth-card input{border-radius:10px;border-color:var(--line-strong);}
+  input[type=checkbox], input[type=radio]{width:auto;flex:none;}
+  /* Choix du vêtement (catalogue printtex.fr) */
+  .site-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;max-height:340px;overflow:auto;margin-top:8px;padding:2px;}
+  .site-card{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;cursor:pointer;font:500 12px Inter,sans-serif;color:var(--ink);text-align:center;transition:border-color .15s, box-shadow .15s;}
+  .site-card img{width:100%;aspect-ratio:1;object-fit:contain;background:#F5F5F5;border-radius:8px;}
+  .site-card:hover{border-color:var(--line-strong);box-shadow:0 4px 12px rgba(20,18,16,0.08);}
+  .site-card.on{border:2px solid var(--ink);box-shadow:0 6px 16px rgba(20,18,16,0.14);}
+  .site-card-special{justify-content:center;min-height:150px;background:#FAFAFA;}
+  .site-card-icon{font-size:28px;}
+  .site-colors{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .site-colors-label{width:100%;font-size:12px;color:var(--ink-2);}
+  .site-color{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:5px 12px;font:500 12px Inter,sans-serif;cursor:pointer;}
+  .site-color.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .order-cat-color{font:600 12px Inter,sans-serif;color:var(--ink);margin:10px 0 4px;}
+  /* Ruptures à commander */
+  .to-order-auto{max-height:55%;overflow:auto;margin-bottom:12px;}
+  .to-order-title{font:600 13px Inter,sans-serif;color:var(--ink);margin-bottom:8px;}
+  .to-order-empty{font-size:13px;color:var(--ink-2);margin-bottom:8px;}
+  .to-order-line{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:8px;margin-bottom:8px;background:#fff;}
+  .to-order-line img, .to-order-noimg{width:56px;height:56px;object-fit:contain;background:#F5F5F5;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .to-order-name{font-weight:600;font-size:13px;color:var(--ink);}
+  .to-order-meta{font-size:12px;color:var(--ink-2);margin-top:2px;}
+  .to-order-info a{font-size:12px;color:var(--thread);}
+  .to-order-warn{display:block;font-size:12px;color:#B3261E;margin-top:2px;}
+  .to-order-cart{display:block;text-align:center;text-decoration:none;margin-top:4px;}
+  /* Liaison Shopify */
+  .shopify-connect h3{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:17px;margin:0 0 6px;color:var(--ink);}
+  .shopify-steps{font-size:13px;line-height:1.6;color:var(--ink-2);padding-left:20px;margin:10px 0 14px;}
+  .shopify-connect label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin:10px 0 5px;}
+  .shopify-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;margin-bottom:8px;}
+  .shopify-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0;}
+  .shopify-prod{display:flex;gap:10px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;}
+  .shopify-prod.on{border:2px solid var(--ink);}
+  .shopify-prod img, .shopify-noimg{font-size:11px !important;color:var(--ink-2);width:72px;height:72px;object-fit:contain;background:#F5F5F5;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .shopify-prod-body{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .shopify-prod-title{font-weight:600;font-size:13px;color:var(--ink);}
+  /* Facturation (Printtex seulement) */
+  body.role-brand #btnShowBilling, body.role-brand #tasksViewBilling{display:none !important;}
+  .billing-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+  .billing-due{font-size:15px;color:var(--ink);}
+  .billing-due strong{font-family:'Oswald',sans-serif;font-size:22px;}
+  .billing-block{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:#fff;}
+  .billing-block summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--ink);}
+  .billing-title{font-weight:600;font-size:13px;color:var(--ink);margin-bottom:8px;}
+  .billing-warn{color:#B3261E;font-weight:600;font-size:12px;}
+  .billing-price-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
+  .billing-price-row img, .billing-noimg{width:40px;height:40px;object-fit:contain;background:#F5F5F5;border-radius:8px;flex:none;}
+  .billing-price-row span{flex:1;font-size:13px;}
+  .billing-price-row input{width:110px;flex:none;}
+  .billing-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .billing-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);padding:4px 6px;}
+  .billing-table td{padding:8px 6px;border-top:1px solid var(--line);vertical-align:top;}
+  .billing-sub{font-size:11px;color:var(--ink-2);}
+  .billing-actions{display:flex;justify-content:flex-end;margin-top:10px;}
+  .brand-due{font-size:12px;font-weight:600;color:var(--ink-2);margin-top:6px;}
+  .billing-alert{background:#FCECEA;color:#8C1D18;border:1px solid #F2C4BF;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:10px;}
+  .billing-price-head, .billing-price-row{display:grid;grid-template-columns:minmax(0,1fr) 76px 76px 84px 60px 74px;gap:8px;align-items:center;}
+  .billing-price-head{font-size:10px;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin-top:8px;}
+  .billing-price-row input{width:100%;}
+  .billing-prod{display:flex;align-items:center;gap:8px;font-size:13px;min-width:0;}
+  .billing-unit{font-weight:600;font-size:13px;text-align:right;}
+  .billing-state{display:inline-block;font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:#F2F2F2;color:var(--ink);white-space:nowrap;}
+  .billing-state.st-a_payer{background:#FCECEA;color:#8C1D18;}
+  .billing-state.st-partiel{background:#FFF4E0;color:#7A4B00;}
+  .billing-state.st-paye{background:#E6F2EA;color:#1E5631;}
+  .billing-state.st-manquant{background:#8C1D18;color:#fff;}
+  .billing-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px;}
+  .billing-form input, .billing-form select{width:auto;flex:1;min-width:120px;}
+  .billing-opt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px;}
+  .billing-opt input{width:auto;}
+  @media (max-width:640px){
+    .billing-price-head{display:none;}
+    .billing-price-row{grid-template-columns:1fr 1fr 1fr;}
+    .billing-prod{grid-column:1 / -1;}
+    .billing-unit{text-align:left;}
+    .billing-table{font-size:12px;}
+  }
+  .brand-due.has-due{color:#B3261E;}
+  /* Taille d'impression */
+  .ps-preview{display:flex;justify-content:center;align-items:center;background:#F5F5F5;border-radius:12px;min-height:120px;margin:10px 0;padding:10px;}
+  .ps-preview img{max-width:100%;max-height:180px;}
+  .ps-file{font-size:13px;color:var(--ink-2);}
+  #printSizeOverlay label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-2);margin:10px 0 5px;}
+  .ps-height{font-size:12px;color:var(--ink-2);margin-top:6px;}
+  .img-size{position:absolute;left:0;right:0;bottom:0;background:rgba(20,18,16,0.78);color:#fff;font-size:9px;line-height:1.2;padding:2px 4px;text-align:center;}
+  .gallery-item .img-size{font-size:11px;padding:4px 6px;}
+  .gallery-item a{display:block;width:100%;height:100%;}
+  /* Rupture : réassort */
+  .restock-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px;font-size:12px;color:var(--ink-2);}
+  .restock-row label{display:flex;align-items:center;gap:6px;}
+  .restock-row input{width:auto;padding:5px 8px;font-size:12px;}
+  .restock-note{font-size:11px;color:#1E5631;}
+  .restock-warn{font-size:11px;font-weight:600;color:#B3261E;}
+  .brand-suspended{display:inline-block;font-size:11px;font-weight:600;color:#fff;background:#B3261E;border-radius:999px;padding:2px 8px;margin:4px 0;}
+  /* Paramètres */
+  .params-title{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:20px;margin:6px 0 12px;color:var(--ink);}
+  .params-block{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;max-width:760px;}
+  .params-block h3{font-size:14px;margin:0 0 4px;color:var(--ink);}
+  .params-brand{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--line);padding:10px 0;}
+  .params-brand-right{display:flex;align-items:center;gap:12px;font-size:12px;}
+  .params-brand-right a, .params-confirm a{color:var(--ink-2);font-size:12px;}
+  .params-state{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;}
+  .params-state.on{background:#E6F2EA;color:#1E5631;}
+  .params-state.off{background:#B3261E;color:#fff;}
+  .params-confirm{width:100%;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;background:#FCECEA;border-radius:10px;padding:8px 10px;}
+  .params-confirm input{width:200px;}
+  /* Corrections du rapport de test */
+  body:not(.role-brand) .tasks-note{display:none;}
+  .order-extra{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;font-size:12px;color:var(--ink-2);}
+  .order-extra label{display:flex;flex-direction:column;gap:4px;flex:1;min-width:180px;}
+  .order-total{font-weight:600;font-size:14px;color:var(--ink);margin-right:10px;align-self:center;}
+  .order-footer .right{display:flex;align-items:center;}
+  .order-group{border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:12px;background:#FAFAFA;}
+  .order-group-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:13px;margin:2px 4px 8px;color:var(--ink);}
+  .order-group-head span{color:var(--ink-2);font-size:12px;}
+  .order-group .task-card{margin-bottom:8px;}
+  .thumb-empty{font-size:9px;line-height:1.1;text-align:center;color:var(--ink-2);padding:2px;}
+  .ps-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .ps-presets button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:5px 10px;font:500 12px Inter,sans-serif;cursor:pointer;}
+  .mail-undo{position:fixed;left:50%;transform:translateX(-50%);bottom:70px;z-index:120;background:#141210;color:#F7F3EE;border-radius:12px;padding:10px 14px;font-size:13px;box-shadow:0 10px 24px rgba(0,0,0,0.25);max-width:92vw;}
+  .mail-undo a{color:#E0B48C;font-weight:600;margin-left:6px;}
+  .stock-badge a{color:inherit;text-decoration:underline;}
+  @media (max-width:640px){
+    .order-cat-img{width:56px !important;height:56px !important;float:left;margin-right:10px;}
+    .order-cat-sizes{grid-template-columns:repeat(5,1fr) !important;gap:4px !important;}
+    .order-cat-size-input{padding:6px 2px !important;font-size:14px !important;text-align:center;}
+    .order-cat-size-cell label{font-size:10px;}
+    .order-footer{position:sticky;bottom:0;background:#fff;padding:10px 0;margin:0;z-index:5;border-top:1px solid var(--line);}
+    .task-thumb-add{width:32px;height:32px;bottom:-10px;right:-10px;font-size:16px;}
+    #tasksViewDefault > .check-inline input{width:20px;height:20px;}
+    #btnPortalLogout{padding:10px 14px;}
+  }
+  /* Choix du fond */
+  .bg-stage{display:flex;justify-content:center;align-items:center;border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;min-height:160px;}
+  .bg-stage canvas{max-width:100%;max-height:260px;cursor:crosshair;}
+  .bg-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);margin:6px 0;}
+  .bg-row button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:4px 10px;font:500 12px Inter,sans-serif;cursor:pointer;}
+  .bg-swatch{width:22px;height:22px;border-radius:6px;border:1px solid var(--line-strong);display:inline-block;}
+  /* Boutique en ligne */
+  .store-steps{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px;}
+  .store-steps span{font-size:12px;padding:4px 10px;border-radius:999px;background:#F2F2F2;color:var(--ink-2);}
+  .store-steps span.on{background:#141210;color:#fff;}
+  .store-steps span.done{background:#E6F2EA;color:#1E5631;}
+  .store-mail{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#F5F5F5;border-radius:12px;padding:10px 12px;margin:10px 0;}
+  .store-mail code{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--ink);word-break:break-all;}
+  .store-list{display:flex;flex-direction:column;gap:6px;font-size:13px;margin:8px 0;}
+  #storeSearch{margin:6px 0;}
+  /* Boîte à idées bien visible : pastille en cuir cousu dans la navigation. */
+  .main-nav a.nav-link.idees-link{
+    background-color:#141210;background-image:var(--cuir-grain);color:#F7F3EE;border-radius:999px;
+    padding:10px 20px;outline:1px dashed var(--couture-claire);outline-offset:-4px;text-shadow:var(--cuir-grave);
+    box-shadow:0 6px 16px rgba(20,18,16,0.18);
+  }
+  .main-nav a.nav-link.idees-link:hover{color:#FFFFFF;background-color:#2B2622;}
+  input:focus, select:focus, textarea:focus, .auth-card input:focus{outline:2px solid var(--thread);outline-offset:1px;}
+
+  /* ---------- Téléphone : moins d'informations, cartes lisibles ---------- */
+  :root{color-scheme:light;}
+  .task-actions-block .badge-status{white-space:normal;text-align:center;max-width:170px;}
+  body.role-brand #tasksModalTitle, body.role-brand #tasksModalSub{display:none;}
+  body.role-brand #btnShowNewOrder{order:-1;}
+  .tasks-modal-nav{display:flex;flex-wrap:wrap;gap:8px;}
+  @media (max-width:640px){
+    .wrap{padding:12px 12px 70px;}
+    header{padding:16px;border-radius:14px;gap:12px;}
+    header .stats{grid-template-columns:repeat(3,1fr);gap:8px;}
+    header .stat{padding:8px 6px;min-width:0;}
+    header .stat .n{font-size:20px;}
+    header .stat .l{font-size:9px;}
+    .main-nav{overflow-x:auto;flex-wrap:nowrap;}
+    .main-nav button, .main-nav a{white-space:nowrap;}
+    /* Outils de bureau (exports, sauvegardes) masqués sur téléphone */
+    #btnExport, #exportMonth, #btnExportMonth, #btnBackup, #btnRestore, .view-toggle{display:none !important;}
+    .toolbar{display:flex;flex-direction:column;align-items:stretch;gap:8px;}
+    .toolbar #btnNew{order:-1;}
+
+    /* Espace marque */
+    body.role-brand #tasksOverlay{padding:10px;}
+    body.role-brand #tasksOverlay .modal{padding:14px;border-radius:14px;}
+    .brand-portal-header{padding:12px 14px;border-radius:0 0 14px 14px;}
+    #btnPrintBrandSummary{display:none;}
+    .tasks-modal-nav{display:grid;grid-template-columns:1fr 1fr;width:100%;}
+    .tasks-modal-nav .btn{width:100%;padding:10px 8px;}
+    body.role-brand #btnShowNewOrder{grid-column:1 / -1;background-color:#141210;background-image:var(--cuir-grain);color:#F7F3EE;outline:1px dashed var(--couture-claire);outline-offset:-4px;border:none;}
+    .tasks-modal-phone{margin:6px 0 10px;}
+    .tasks-modal-phone input{font-size:14px;}
+    #tasksViewDefault > .check-inline{font-size:12px;text-transform:none;letter-spacing:0;}
+    .tasks-note{font-size:12px;}
+    body.role-brand .task-card{
+      display:grid;grid-template-columns:56px 1fr auto;grid-template-areas:"thumb body qty" "act act act";
+      gap:8px 12px;padding:12px;
+    }
+    body.role-brand .task-thumb-wrap{grid-area:thumb;}
+    body.role-brand .task-card-body{grid-area:body;}
+    body.role-brand .task-qty-block{grid-area:qty;width:auto;}
+    body.role-brand .task-actions-block{grid-area:act;flex-direction:row;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+    body.role-brand .task-actions-block .badge-status{max-width:none;text-align:left;}
+    body.role-brand .task-title-row{flex-direction:column;align-items:flex-start;gap:2px;}
+    body.role-brand .task-date-badge{margin-left:0;}
+    .task-nom-ro{font-size:14px;line-height:1.25;}
+    .task-meta-ro{font-size:12px;}
+    .stock-badge{font-size:11px;}
+    .site-picker{grid-template-columns:repeat(3,1fr);max-height:300px;}
+    .shopify-products{grid-template-columns:1fr;}
+  }
 </style>
 </head>
 <body>
+<div id="testBanner" style="display:none;background:#B3261E;color:#fff;text-align:center;font:600 13px Inter,sans-serif;padding:6px 10px;"></div>
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
     <div id="authLoginBlock">
       <h2>Connexion</h2>
-      <p class="auth-sub">Accès réservé. Connecte-toi pour continuer.</p>
+      <p class="auth-sub">Accès réservé. Connectez-vous pour continuer.</p>
       <form id="authForm" novalidate>
         <label for="authEmail">Email</label>
-        <input type="email" id="authEmail" required placeholder="ton@email.com" autocomplete="username">
+        <input type="email" id="authEmail" required placeholder="votre@email.com" autocomplete="username">
         <label for="authPassword">Mot de passe</label>
         <input type="password" id="authPassword" required placeholder="••••••••" autocomplete="current-password">
         <button type="button" class="btn btn-primary" id="btnLogin" style="width:100%;margin-top:14px;">Se connecter</button>
@@ -555,18 +829,18 @@
         <svg width="16" height="16" viewBox="0 0 48 48" style="vertical-align:-3px;margin-right:6px;"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.3 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.5-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 19 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 5.3 29.5 3 24 3c-7.6 0-14.2 4.3-17.7 10.7z"/><path fill="#4CAF50" d="M24 45c5.4 0 10.3-2.1 14-5.5l-6.5-5.5C29.4 35.6 26.8 36.5 24 36.5c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.7 40.5 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.5C39.6 37.4 42 32 42 26c0-1.9-.2-3.7-.4-5.5z"/></svg>
         Se connecter avec Google
       </button>
-      <div class="auth-switch">Tu es une marque ? <a href="javascript:void(0)" role="button" id="linkShowSignup">Créer un compte marque</a></div>
+      <div class="auth-switch">Vous êtes une marque ? <a href="javascript:void(0)" role="button" id="linkShowSignup">Créer un compte marque</a></div>
       <div class="auth-error" id="authError"></div>
     </div>
     <div id="authSignupBlock" style="display:none;">
       <h2>Compte marque</h2>
-      <p class="auth-sub">Renseigne tes infos pour accéder au suivi de tes commandes.</p>
+      <p class="auth-sub">Renseignez vos informations pour accéder au suivi de vos commandes.</p>
       <form id="signupForm" novalidate>
         <label for="signupEmail">Email</label>
-        <input type="email" id="signupEmail" required placeholder="ton@email.com" autocomplete="username">
+        <input type="email" id="signupEmail" required placeholder="votre@email.com" autocomplete="username">
         <label for="signupPassword">Mot de passe</label>
         <input type="password" id="signupPassword" required placeholder="6 caractères minimum" autocomplete="new-password">
-        <label for="signupBrandName">Nom de ta marque</label>
+        <label for="signupBrandName">Nom de votre marque</label>
         <input type="text" id="signupBrandName" required placeholder="Ex. Studio Delacroix">
         <button type="button" class="btn btn-primary" id="btnSignup" style="width:100%;margin-top:14px;">Créer mon compte</button>
       </form>
@@ -586,6 +860,7 @@
     <h3>À commander</h3>
     <button type="button" id="btnNotepadClose">×</button>
   </div>
+  <div id="toOrderAuto" class="to-order-auto"></div>
   <textarea id="notepadText" placeholder="Note libre… (papier, encre, blanks manquants…)"></textarea>
   <div class="notepad-status" id="notepadStatus"></div>
 </div>
@@ -595,7 +870,7 @@
   <header>
     <div class="brand">
       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLAAAAJ0CAMAAAA1ViplAAABAWlDQ1BpY2MAABjTY2BgXJGTnFvMJMDAkJtXUhTk7qQQERmlwH6HgZFBkoGZQZPBMjG5uMAxIMCHASf4dg2oGggu64LMYiANcKakFicD6Q9AHJ9cUFTCwMAIsounvKQAxI4AskWKgI4CsnNA7HQIuwHEToKwp4DVhAQ5A9k8QLZDOhI7CYkNtQsEWJONkjORHZJcWlQGZUoB8WnGk8zJrJM4srm/CdiLBkqbKH7UnGAkYT3JjTWwPPZtdkEVa+fGWTVrMvfXXj780uD//5LUihKQZmdnAwZQGKKHDUIsfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsOw8A8P1N2yX7ruEAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAoJQTFRFAAAAAQEBsLCw4ODg3Nzc29vbf39/BQUFAgICq6ur2dnZ3d3d5eXl19fX+vr6/f39////09PTz8/P4uLi/Pv8+fn5AwMD/v7+5OTk3t7e4eHhBgYGCQkJBwcH+Pj46+vrc3NzjY2Nd3d3hYWFjIyMi4uLjo6O8vLyS0tL9fX1SUlJTExMkJCQiYmJ6Ojoj4+PT09PCAgISEhI6enp5+fnh4eH1tbW2traCgoKR0dH7u7uqKiooKCge3t7wsLCqqqq9/f38PDwRkZG8/PziIiIurq6tra2v7+/m5ubenp6ZmZmtLS0xcXFnZ2daGho1dXVvb29lpaW8fHxRUVFwMDAnp6epaWloaGhy8vLbW1teHh4Tk5O4+PjY2NjrKysp6an1NTUampqsbGxTU1Nu7u7qampl5eXeXl5ubm5srKya2trkpKSnJycoqKiYmJiYWFhZWVlmpqazs7ORERE0tLSzc3Ns7OzxsbG7OzsyMjIaWlpgICAwcHBlZWVk5OT9vb2t7e37+/v6urqmZmZFhYWgoKCdnZ2UlFSDQ0NGhoaVVVVHBwcKCgohoaGMDAwhISEPT09V1dXUFBQW1tbzMzMo6OjcnJyvr6+Xl5ebGxsr6+vIiIiuLi4Pj4+Nzc3NjY2HR0d0NDQycnJb29vcHBwfX19Ozs7dHR0ODg4JSUlOjo6fn5+lJSUJCQkKysrLS0tISEhWFhYgYGBFRUVERERX19fXFxcx8fHVFRUFxcXDAwMKioqZGRkHh4eKSkpra2tGxsbMTExWlpapKSkExMTQkJCFBQUOTk5Dw8PNDQ0QEBADg4OEBAQJiYmcXFxHx8fU1NTxMTEMjIyMzMzVlZWXV1d19bA+QAAAAFiS0dEEJWyDSwAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAHdElNRQfqCAUVOTU+fwG1AAABQ3pUWHRSYXcgcHJvZmlsZSB0eXBlIGljYwAAKM+dUtttwzAM/NcUHYFviuNYUgR0/wVK27LRFMlHejAgmI8T78Ty3Xv52iEkBXbgVq0b23AGwiNkwx4uTkriQgRaNXQjAB9978gv8mQAypOjGBo7OwgqKEiHf2DmreVkPzGYxj3Zhygf1oeJqbOti+YK6ywpDJxcTq9uad09HYIrrhVWQbp2uHX+Wr/ixfx3YtVnwp4aQn4RST7AORHCIhLYiV4m7E3Ds7QbmtKY0t54Z0pK15Ruz1HclgMNsAckcQENgmoN2jQEnqiK2FgIJ1JkDWHlFiQGmXHX8RjW0r0tVysaxuZ96xalTR+DOz+CYSZ8H70uk3cxLLzruBfyz/5c61Ou/XlVaPMMcJ16BDheElqOfhA1r3o+2theFZIsS2Y9Jm3WZ/kBFCy27zRVavsAAAABb3JOVAHPoneaAAAApmVYSWZJSSoACAAAAAYAEgEDAAEAAAABAAAAGgEFAAEAAABWAAAAGwEFAAEAAABeAAAAKAEDAAEAAAACAAAAPAECAAkAAABmAAAAaYcEAAEAAABwAAAAAAAAAEgAAAABAAAASAAAAAEAAABpbWFnZXJ5NAAABAAAkAcABAAAADAyMTABoAMAAQAAAP//AAACoAMAAQAAALAEAAADoAMAAQAAAHQCAAAAAAAAKdfKpAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyNi0wOC0wNVQyMTo1Nzo1MyswMDowMNvuQgsAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjYtMDgtMDVUMjE6NTc6NTMrMDA6MDCqs/q3AAAAKHRFWHRkYXRlOnRpbWVzdGFtcAAyMDI2LTA4LTA1VDIxOjU3OjUzKzAwOjAw/abbaAAAABV0RVh0ZXhpZjpDb2xvclNwYWNlADY1NTM1M3sAbgAAABN0RVh0ZXhpZjpFeGlmT2Zmc2V0ADExMmpZGOYAAAAVdEVYdGV4aWY6RXhpZlZlcnNpb24AMDIxMLh2VngAAAAZdEVYdGV4aWY6UGl4ZWxYRGltZW5zaW9uADEyMDDEGiTqAAAAGHRFWHRleGlmOlBpeGVsWURpbWVuc2lvbgA2Mjjin10uAAAAEXRFWHRpY2M6Y29weXJpZ2h0AENDMP3UVi0AAAAUdEVYdGljYzpkZXNjcmlwdGlvbgBjMmNp/wr3XgAAABB0RVh0dW5rbm93bgBpbWFnZXJ5NF9znN0AACURSURBVHja7d2JoxzFYefxKp5EF3rQXaCebqTRjBBIDwSS4CEhcQR4QhKnDLICBMxhTMCQ4NgYc0gGW5ZiiC8cH4CwwyY24LXxlQQ7YO/6iJ3dOMeud9nN/j/b3XP2TNW8ObqnW5rvB2Oennp6qud1/15VdXWVEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4CQliy4AAAx2ytyK2MpTHSW7FF0szLbTVs2fPhc5teiCoGTOcL2YPlNIAgtlMa8bzhLSKbosKJM5r3FmrHYEgYWymNN+JT4tzxBB0UVBmQSrvDCmz278IiOwUAatGtYZir5VdJvzk8TSazrfIrBQtDXNwFpbdEFQMgQWSojAghmBhRIisGBGYKGECCyYEVgoIQILZgQWSojAghmBhRIisGA25xFYKJ04sOLzksCacU48clgGUirVCKV53RjqvloE7aAirjBlgVCpP68Mk7wKV3cNHJUOJ+bsqcYj2pVQkTigqs3A8leI9jNb0TmyruhiYsZEeaW6tEa6z0dJ1nn6olZ0KTFtgVMV8xVd1/38zpdnF11MzBjV6bbqETaeHYu7LdYXXUoU4ZzoHPA83/PC+Hxo/H/0XzdsnyJabyi6kJg151b0Mnx9XtGFRAE2NGMpbMdTs4OzHVihR2BhutTG3ppV88Rs/0qNbCq6lChAT2BpAgvFI7BgQWChfAgsWBBYKB9zYIUE1sxTC6lzIOnDiiLK60ow310oupSYMXJBu67vN4Yxx6dj85eo1x1iG5gueRadr+MTo3Fq1MPQbdwl7JwWrrf+gqLLiJmTvkuYqv83bb6QkaOzphb9Lrtow6YtWyObIhvXu0lUudsWFjY1LVx8SdHFxIwJFsWlGyOtc3B7M752nLflso1NC5cqJnifTdX2V3K+8avMmwu6TobWczvA1EjV9QjrnNfoodgpOqtQ1CR5NfNagaXXqsl3Bkyg+6H71qM5awUP46MLgYWyILCwLAILZUFgYVkEFsqCwMKyCCyURffK4yvCxsAGJvBDCoGFsiCwsCwCC2VBYGFZXYFFPwGKJAksLG9XY+5sPXe56j5hii4WykhdMX9laHpoJuXsq+J52NUf7Ai12/remqt7diWD4JptnYdaK2c0RoW2zr81zb+Yk2qx6KNGmexoBtbK9K+4oouFMgo2LR9XkdVSKlG7dql7293XVdO7Utd2v6Sy5/LknGudf+ubDxOuENWxSoqT1UrdWubLIbAwkBR7h4gr7c2vS1Ze2t71RL2r96Wfq1m8Yk9q0pDr0zWstc1vzwWciuiibnDrSWDdKGkSYqB1Qm4cJrCialGUV6p2k+40CSM3p/d2i653TdJ9elwpE53A2u/q5PHn9yluBqGLNH4JmAwZWGubuXO9154lJvrvru4TTN2aTMDWmIwt+nchCjg5QNFHDuDEM1JgCbGnFVjJfLYLXbkT3OZ3z3J7INWBRWAByMCIgbUl7KzJFC8r2JnC6P2tbya1r4N/KAfGFYEFYHSjBVZV3N4VWGF4fWeEwtm+1wys6H/uHdIRQhFYALKUDqzQzF3ZmHpdiuC63W67Vag977rGXhx1Z9hc0FmHXhJwyfYEFoAMpQIrXkDcaK6xsQoC+Ud+92Csu5ImYS24aKkVbl7095W7AwILQOaGqmHplbXG1lUpardpv729pz8Qf1uKfWHz5VG6+Uu39AxpILAAZCEVWAsWG7qHiN5T73qFd2/8LXlfI8QafVhL21qbElgAspQKrOFecn+qUvbBdUI4D6Se79nLCEAAeRg9sAK5uvs1u68Q1Q1+93dup/oEIBejB5ZSH9rdtUiv/6CQ93btw9/zx1SwAORi1MCSUqrgoe41nf37Hk61ET8csNgggFyMXMNKRoPu6Kpi6Z2p+JoTgVP0QQE4OY0cWMkdvkdao9ojbtjuwQpdXb9PMBsDgHyMFVhV9ajXCqzu/nZPh39CexBAXsarYSmxOx4j2kipSrt9GOodRR8PgJPYwIGjWy9e+NN4o+67fjLpdhePec3pRbumlIls4gYhgNwMfjTH0/VLe7qkkhqWVOqapc5L2q+/gZWaAORn4MPPYejrjXJd6gVJDSsKsYuu1H01rPoVRR8OgJPZwPmwfF1xN/S8II6rKLCU/EhjRYruwPozIelzB5CbZSfw22Kch0/IRXFG6oGcKLXmoyQLeLgZQF7GDiwRXOCnt9zz0bjuRWAByMuYgRU1DOXHlno2fZzAApCnIQLLWMGSQu2qp7f01hBYAPI0cFhDnEKbmqOwuvMqXmy++nHtpsdgaf1gcxV6AgtAHgYOa1jSXn2jSPIpFVjx44LxxKO9gXX+442bhAQWgDwMrGH5ofYvaC4t3x1YTvTHJ3R/YOlVsr34RNEHBuDkM/DRnA0XP3ahEJ1aU7vDXaj3aV8nC3ulhzbc2N626AMDcPIZ4uHn/hpWoD7hh82FCLV22zWtsHL+Ja1tiz4wACefoWdrSA9peFJ3dcy3A6vih08FgsACkI+xAku8z28Fldbxl+25sep6QyDWEVgA8jBWYF2wx+1ah/DpuaR7vmnbhdSwAORj9MASwjmgO33t7r3y1DCseO3u9xscAgtALkYOLKHkxVp3LUJxmRDPeK7fDiz/kWTjog8MwMln9BqW+uNDYVdeHRbSucjVlVZg1fXqgMACkIeRAksl0yNfkxoreoEIHHlV3J/V+HNFh9dHW7N0DoDMpQJLWYh4gfpkhLsjxV6303+l9f1xjDlidSextBd+kon8AOQgFVjSRqhmDUuIS/eE7cTy/PkkyETwbFdgab3GYXFCANlbdnqZpB/94M2LjW4pqbobhJv1qUmQBcJ5rjuw9C2CPiwAmRu8ak5TxfuUaA5p+LSXtARbPe7tmtcVqcDyLy36uACchIaqYWm90BpbdbAdS74XuteJdl/VnRV9pL15/YGijwvASWi0wKp+xtOtQaO+1qd1dVXV5rq39/5oUdAsBJCt0QLrkWRqhmbzUa9KerWaO1Ibumea8eqXcqcQQMZGC6yjbth5KqdydRAPc2h7stMV5unw9uZMpQCQleEDK9r4lnqnFuV5t6dncBDXuamXbHBoEwLI1NCBJRznpnp3q8+9KLX+V5ROT6d6sQ7eQ2AByNTwgSWcban5kB9OTTkjpFOVx1KvOYUHCgFkaoTAOi31nduq6RVWow3Un6eqWP59BBaA7Ch5c6Xiur7veeEA3sEPRRv/ufaizRphVD9yas/iFPHXwWd0Jel0T5bc2fxJAgtAZqQjZBAEKhmeMICoxUMUkjFXXas6pxdYbe6yJlvP8PA0IYAMSSWcYJipq5KFJarKCRpr0Ud/UkEgHKc76Ez7p4YFIDuqVUtSUQLZxSunqiCuNbXqTUGtd/mv+Ov4m04kfknRhwbgZNNq3BlqSP3tws52jf9K83bMNgogT8OGTDqwOt8jsABMDYEF4IRBYAEAAAAAAADACFQypm/w4xct8VhmIRwRr4857P5lvP1I4u1VIC7P4BgcYezotZVJDT8PpgyUqQM5/cyJrIkc17TKdtLOYJSjBwrUnP1xqMCKrj8nGOXMDgzhMPDZtMX4Go8fNxvphpLxGJIh2IbAistkGLQdva9Sw75rTTRGd3cLRM2R3XOZRymg4oHdw/w2GFLXdOhq8r1177fqODzjhxPAZ5+PbBzCeZEX/uJzThQEQ9+flsHnr76sx94Bnj/nC190gpGvHOMxPPul9gO3fWXaavDi44sjvOWX/7K37Ju27v1K+t0CdcneDVuH+WyH9VWn+RtABV/Lcr8Ll235uqiRWCg5KS69N54lxPOX05w/xNfHbnvp5VeGrv9ct9bvnZJk8PxKvr5y1/Frb5XDt3lsx6B3v+qYAisuk/m9t39o2Pd0vrHk9r66orW3UXRV0pT8iHZdb7h5pYb0zdYxX7s5y9362nNPEUy1jtI7rpcPkX5HzrzqOpl00ciBLZ7Fh0JvtMBq8Da/dONf1eLQGqahcrvxGCreE+bQe838ntEO6v9pyF6nxTPN+9guqp2Bk+qvK+N8tgO59zR2/jdLme42mabqUlazQck54syxAktH9Yb5x74V7yIY1Jkivu254wRWrPL63VUl1LK99oE4yzPtN1yaN7/gttBcw4p28dyQfc9yrWsuc1eFTok36lkHlued23iDN7PNwaSc3yn6bASWUZNrxgms5va7r/3PouoM7MxdoceqYcVvEbreik3V5ZuGVbHSN+63st24vfq2Npch3sfeIRu72yrmYneXVl3tZR5YeiGpAgZ3u5XJ95Y69NDbVPTZCCwnWOWPdVHVdbLC756XvzXw7pNzW3Na3BEDq7GR73lr3ly+hlXdZQkGc2DJM21vGu3jyk84Q80vd7o219KkrLXfJ/ium3mTUF/W2Pkj2e41aRJuKPpkBJah1G0T1gJ2PBvfvbfWsHaO1+fcKlAYHrnre/Ggg66+sr6DkKss5TcHljgjHPC++5PxEOlb/gaHtPHAvNSHe24ONaytjU62m8LxftEMsmn4h52BQih523h9WB2bD7wla1kHVkcYHjwv6QmX0wksN343qZYPLHOgpD7cc0fqsxtGzoElCSyUmpQ7Jwssz9f+6o+K/AIrahiGpzWKOoXAisx9P0gfjnEfBQZWUiYCC7No0sAKk/uFu3+QZ2CFrn7qr4QIphJYUXEP9AwiN+6DwAKKsHOiczxs/Ov9UCpjH5M8I5tratePZDtG+g4h2xqW1i86YtzACrtfF3wgk2PvRmBhxk0WWM3LVIdbhZNnYOlVP55aYB05+rcEFlBOZ2RzsrsvqjwDy9NPrptaDUsfqBJYQCllE1gVb8/j8YwruQWW5z00rcAKtfe8lFIQWEDpZBNYfqjv/bLhObzMmoQ69LYIyyLnmdew9NzfNR8EJrCAUsmoSRjZbxiTnl1gab3n78W0Aks/17V6sXEfBBZQhOwCS3+nP1CyDKzwAcsy5zkEln6hUZsjsIBSySywfH3wLdE7UWiWgeV6nzZP2JRHYB17a/A8M8UFVmM82k1h9s8p8mgOyi/DGpb3sBA9EyhnGVgVveNbgVg3hbuEcTBcP3iWiGECK+snlONy1fc27j284Gdfw3pxtHmpgQJkF1hu3f3r3kZFloEVuSqomnr2sw+sMDxyTnXQZH7DBJZ6O8tjb9rSqAX9QGc+ij5cGGm6fqAIGdawQvebvWd8xoF19CemOkAeTUKt574YDKhxDBFYsvpmlsfe9GwjsL6hJ31ovb/s36mNusQRMG3ZBVboe0d+mmMfVlSH82809bvnEViep28ZtETZMDUs55LlPrExPoN/aOz7Ip19k/Cd4ZdvAwpiCyzv7O09NnuuF+pKxbed8F4YXtzTZ2sNrPNfPu3hhx++6qoPdtxxyrur6nH3kWd9B71WGOYdzyWwon/fHPCxDdWHJZ6Icq+Snr6wsVaGF31WFcscgKGO/94zPzV+VuMJpUDstxbdPHlzPAF06LvmFUZCHf1sX+qajx4oKUtghdv678gFry48sdS8psyXRNi77IMtsMJ7ncB0Q+qLlz0VV9Xqtoux/rPaVDrdE3M/tX9sQ9WwhPPDA48efyjlwIHjx284fiD66nzL1PJHDzz33PHIAYNP/bx5J8/5L4/Fe9tncvstttIdPW7x6P7Xbvy70Ve9BabNVsM6athWKvFf71jv2Zoi0ffrb/W8whYO2wNjYEV+Ma8965w03mmmYuUTWL4+ZZI+rMZ2AyJgm+UwV0ohHcexLeoa71upeHYMZZ7pNXrPecshzUuzZFbomlA1AZSbObDC8Mq+LRej1kggxS8ftdV/4iDbmF40wh5YyhBYyklWVL52QIqscqZXw9KVW60f21DjsKL2a1X0rDLdCBmlgmDOM5djV3MmHeP7NhaSbqyuZimaEtbAetIaWKLxJGhhpyEwHHNgeXqH/eT9wWbrFR/uc1JNSWuTcIf9DpwSH3St+3d/1f+C3AJLr1q3WBt5pPuwn/xqSz1y1cQ/U7nacjxnMDAUJzhLDWtQYKlzj1ov8Z3D1bAGBZZQ6jVbt7vvPdK/fX6BpX9tK2MWgWUpRn6BFRJYONGNEVhCXFzR5n6sMPz85DUsR/7jvNaW+sf9/S/IMbD8Vy2FJLCAIowRWEGgVunQHCj+falNx6phRTZ55rvzoffudIY1tKxZFMaSElhAEUYPrPgv3qlYhjb4WyZvEkYCW7exPt1QoBwDS98Z90Zf3tNDTWABxRirSSiiKpb5deGfpW7kjxtY6n5bIO6Zbg3LW2o0CgksoAzGCyzxfssloR/NJLDEh8z7r4f1/m1zrWFV5uIhBIrAAspgvMCqXmK+2jz9+sSd7ol1FePr/ND/ft+2+QaWd6cQgiYhUApjNgnFQcvrnsqmhiXutVzO4df7Ns0xsMKokXv+qw5NQqAcxg4s87CGvAMr1P0DDfIMrIi/Si4SWEApZB5YmdwltAWW7+n7+jbNObBc/w5qWEA5jBdY0h5YqWk6Jwgs4+sqvn68vzD5BpbW3s+iwFIEFlC4Me8SftkyEL1+eKiFVJcd1qDOt1xz+oK+jbMJrEGz4T0ggsYzhQQWUKgxa1gvWObxcx9KbzduYP2NZ8uPH/UXJqMa1jF7Yt3YeisCCyjSeIEVvGabxC89YdXYTcK9luk4td8/Z1NGgRW+/4g1sJYubBSXwAIKNcajOUoI55BtQvI70tuOE1jx39zlGl/o6mP5jXR/4U7rxIFLt4nWXFQEFlCcMQIrcKpvW2dTOGfyTncnkL/ZbJ4Sy/WfzK2GpW8Sa2zT2tT1+4N4LWgCCyjUOE1C9ZPTLRe2rz8x+bCGmlK/tgVieDi/dQlfEe9YZw7URy6IDqx6EgTWxHsHCjROYMnrG9v08w6KyR/NUet+e75vq8H9QW5TJLuPBM4/udZ7hU85isACCjZOYH247mnzs37eznQFaJzAcsR/u83ameS/kV8f1neVqM0ZG4Whp/1wazxJ+wkfWBPvHCjS8IEl4yyRQSA2WVfh0vrB4dYltAVWLYmj5yq2RUL9g4YXZRVYj0S7+ocjxqwMvTDc899Phj6srM4boBBDB5YMlIrj5EvX64o1scJzFifrw3KE+NYz9lWNw7uq+dWwHokfOTrNXN64PHcpdcIHVpanDjB9IzQJ42vxpx8+pu39PHpzT5f46E3C2jsrkjWkLQPPN4nc+rB0sr7FP+8w/W1SHveyE7+Glc1JAxRllD6sH1+9b3c99LS1h0kf7lk4dOTA+sJzS76X5IPxhXt+aXhNloGl5Kum6mPyELQ++rt48b5kHydoYGVyygDFMQdWXburVvQ4dKR1hdmmqtL6+Z692wOrv2X35Z/tvX/1ZmsW6nhdin2if1RDtjUsIe60vH+UWe+KxeifGIEFFMEYWHH1xve9tOXmOIj+/thPRfOCbrIE1ihTfnYCy9/sf8F0CBkH1r+stCfWZck4f0FgAcUw17DG4nmnOWK4u4S2yPJ9e5ZFKfq6FHn3YUU+5vu2Euz+V7ku2YbAAopg68MKB4xdsFwOlfq/BemFn+2BZV52cOAcLzpc+mo8L1XfIWQcWI5zrbUE3jXNfay3NHUJLCBP1sAavdkWPti3dznSgg+DHQm/mYzc7H+TbAMrcD53trX9W3lRJpF8zPLkEIEF5MkSWOHogeUufa/au/csA0vf+3llPISsm4RK/cJ2H9TXV35PCulIAgsoQoaB9bKhtZZhYFXeUI7xELIOLKHkVZ65G6ui9UNRq7cqtlmatAQWkKfsAmvNv/TnSZaB9XHHkgWZB1ZVLK62zdvgu/ETPAQWUIiM7hKGuvIxwx287ALLvybOAjmFPqxY9ZP2wbHrvxRtcIxOd6AAGQVWxfuUkKqvTZhVYLnhu/+eWrUm9SbZB5aoPmidGsu/PirCekskEFhAnrIJLF8fj58c7msTZhZYL/2PxakGlvj5DltZwvoLBBZQjIwC64l/jipYzrrevWcVWO9+Tkw1sKI3+8aS7Vj1+v8p1nOXECjA5IEVj1n69i+j+pXhUp00sMJk8Rz/n1Q8s4sQU+vDil2rzbMUhmHlBrXefBeRwAJylUUNy3v9s0IGpr1PXMNyfR0e+o4sIrB+YlunMEqsN86mhgUUIIPA8r8pq5a9TxpYUSyEN/yrLCSw5Ju2UoXhHM8SAkWYPLD2vOjEo8ONe588sOpXRwkQFBFYQr5mTSzPMz+7RGABuZogsDxfRxfuziuEaDyTbOgUn7hJGLofiKNQyY6+Q8irhqU+f7ZreQQ8Sivz3O8EFpCn8QMrrPjh0qHz4p1050m2geV7q5zAvv/Gm+QTWIGQt1qP3TbnPIEF5Gn8wIqqGNs//tl4PhlZzSuw3ND3fy/albepBpYIAvG0Z565i8ACCmEJrCFyxt31qf8lpBPnlcithlXR+syovVlEYCkl1D/uME/cRWABhbAElqfdeI7knssyuUw3xzESrjztfzf72WWP7r3bpkiO+4CGjTL/7mKahPGbinO8ih4BgQXkyjaBn2upRXhuuG3N8U//TtSc5vSiYwSWrriN/bfEjT/rDBHfLqZJGL9XsLhvlLwisIB82WpYS48eiDzU4/6PnPfdeLICJUV7aPs4gaWPXnjBH3b5hBD3WwPLO0cWFVii9qvtBBZQGubA8vSVynbtqSAewhA4raHtYwXW+t71uhZ/Z5+Da5Xs7sbqK1COgRW92bkEFlAatk73HZns3RpY2/qfPHw0tHT1e97vVVyfm/ZdwqY/0f7Q/VgEFpArW5Nw+oF1gWVxrcgDQVSvKyqw3jp7+HUUCSwgV+UJLLnfulqh/lNRKyywxCvDxhWBBeSsPIElvm58DsaLH4B+KQim3ofV3r24wT5fMoEFTFOJAks8YUyseA/hLxp99IXUsKpfOlYZslFIYAG5Kk9gKWGdz0Xrsxr3JIsIrCgqzxkurggsIGflCazoUn/AngS/b25TQA1Liuqww0cJLCBXJQosIX5gj4K7knGqhQRWVMd668rh1mkksIBclSmwpFitzWMb3NB7QzRn8Ot/k7wDK/Jdn8ACileewIo3/7A2T4znav2kEsIppoYVrwX93jB5RWAB+SpVYInPrbdVZHzvk05j8Gj/m0yhhiX+z+kEFlC4cgWWeN+SeT4aT4eHa6KYgaMRR4gPEFhA4coVWLUfrTdPmOeFofcx25tMo4YlxD5tf3aIwAKmolyBJdTD5kstdo3lNVMKrP97bPnEIrCAXJUrsKT4ymZbYOnwHcubTCewFq9eLq4ILCBn5QqsiHExwCSw6k9Y3mQ6gSWcd5d9ppDAAnJVUGBZdl8VwSXx7MzGInn1jzZ22jNhoNpliY+MAyv4zfnLtQkJLCBXpQqs+GIPDmvX3PGu9eGqIwJZVGAp8fxyywkRWECuShVYSWT91teWppdb+Y/m4NECAite21oc14NbhQQWkKuSBZaQVXWWPRTeq/ZNIT+9GlbkNwcH5hWBBeSrXIGVBNALA2oxX+hfqWeagVW92txcJbCAqShfYCnnAXsi7K/K1nZFBJYjnhvY705gAbkqX2BJ8bY9EMKvdrYrILBk7d8GNgoJLCBX5QssVQ2OadvtOH+/096wiMAS1fMILKAw5QusKJF+GMWVcca86Hv/0dly+oElksV9CCygIOULLKWCy9fbM+G9ajU9FmvKgSW+ctS+riqBBeSqbIHV+O+d2rXcKvSPfK1nLNa0A8u5zP4QNIEF5KpsgRVd79XA+dF6bazGxO3EA9XixmE1HK5b3jAKLEFgAflZablsDmWz+xWucf/uIctMMa0aytMDHoK5p7PkVyOxdllqY9ttZTJvfvVwhxSIrxyylc6rDv/R3KuXjPuYdyb7yKWorTXu2NUrs/mhAoWx1LD0MZXF3oNVnrn5tNq8fSuwnO8ftK76EO5znNa2je13mrfTO4zHoFZ5xoDzXxnumJSQ5/m20olg6M9mpSX1Vo6wD2P5qnKNuXDu5JU3oEiqdtjSHzOfzRvcZUmdBwLjVdkOLPmotYZV2ZmuYQXVw5Yq0y45SpncS4ar2qhgUdxl+dR2j5A1T1iO7ywhJ6pj1QL1pHnP/kvZ/FCBgkhxt/HSCyt/OWHDpOkNc5ZUTl2mSbj4qzXWGtav04/nBOIbxmPwK886o5TpqeHCJi6h/LGl2+x6KWvDfjQ3LZn38YKY8KNfNM8/7+n6kHVIoKSiq+v/7Tt+zTO9rs/o1A7Eb5++psdLz9yw783qcrUI+e8bH3z9mcM9notsCDod28m4LRV89LV9N1zTu+1nXhHGHvBAffXB/fufeebddzvbvvfSQzf+fHGUI3v7tdZr323a/9ItG8Twfe5C3fyZ9/b3eub4zVl87rc++O5dfbt+9OZMmvlAgazn8PBX3uDd9+5HBRNcNsk4LZn+cyDiPaqgl/UgVPQCpVJ/paq1ajWQapKDjl474uv73m/4MRHL7DiIYlz1fR5qouMDChdnhylAApVNizBezlmlRZfOUIOV4m0MS3op1f3tOLDiNpjpSlRRJc64Wmv0T1SIVO4lH0F0mY/yuRk+tMk/r0BO1uPeKV//RIeZ7BkoUHSl1mqmbFrM5uyWgem3evyuw72471uNgVepP8ddPsbS1pQpsGScmI3XdlI0SZuR6h9yiO8sw3DfIciqjmUscW3o/jWglNojA3Lc/xTKL61/N+Trk01P8vaSzPuHDeRt1gNrlhBYOOERWLODwMIJj8CaHQQWTnh5n8TTCiyrPN/8BMNHghMegTU7+EhwwiOwZgcfCU54BNbs4CPBCW/ZC37CE5zAKg8+EpzwCKzZwUeCEx6BNTv4SHDCI7BmBx8JAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZoAsugAAMNDlQjhBxFEEFsrDqbW/KrooKBPVPh84MVAmjlBKBfweRUrQ+VIVXRagJZDdpybQ8sG1q+cjc28XXRCg49q5nfNzkbcVNX90W6M9HQlXCiG7FF0szLY1WvthZBX1fqR0AksSWCgLAgtmBBZKqBVYuwgspBBYKCECC2YEFkqoFVg9XaucnzOPwEIJtQJrBYGFFAILJdQKrHkCCykEFkqIwIIZgYUSIrBgRmChhAgsmBFYKCECC2YEFkqIwEJCRT/rqnDaP/DqGTpRXyOCFsHMDZi2quicgJGuwOpDYM0UpVZ5ng4bvOisaCSW9nWbt42pPTBt850TMDk1veY56reE2xunJYE1Q2QgnvU9rbtPjiSuKp1vRl8tFF1OzJjgpnpo4Hafqd6GJKgIrFki5V4dds6BzheV9kmifW9j0cXErNmwpHvFgVXp/vMCgTVrop/1gl7e1qLLiVnzWLjsWelvJLBmDYGFchoqsJItCawZQmChnAgsGPQHVkhgoQQILFgc1Lo1rCH6ykufKPF9ZL35nqLLiBkTiINeN63dZHCDG98dbH5r6ZJkUwJrxnxt68KLG5q2HmqOv9qx5eKNGzdsWFi4+OJNWy4ouoiYPddt6nIobPxSPbZl4Yetc3XThY0VdAis2ZL+ac/7jcRa2flWwLL1mDIVnXaqy1yzFbBCVJ320zhKJetBE1gzTK1tNgXnU0/jLBZdLsyWas+zFWu0nwwkXRt0HiZMnt8RBNZsW6Mbj0CsTU6EoksDJNaGXm/Fv43AmmVrQgILpbO2+YwrgYU0AgslRGDBjMBCCRFYMOsKLKAsCCyYEVgoIQILZgQWSojAghmBhRIisGCk5hqPFXorJ98XkJXTm0+4zgeCRSfQEczrxoOlu4ouCdCxoq5bNaxFAgsdz+nNSWC9zEo5KI/b9ZFkqPvHVbzQE4GFFhk0TgbiCiWigqAzLpDAQhsnA0qoe8FUalho42RAGRFYMOJkQBkRWDDiZEAZEVgwkhZFlwuzjfMRRgQWyojzEUYEFsqI8xFGBBbKiPMRRgQWyojzEUYEFsqI8xFGBBbKiPMRRgQWyojzEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8fvhxwolrLO/AAAAAASUVORK5CYII=" alt="Printtex" class="brand-logo">
-      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-10-19-fiche-marque</span>
+      <span class="brand-tag" style="border-color:var(--ink-2);color:var(--ink-2);" id="buildTag">build 2026-10-19-nouvelle-version</span>
       <button type="button" class="btn btn-ghost btn-sm" id="btnLogout" style="margin-left:6px;">Déconnexion</button>
     </div>
     <div class="stats" id="stats"></div>
@@ -605,7 +880,8 @@
     <button id="navCommandes" class="active">Commandes</button>
     <button id="navMarques">Marques</button>
     <button id="navVectorizer">Vectorizer</button>
-    <a href="idees.html" class="nav-link">Boîte à idées</a>
+    <button id="navParams">Paramètres</button>
+    <a href="idees.html" class="nav-link idees-link">Boîte à idées</a>
   </div>
 
   <div class="quota-widget" id="quotaWidget">
@@ -646,7 +922,7 @@
   <div id="listView" style="display:none;"></div>
   <div id="emptyState" class="empty-state" style="display:none;">
     <h2>Aucune commande</h2>
-    <p>Commence par créer ta première commande pour la voir apparaître ici.</p>
+    <p>Commencez par créer votre première commande pour la voir apparaître ici.</p>
     <button class="btn btn-primary" id="btnNewEmpty" style="margin-top:10px;">+ Nouvelle commande</button>
   </div>
 
@@ -661,8 +937,21 @@
     <div id="brandsGrid" class="brands-grid"></div>
     <div id="brandsEmpty" class="empty-state" style="display:none;">
       <h2>Aucune marque</h2>
-      <p>Ajoute une marque pour commencer à suivre ce qu'il faut lui produire.</p>
+      <p>Ajoutez une marque pour commencer à suivre ce qu'il faut lui produire.</p>
       <button class="btn btn-primary" id="btnNewBrandEmpty" style="margin-top:10px;">+ Nouvelle marque</button>
+    </div>
+  </div>
+
+  <div id="paramsSection" style="display:none;">
+    <h2 class="params-title">Paramètres</h2>
+    <div class="params-block">
+      <h3>Accès des marques</h3>
+      <p class="hint">Suspendre l'accès empêche une marque d'entrer dans son espace (compte inconnu, marque qui ne travaille plus avec Printtex). Rien n'est effacé et l'accès peut être rendu à tout moment.</p>
+      <div id="paramsBrands"></div>
+    </div>
+    <div class="params-block" style="margin-top:14px;">
+      <h3>Mails aux marques</h3>
+      <div id="paramsMails"></div>
     </div>
   </div>
 
@@ -719,7 +1008,7 @@
 <div class="overlay" id="overlay">
   <div class="modal">
     <h2 id="modalTitle">Nouvelle commande</h2>
-    <div class="sub" id="modalSub">Renseigne les informations de la commande.</div>
+    <div class="sub" id="modalSub">Renseignez les informations de la commande.</div>
     <form id="orderForm" novalidate>
       <div class="form-grid">
         <div>
@@ -814,7 +1103,7 @@
 <div class="overlay" id="brandOverlay">
   <div class="modal" style="max-width:420px;">
     <h2 id="brandModalTitle">Nouvelle marque</h2>
-    <div class="sub">Renseigne les informations de la marque.</div>
+    <div class="sub">Renseignez les informations de la marque.</div>
     <form id="brandForm" novalidate>
       <div class="form-grid">
         <div class="full">
@@ -850,14 +1139,16 @@
         <h2 id="tasksModalTitle">Marque</h2>
         <div class="sub" id="tasksModalSub"></div>
         <div class="tasks-modal-phone">
-          <span>☎</span>
+          <span>Tél.</span>
           <input type="tel" id="tasksModalPhone" placeholder="Numéro à appeler en cas de besoin">
         </div>
       </div>
       <div class="tasks-modal-nav">
-        <button type="button" class="btn btn-ghost btn-sm" id="btnPrintBrandSummary">🖨 Imprimer le résumé des commandes</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnPrintBrandSummary">Imprimer le résumé des commandes</button>
         <button type="button" class="btn btn-ghost btn-sm" id="btnShowNewProduct">+ Nouveau produit</button>
         <button type="button" class="btn btn-ghost btn-sm" id="btnShowNewOrder">+ Nouvelle commande</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnShowShopify">Ma boutique en ligne</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnShowBilling">Facturation</button>
       </div>
     </div>
 
@@ -866,12 +1157,19 @@
       <div id="tasksTableBody" class="task-cards-list"></div>
       <div id="tasksDoneGroups"></div>
       <input type="file" id="taskMockupInput" accept="image/*" style="display:none;">
-      <div class="tasks-note">Seuls les modèles qui ont déjà été réalisés précédemment peuvent être inscrits dans le tableau, pour SAMPLER, RDV en boutique.</div>
+      <div class="tasks-note">Seuls les modèles déjà réalisés chez Printtex peuvent être commandés ici. Pour un nouveau modèle, un échantillon est d'abord nécessaire : prenez rendez-vous en boutique.</div>
     </div>
 
     <div id="tasksViewNewProduct" style="display:none;">
       <div class="product-form">
         <div class="product-form-grid">
+          <div class="full">
+            <label for="sitePickerSearch">Vêtement utilisé</label>
+            <input type="search" id="sitePickerSearch" placeholder="Rechercher un vêtement du site (t-shirt, hoodie, casquette…)">
+            <div class="site-picker" id="sitePicker"></div>
+            <input type="text" id="siteOtherName" style="display:none;margin-top:8px;" placeholder="Nom et référence du vêtement">
+            <div class="site-colors" id="siteColors"></div>
+          </div>
           <div>
             <label for="prodNom">Nom du produit</label>
             <input type="text" id="prodNom" placeholder="Ex. T-shirt col rond logo dos">
@@ -884,7 +1182,7 @@
             <label for="prodImpression">Type d'impression</label>
             <select id="prodImpression"></select>
           </div>
-          <div>
+          <div id="prodBlankWrap" style="display:none;">
             <label for="prodBlank">Blank</label>
             <select id="prodBlank"></select>
             <input type="text" id="prodBlankOther" style="display:none;margin-top:5px;" placeholder="Préciser le blank">
@@ -907,12 +1205,19 @@
       <div class="products-catalog" id="productsCatalog"></div>
     </div>
 
+    <div id="tasksViewShopify" style="display:none;"><div id="shopifyView"></div></div>
+    <div id="tasksViewBilling" style="display:none;"><div id="billingView"></div></div>
+
     <div id="tasksViewNewOrder" style="display:none;">
-      <div class="hint" style="margin-bottom:10px;">Choisis une quantité pour chaque produit à commander, puis valide.</div>
+      <div class="hint" style="margin-bottom:10px;">Indiquez une quantité par taille pour chaque produit à commander, puis validez.</div>
       <div class="order-catalog" id="orderCatalog"></div>
-      <div class="modal-actions">
+      <div class="order-extra">
+        <label>Date souhaitée (facultatif) <input type="date" id="orderWanted"></label>
+        <label>Remarque (facultatif) <input type="text" id="orderNote" placeholder="Ex. urgent, livraison groupée…"></label>
+      </div>
+      <div class="modal-actions order-footer">
         <div class="left"><button type="button" class="btn btn-ghost btn-sm" id="btnBackFromOrder">← Retour</button></div>
-        <div class="right"><button type="button" class="btn btn-primary" id="btnCreateOrderFromCatalog">Créer la commande</button></div>
+        <div class="right"><span class="order-total" id="orderTotal">0 pièce</span><button type="button" class="btn btn-primary" id="btnCreateOrderFromCatalog">Créer la commande</button></div>
       </div>
     </div>
 
@@ -921,6 +1226,42 @@
       <div class="right">
         <button type="button" class="btn btn-primary" id="btnTasksClose">Fermer</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="bgOverlay">
+  <div class="modal" style="max-width:480px;">
+    <h2>Fond du visuel</h2>
+    <div class="sub">Votre visuel a un fond uni. Seul le fond autour du dessin est retiré : les parties de la même couleur à l'intérieur (des yeux blancs, par exemple) sont gardées.</div>
+    <div class="bg-stage" id="bgStage"><canvas id="bgCanvas"></canvas></div>
+    <div class="bg-row"><span>Couleur retirée :</span><span id="bgSwatch" class="bg-swatch"></span><span class="hint">Touchez l'image pour en choisir une autre.</span></div>
+    <div class="bg-row" id="bgPreviewBtns"><span>Aperçu sur :</span><button type="button" data-bg="#FFFFFF">Blanc</button><button type="button" data-bg="#111111">Noir</button><button type="button" data-bg="produit" id="bgProd">Textile du produit</button></div>
+    <div class="ve-note" id="bgDtf" style="display:none;">Impression DTF : si vous gardez le fond, il sera imprimé.</div>
+    <div class="modal-actions">
+      <div class="left"><button type="button" class="btn btn-ghost" id="bgKeep">Garder le fond</button></div>
+      <div class="right"><button type="button" class="btn btn-primary" id="bgRemove">Retirer ce fond</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="printSizeOverlay">
+  <div class="modal" style="max-width:460px;">
+    <h2>Taille d'impression</h2>
+    <div class="sub">Indiquez où et à quelle taille ce visuel sera imprimé sur le vêtement.</div>
+    <div class="ps-preview" id="psPreview"></div>
+    <label for="psPlace">Emplacement</label>
+    <select id="psPlace"></select>
+    <div id="psSizeRow">
+      <label for="psWidth">Largeur imprimée (cm)</label>
+      <input type="text" id="psWidth" inputmode="decimal" placeholder="Ex. 28">
+      <div class="ps-presets"><button type="button" data-w="8">Cœur 8 cm</button><button type="button" data-w="15">A5 15 cm</button><button type="button" data-w="21">A4 21 cm</button><button type="button" data-w="29">A3 29 cm</button></div>
+      <div class="ps-height" id="psHeight"></div>
+    </div>
+    <div class="auth-error" id="psError"></div>
+    <div class="modal-actions">
+      <div class="left"><button type="button" class="btn btn-ghost btn-sm" id="psCancel">Annuler</button></div>
+      <div class="right"><button type="button" class="btn btn-primary" id="psOk">Valider</button></div>
     </div>
   </div>
 </div>
@@ -943,7 +1284,7 @@
 <div id="printArea"></div>
 <div class="overlay" id="confirmOverlay">
   <div class="modal" style="max-width:380px;">
-    <p id="confirmMsg" style="font-size:13px;line-height:1.5;margin:0 0 18px;"></p>
+    <p id="confirmMsg" style="font-size:13px;line-height:1.5;margin:0 0 18px;white-space:pre-line;"></p>
     <div style="display:flex;justify-content:flex-end;gap:8px;">
       <button type="button" class="btn btn-ghost" id="confirmCancel">Annuler</button>
       <button type="button" class="btn btn-primary" id="confirmOk">Confirmer</button>
@@ -951,6 +1292,7 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="mail-undo" id="mailUndo" style="display:none;"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-firestore-compat.min.js"></script>
@@ -1002,7 +1344,8 @@ const SLOTS = [
 ];
 const PRIORITY_LABEL = {basse:'Basse', normale:'Normale', haute:'Haute'};
 const PRIORITY_RANK = {haute:0, normale:1, basse:2};
-const firebaseConfigured = FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('COLLE_');
+const DEMO_MODE = new URLSearchParams(location.search).get('demo');
+const firebaseConfigured = !DEMO_MODE && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('COLLE_');
 let db = null;
 let storageRef = null;
 let auth = null;
@@ -1020,7 +1363,7 @@ let currentEditId = null;
 let currentImages = { extra:[] };
 let currentView = 'kanban';
 const $ = (sel) => document.querySelector(sel);
-if(!firebaseConfigured){ $('#storageBanner') && $('#storageBanner').classList.add('show'); }
+if(!firebaseConfigured && !DEMO_MODE){ $('#storageBanner') && $('#storageBanner').classList.add('show'); }
 
 window.addEventListener('error', (e)=>{
   console.error('Erreur non interceptée :', e.error || e.message);
@@ -1044,9 +1387,15 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 2400);
 }
 
-function askConfirm(message){
+/* Échappe un texte saisi (nom de produit, de marque…) avant de l'insérer dans le HTML */
+function esc(v){
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function askConfirm(message, okLabel, cancelLabel){
   return new Promise((resolve)=>{
     $('#confirmMsg').textContent = message;
+    $('#confirmOk').textContent = okLabel || 'Confirmer';
+    $('#confirmCancel').textContent = cancelLabel || 'Annuler';
     $('#confirmOverlay').classList.add('open');
     const onOk = ()=> finish(true);
     const onCancel = ()=> finish(false);
@@ -1069,7 +1418,7 @@ function withTimeout(promise, ms){
   ]);
 }
 async function loadOrders(){
-  if(!db){ orders = []; render(); return; }
+  if(!db){ orders = DEMO_MODE ? DEMO.orders : []; render(); return; }
   try{
     const snap = await withTimeout(db.collection('orders').get(), 14000);
     orders = snap.docs.map(d=>d.data());
@@ -1085,7 +1434,7 @@ async function loadOrders(){
   render();
 }
 async function saveOrder(order){
-  if(!db) return { ok:false, error: 'Firebase non configuré' };
+  if(!db) return DEMO_MODE ? { ok:true } : { ok:false, error: 'Firebase non configuré' };
   try{
     if(order.status === 'prete'){ if(!order.readyAt) order.readyAt = new Date().toISOString(); }
     else if(order.readyAt){ delete order.readyAt; }
@@ -1423,10 +1772,10 @@ function capacityWarning(order){
     const d = new Date(base); d.setDate(base.getDate() + 7*i);
     if(weekPoints(d, order.id) + mine <= TSHIRT_WEEKLY_QUOTA){
       const { monday } = getWeekRange(d);
-      return `⚠ Semaine surchargée (${total}/${TSHIRT_WEEKLY_QUOTA} pts). Première semaine avec de la place : lundi ${monday.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}.`;
+      return `Attention : semaine surchargée (${total}/${TSHIRT_WEEKLY_QUOTA} pts). Première semaine avec de la place : lundi ${monday.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}.`;
     }
   }
-  return `⚠ Semaine surchargée (${total}/${TSHIRT_WEEKLY_QUOTA} pts).`;
+  return `Attention : semaine surchargée (${total}/${TSHIRT_WEEKLY_QUOTA} pts).`;
 }
 function renderQuota(){
   const { monday, sunday } = getWeekRange(new Date());
@@ -1887,7 +2236,7 @@ async function openModal(id){
     return;
   }else{
     $('#modalTitle').textContent = 'Nouvelle commande';
-    $('#modalSub').textContent = 'Renseigne les informations de la commande.';
+    $('#modalSub').textContent = 'Renseignez les informations de la commande.';
   }
   $('#overlay').classList.add('open');
 }
@@ -1913,7 +2262,7 @@ $('#btnSave').addEventListener('click', async (e)=>{
       return;
     }
     if(!currentOrderItems.length){
-      showToast('Ajoute au moins un produit à la commande.');
+      showToast('Ajoutez au moins un produit à la commande.');
       return;
     }
     const invalidQty = currentOrderItems.some(it => !(Number(it.quantity) > 0));
@@ -1949,7 +2298,7 @@ $('#btnSave').addEventListener('click', async (e)=>{
     }else{
       const imagesResult = await saveOrderImages(id, currentOrderItems, currentImages.extra);
       if(!imagesResult){
-        showToast("Échec de l'envoi des images. Réessaie — tes fichiers sont toujours sur ton appareil.");
+        showToast("Échec de l'envoi des images. Réessayez : vos fichiers sont toujours sur votre appareil.");
         return;
       }
       const thumbSource = [];
@@ -2246,7 +2595,7 @@ function exportCSV(source, filename, withTotals){
 $('#btnExport').addEventListener('click', ()=> exportCSV());
 $('#btnExportMonth').addEventListener('click', ()=>{
   const m = $('#exportMonth').value;
-  if(!m){ showToast("Choisis d'abord un mois à côté du bouton."); return; }
+  if(!m){ showToast("Choisissez d'abord un mois à côté du bouton."); return; }
   const list = orders.filter(o=> o.status === 'livree' && String(o.deliveredAt || o.deadline || '').slice(0,7) === m);
   if(!list.length){ showToast('Aucune commande livrée pour ' + m + '.'); return; }
   exportCSV(list, 'comptabilite-' + m + '.csv', true);
@@ -2280,7 +2629,8 @@ let currentTasks = [];
 let brandsLoaded = false;
 
 async function loadBrands(){
-  if(!db){ brands = []; renderBrands(); return; }
+  await loadBillingDue();
+  if(!db){ brands = DEMO_MODE ? DEMO.brands : []; renderBrands(); return; }
   try{
     const snap = await withTimeout(db.collection('brands').get(), 12000);
     brands = snap.docs.map(d=>d.data());
@@ -2291,7 +2641,7 @@ async function loadBrands(){
   renderBrands();
 }
 async function saveBrandDoc(brand){
-  if(!db) return { ok:false, error:'Firebase non configuré' };
+  if(!db) return DEMO_MODE ? { ok:true } : { ok:false, error:'Firebase non configuré' };
   try{
     await withTimeout(db.collection('brands').doc(brand.id).set(brand), 12000);
     return { ok:true };
@@ -2312,7 +2662,7 @@ async function deleteBrandCompletely(id){
   }
 }
 async function loadBrandTasks(brandId){
-  if(!db) return [];
+  if(!db) return DEMO_MODE ? (DEMO.tasks[brandId] || (DEMO.tasks[brandId] = [])) : [];
   try{
     const snap = await withTimeout(db.collection('brands').doc(brandId).collection('tasks').get(), 12000);
     return snap.docs.map(d=>d.data()).map(t=>{
@@ -2324,7 +2674,7 @@ async function loadBrandTasks(brandId){
   }
 }
 async function saveTaskDoc(brandId, task){
-  if(!db) return false;
+  if(!db) return !!DEMO_MODE;
   try{
     await withTimeout(db.collection('brands').doc(brandId).collection('tasks').doc(task.id).set(task), 10000);
     return true;
@@ -2344,9 +2694,11 @@ function brandCardHTML(b){
   const pct = total ? Math.round(done/total*100) : 0;
   const isQuiet = total === 0 || done === total;
   return `<div class="brand-card ${isQuiet?'quiet':''}" data-id="${b.id}">
-    <h3>${b.name}</h3>
-    ${b.contact ? `<div class="contact">${b.contact}</div>` : ''}
+    <h3>${esc(b.name)}</h3>
+    ${b.disabled ? '<div class="brand-suspended">Accès suspendu</div>' : ''}
+    ${b.contact ? `<div class="contact">${esc(b.contact)}</div>` : ''}
     <div class="brand-progress">${done}/${total} commandes faites</div>
+    ${brandDueHTML(b)}
     <div class="brand-bar"><div class="brand-bar-fill" style="width:${pct}%"></div></div>
     ${b.oldestPendingDate ? `<div class="brand-oldest">Commande en attente depuis le ${formatDate(b.oldestPendingDate)}</div>` : ''}
     <div class="brand-card-actions">
@@ -2404,7 +2756,6 @@ $('#btnBrandSave').addEventListener('click', async ()=>{
   if(!name){ showToast('Le nom de la marque est obligatoire'); return; }
   const id = currentEditingBrandId || ('brand_' + Date.now() + '_' + Math.random().toString(36).slice(2,7));
   const existing = currentEditingBrandId ? brands.find(b=>b.id===currentEditingBrandId) : null;
-  // On repart de la fiche existante : sinon ownerUid / ownerEmail disparaissent et la marque ne peut plus se connecter.
   const brand = Object.assign({}, existing || {}, {
     id, name,
     contact: $('#brandContact').value.trim(),
@@ -2474,18 +2825,18 @@ function printBrandSummary(){
     const qty = Number(t.quantity)||0;
     const statut = t.outOfStock ? 'Rupture de stock' : (ready>0 ? `Partielle (${ready}/${qty})` : 'À faire');
     return `<tr>
-      <td>${t.nom||'—'}</td>
+      <td>${esc(t.nom||'—')}</td>
       <td>${blankLabel}</td>
-      <td>${t.taille||'—'}</td>
-      <td>${t.couleur||'—'}</td>
-      <td>${t.impression||'—'}</td>
+      <td>${esc(t.taille||'—')}</td>
+      <td>${esc(t.couleur||'—')}</td>
+      <td>${esc(t.impression||'—')}</td>
       <td>${qty}</td>
       <td>${statut}</td>
-      <td>${t.remarque||''}</td>
+      <td>${esc(t.remarque||'')}</td>
     </tr>`;
   }).join('');
   $('#printArea').innerHTML = `
-    <h2>Résumé des commandes à faire — ${b.name}</h2>
+    <h2>Résumé des commandes à faire — ${esc(b.name)}</h2>
     <div style="font-size:12px;color:#555;margin-bottom:6px;">Imprimé le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})} — ${todo.length} ligne(s) restante(s)</div>
     <table>
       <thead><tr>
@@ -2506,18 +2857,1369 @@ function showTasksView(view){
   $('#tasksViewDefault').style.display = view==='default' ? 'block' : 'none';
   $('#tasksViewNewProduct').style.display = view==='newProduct' ? 'block' : 'none';
   $('#tasksViewNewOrder').style.display = view==='newOrder' ? 'block' : 'none';
+  $('#tasksViewShopify').style.display = view==='shopify' ? 'block' : 'none';
+  $('#tasksViewBilling').style.display = view==='billing' ? 'block' : 'none';
 }
+
+/* ---------- Facturation des marques (Printtex seulement) ----------
+   Un compte par marque facturée : ce qui est dû (pièces faites ou prêtes × prix, frais en plus) moins les paiements reçus.
+   Les paiements soldent les lignes de la plus ancienne à la plus récente (acomptes et paiements partiels compris).
+   Prix d'une pièce = textile + prix d'une impression × nombre d'impressions (faces : dos, devant, manche…).
+   Rangé dans adminNotes/billing_<marque> : collection réservée à l'admin, la marque ne voit jamais ces données. */
+let currentBilling = null;
+let billingDue = {};
+const PAY_MODES = ['Espèces', 'Virement', 'Carte', 'Chèque'];
+function euros(n){ return (Number(n)||0).toLocaleString('fr-FR', { style:'currency', currency:'EUR' }); }
+function round2(n){ return Math.round((Number(n)||0) * 100) / 100; }
+function emptyBilling(brandId){ return { brandId, enabled:false, prices:{}, extras:[], payments:[], archived:[], settledBefore:'', dueTotal:0, oldestDue:'', missingPrices:0 }; }
+async function loadBilling(brandId){
+  if(!db){
+    if(!DEMO_MODE) return emptyBilling(brandId);
+    return DEMO.billing[brandId] || (DEMO.billing[brandId] = emptyBilling(brandId));
+  }
+  try{
+    const d = await withTimeout(db.collection('adminNotes').doc('billing_' + brandId).get(), 10000);
+    return d.exists ? Object.assign(emptyBilling(brandId), d.data()) : emptyBilling(brandId);
+  }catch(e){ showToast('Erreur facturation : ' + e.message); return emptyBilling(brandId); }
+}
+async function saveBilling(bill){
+  const acc = billingAccount(bill);
+  bill.dueTotal = acc.due;
+  bill.oldestDue = acc.oldestDue;
+  bill.missingPrices = acc.missing;
+  bill.updatedAt = new Date().toISOString();
+  billingDue[bill.brandId] = bill.enabled ? { due: bill.dueTotal, oldest: bill.oldestDue, missing: bill.missingPrices } : null;
+  if(!db) return true;
+  try{
+    await withTimeout(db.collection('adminNotes').doc('billing_' + bill.brandId).set(JSON.parse(JSON.stringify(bill))), 10000);
+    return true;
+  }catch(e){ showToast('Erreur facturation : ' + e.message); return false; }
+}
+async function loadBillingDue(){
+  billingDue = {};
+  const add = b => { if(b.enabled) billingDue[b.brandId] = { due: Number(b.dueTotal)||0, oldest: b.oldestDue || '', missing: b.missingPrices || 0 }; };
+  if(!db){ if(DEMO_MODE) Object.values(DEMO.billing).forEach(add); return; }
+  try{
+    const snap = await withTimeout(db.collection('adminNotes').get(), 10000);
+    snap.docs.filter(d=>d.id.startsWith('billing_')).forEach(d=> add(d.data()));
+  }catch(e){}
+}
+function billingProductId(t){
+  if(t.productId) return t.productId;
+  const p = currentBrandProducts.find(x=>x.nom === t.nom);
+  return p ? p.id : '';
+}
+function billingPrice(bill, pid){
+  const p = bill.prices[pid];
+  if(p == null) return null;
+  if(typeof p === 'number') return { textile:p, marquage:0, extra:0, faces:0 };
+  return { textile: Number(p.textile)||0, marquage: Number(p.marquage)||0, extra: p.extra == null ? (Number(p.marquage)||0) : Number(p.extra)||0, faces: p.faces == null ? 1 : Number(p.faces)||0 };
+}
+function billingUnit(bill, t){
+  const pr = billingPrice(bill, billingProductId(t));
+  if(!pr) return null;
+  // Nombre d'impressions : celui de la commande Shopify (dos, devant…) s'il est connu, sinon celui du produit.
+  const faces = Number(t.faces) > 0 ? Number(t.faces) : pr.faces;
+  const unit = billingPieceUnit(pr, faces);
+  return unit > 0 ? unit : null;
+}
+function billingPieceUnit(pr, faces){ return round2(pr.textile + (faces > 0 ? pr.marquage + (faces - 1) * pr.extra : 0)); }
+function billingQty(t){ return t.done ? (Number(t.quantity)||0) : Math.min(Number(t.readyQty)||0, Number(t.quantity)||0); }
+// Toutes les lignes dues (pièces faites ou prêtes, frais en plus), de la plus ancienne à la plus récente.
+function billingCharges(bill){
+  const settled = bill.settledBefore || '';
+  const charges = currentTasks
+    // Annulée sur Shopify : seules les pièces déjà prêtes ou faites restent facturées.
+    .filter(t=> billingQty(t) > 0 && !(settled && (t.createdAt||'') < settled))
+    .map(t=>{
+      const unit = billingUnit(bill, t);
+      const qty = billingQty(t);
+      return { id:'t_' + t.id, taskId:t.id, date:t.createdAt || '', label:[t.nom, t.taille, t.couleur].filter(Boolean).join(' · '),
+        qty, partial: !t.done, cancelled: !!t.shopifyCancelled, faces: Number(t.faces) || null, unit, missing: unit == null, amount: unit == null ? 0 : round2(unit * qty) };
+    });
+  (bill.extras || []).forEach(x=> charges.push({ id:'x_' + x.id, date:x.date || '', label:x.label, qty:null, unit:null, missing:false, amount: round2(x.amount), extra:true }));
+  return charges.sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+}
+function billingAccount(bill){
+  const charges = billingCharges(bill);
+  const paidSum = round2((bill.payments || []).reduce((s,p)=> s + (Number(p.amount)||0), 0));
+  let credit = paidSum;
+  charges.forEach(c=>{
+    if(c.amount <= 0){ c.paid = 0; c.state = c.missing ? 'manquant' : 'paye'; return; }
+    const pay = Math.min(credit, c.amount);
+    c.paid = round2(pay); credit = round2(credit - pay);
+    c.state = pay >= c.amount - 0.005 ? 'paye' : (pay > 0 ? 'partiel' : 'a_payer');
+  });
+  const total = round2(charges.reduce((s,c)=> s + c.amount, 0));
+  const firstOpen = charges.find(c=> c.state === 'a_payer' || c.state === 'partiel');
+  return { charges, total, paidSum, due: round2(Math.max(0, total - paidSum)), advance: round2(Math.max(0, paidSum - total)),
+    oldestDue: firstOpen ? firstOpen.date : '', missing: charges.filter(c=>c.missing).length };
+}
+// Après un changement d'avancement côté Printtex : met à jour le montant dû affiché sur la carte de la marque.
+async function refreshBillingDue(){
+  if(!currentTasksBrandId) return;
+  const bill = await loadBilling(currentTasksBrandId);
+  if(!bill.enabled) return;
+  const acc = billingAccount(bill);
+  if(acc.due !== bill.dueTotal || acc.oldestDue !== bill.oldestDue || acc.missing !== bill.missingPrices) await saveBilling(bill);
+}
+// Une ligne faite (ou en partie prête) et pas encore payée ne peut pas être supprimée.
+async function billingBlocksDelete(task){
+  const bill = await loadBilling(currentTasksBrandId);
+  if(!bill.enabled || billingQty(task) <= 0) return false;
+  const c = billingAccount(bill).charges.find(x=> x.taskId === task.id);
+  return !!(c && c.state !== 'paye');
+}
+const BILLING_STATE = { a_payer:'À payer', partiel:'Payé en partie', paye:'Payé', manquant:'Prix manquant' };
+async function renderBillingView(){
+  const box = $('#billingView');
+  const b = brands.find(x=>x.id===currentTasksBrandId);
+  if(!b) return;
+  box.innerHTML = '<div class="hint">Chargement de la facturation…</div>';
+  const bill = currentBilling = await loadBilling(b.id);
+  const back = '<button type="button" class="btn btn-ghost btn-sm billing-back">← Retour</button>';
+  if(!bill.enabled){
+    box.innerHTML = `
+      <label class="check-inline billing-enable"><input type="checkbox" id="billEnabled"> Je facture cette marque</label>
+      <p class="hint">Cochez pour suivre ce que ${esc(b.name)} vous doit : prix par produit, lignes à payer, paiements reçus.</p>
+      <div class="modal-actions"><div class="left">${back}</div></div>`;
+    wireBillingCommon(bill);
+    return;
+  }
+  const acc = billingAccount(bill);
+  if(acc.due !== bill.dueTotal || acc.oldestDue !== bill.oldestDue || acc.missing !== bill.missingPrices) saveBilling(bill);
+  const archived = new Set(bill.archived || []);
+  const visible = acc.charges.filter(c=> !archived.has(c.id));
+  const hidden = acc.charges.filter(c=> archived.has(c.id));
+  const late = acc.oldestDue && (Date.now() - new Date(acc.oldestDue).getTime()) > 15*24*3600*1000;
+  const today = new Date().toISOString().slice(0,10);
+  box.innerHTML = `
+    <div class="billing-head">
+      <label class="check-inline"><input type="checkbox" id="billEnabled" checked> Je facture cette marque</label>
+      <div class="billing-due">Reste à payer : <strong>${euros(acc.due)}</strong>${acc.advance > 0 ? ` <span class="billing-sub">(avance de ${euros(acc.advance)})</span>` : ''}</div>
+    </div>
+    ${acc.missing ? `<div class="billing-alert">${acc.missing} ligne(s) sans prix : le montant dû est incomplet. Complétez les prix ci-dessous.</div>` : ''}
+    ${late ? `<div class="billing-alert">Montant dû depuis le ${formatDate(acc.oldestDue)} (plus de 15 jours) : pensez à relancer.</div>` : ''}
+
+    <details class="billing-block" ${acc.missing || !currentBrandProducts.every(p=>billingPrice(bill,p.id)) ? 'open' : ''}>
+      <summary>Prix par produit</summary>
+      <div class="billing-sub" style="margin:6px 0 4px;">Prix d'une pièce = textile + 1re impression + impressions en plus (dos, devant, manche…). Textile à 0 si la marque fournit le vêtement. Le nombre d'impressions d'une commande Shopify remplace celui indiqué ici.</div>
+      ${currentBrandProducts.length ? `
+        <div class="billing-price-head"><span></span><span>Textile €</span><span>1re impr. €</span><span>Impr. en plus €</span><span>Nb impr.</span><span>Pièce</span></div>
+        ${currentBrandProducts.map(p=>{ const pr = billingPrice(bill, p.id) || { textile:'', marquage:'', extra:'', faces:1 }; const unit = billingPrice(bill, p.id) ? billingPieceUnit(pr, pr.faces) : null; return `
+        <div class="billing-price-row" data-pid="${esc(p.id)}">
+          <span class="billing-prod">${productThumb(p) ? `<img src="${esc(productThumb(p))}" alt="">` : '<span class="billing-noimg"></span>'}${esc(p.nom || '(sans nom)')}</span>
+          <input type="number" min="0" step="0.01" class="bp-textile" value="${pr.textile === '' ? '' : pr.textile}" placeholder="0">
+          <input type="number" min="0" step="0.01" class="bp-marquage" value="${pr.marquage === '' ? '' : pr.marquage}" placeholder="0">
+          <input type="number" min="0" step="0.01" class="bp-extra" value="${pr.extra === '' ? '' : pr.extra}" placeholder="0">
+          <input type="number" min="0" step="1" class="bp-faces" value="${pr.faces}">
+          <span class="billing-unit">${unit ? euros(unit) : '—'}</span>
+        </div>`; }).join('')}`
+      : '<div class="hint">Aucun produit dans le catalogue de cette marque.</div>'}
+    </details>
+
+    <div class="billing-block">
+      <div class="billing-title">Lignes (${visible.length})</div>
+      ${visible.length ? `
+        <table class="billing-table">
+          <thead><tr><th>Date</th><th>Ligne</th><th>Qté</th><th>Prix</th><th>Montant</th><th>État</th></tr></thead>
+          <tbody>${visible.map(c=>`
+            <tr>
+              <td>${formatDate(c.date)}</td>
+              <td>${esc(c.label)}${c.cancelled ? '<div class="billing-sub">annulée sur Shopify après fabrication : reste due</div>' : (c.partial ? '<div class="billing-sub">pièces prêtes (commande pas terminée)</div>' : '')}${c.faces ? `<div class="billing-sub">${c.faces} impression(s)</div>` : ''}</td>
+              <td>${c.qty == null ? '' : c.qty}</td>
+              <td>${c.extra ? '' : (c.unit ? euros(c.unit) : '<span class="billing-warn">manquant</span>')}</td>
+              <td><strong>${euros(c.amount)}</strong>${c.state === 'partiel' ? `<div class="billing-sub">réglé ${euros(c.paid)}</div>` : ''}</td>
+              <td><span class="billing-state st-${c.state}">${BILLING_STATE[c.state]}</span></td>
+            </tr>`).join('')}</tbody>
+        </table>
+        ${visible.some(c=>c.state==='paye') ? '<div class="billing-actions"><button type="button" class="btn btn-ghost btn-sm" id="btnBillingArchive">Archiver les lignes payées</button></div>' : ''}`
+      : '<div class="hint">Aucune ligne due : les pièces apparaissent ici dès qu\'elles sont prêtes ou « Fait ».</div>'}
+    </div>
+
+    <div class="billing-block">
+      <div class="billing-title">Enregistrer un paiement</div>
+      <div class="billing-form">
+        <input type="number" min="0" step="0.01" id="payAmount" placeholder="Montant €" value="${acc.due > 0 ? acc.due : ''}">
+        <select id="payMode">${PAY_MODES.map(m=>`<option ${m === (bill.defaultMode || '') ? 'selected' : ''}>${m}</option>`).join('')}</select>
+        <input type="date" id="payDate" value="${today}">
+        <input type="text" id="payNote" placeholder="Note (facultatif)">
+        <button type="button" class="btn btn-primary" id="btnBillingPay">Enregistrer le paiement</button>
+      </div>
+      <div class="billing-sub">Un acompte ou un paiement partiel solde les lignes de la plus ancienne à la plus récente.</div>
+      ${(bill.payments||[]).length ? `
+        <table class="billing-table" style="margin-top:10px;">
+          <thead><tr><th>Date</th><th>Montant</th><th>Mode</th><th>Note</th><th></th></tr></thead>
+          <tbody>${bill.payments.slice().sort((a,c)=> (c.date||'').localeCompare(a.date||'')).map(p=>`
+            <tr><td>${formatDate(p.date)}</td><td><strong>${euros(p.amount)}</strong></td><td>${esc(p.mode||'')}</td><td>${esc(p.note||'')}</td>
+            <td><button type="button" class="btn btn-ghost btn-sm billing-del-pay" data-id="${esc(p.id)}">Annuler</button></td></tr>`).join('')}</tbody>
+        </table>` : ''}
+    </div>
+
+    <div class="billing-block">
+      <div class="billing-title">Frais en plus ou remise</div>
+      <div class="billing-form">
+        <input type="text" id="extraLabel" placeholder="Ex. création du logo, livraison, remise">
+        <input type="number" step="0.01" id="extraAmount" placeholder="Montant € (négatif pour une remise)">
+        <button type="button" class="btn btn-ghost" id="btnBillingExtra">Ajouter</button>
+      </div>
+      ${(bill.extras||[]).length ? `<div class="billing-sub" style="margin-top:6px;">${bill.extras.map(x=>`${esc(x.label)} : ${euros(x.amount)} <a href="javascript:void(0)" class="billing-del-extra" data-id="${esc(x.id)}">retirer</a>`).join(' · ')}</div>` : ''}
+    </div>
+
+    <details class="billing-block">
+      <summary>Options</summary>
+      <label class="billing-opt">Considérer comme déjà réglé tout ce qui a été commandé avant le
+        <input type="date" id="billSettledBefore" value="${esc((bill.settledBefore||'').slice(0,10))}"></label>
+      <div class="billing-sub">À utiliser seulement pour une marque dont l'historique est déjà payé. Laisser vide sinon.</div>
+    </details>
+
+    ${hidden.length ? `
+    <details class="billing-block">
+      <summary>Archives (${hidden.length}) · ${euros(hidden.reduce((s,c)=>s+c.amount,0))}</summary>
+      <table class="billing-table"><tbody>${hidden.map(c=>`<tr><td>${formatDate(c.date)}</td><td>${esc(c.label)}</td><td>${c.qty == null ? '' : c.qty}</td><td>${euros(c.amount)}</td></tr>`).join('')}</tbody></table>
+    </details>` : ''}
+
+    <div class="modal-actions"><div class="left">${back}</div></div>`;
+  wireBillingCommon(bill);
+  box.querySelectorAll('.billing-price-row').forEach(row=>{
+    row.querySelectorAll('input').forEach(inp=> inp.addEventListener('change', async ()=>{
+      const textile = Math.max(0, Number(row.querySelector('.bp-textile').value) || 0);
+      const marquage = Math.max(0, Number(row.querySelector('.bp-marquage').value) || 0);
+      const extra = Math.max(0, Number(row.querySelector('.bp-extra').value) || 0);
+      const faces = Math.max(0, Math.round(Number(row.querySelector('.bp-faces').value) || 0));
+      if(textile || marquage) bill.prices[row.dataset.pid] = { textile, marquage, extra, faces };
+      else delete bill.prices[row.dataset.pid];
+      await saveBilling(bill);
+      renderBillingView();
+    }));
+  });
+  $('#btnBillingPay').addEventListener('click', async ()=>{
+    const amount = round2($('#payAmount').value);
+    if(!(amount > 0)){ showToast('Indiquez le montant reçu.'); return; }
+    const mode = $('#payMode').value;
+    const ok = await askConfirm(`Enregistrer un paiement de ${euros(amount)} (${mode}) de ${b.name} ?`);
+    if(!ok) return;
+    const date = $('#payDate').value ? new Date($('#payDate').value + 'T12:00:00').toISOString() : new Date().toISOString();
+    bill.payments = bill.payments || [];
+    const pay = { id:'pay_' + Date.now(), amount, mode, date };
+    const note = $('#payNote').value.trim();
+    if(note) pay.note = note;
+    bill.payments.push(pay);
+    bill.defaultMode = mode;
+    await saveBilling(bill);
+    showToast('Paiement enregistré');
+    renderBillingView();
+  });
+  box.querySelectorAll('.billing-del-pay').forEach(btn=> btn.addEventListener('click', async ()=>{
+    const ok = await askConfirm('Annuler ce paiement ? Les lignes concernées repasseront « À payer ».');
+    if(!ok) return;
+    bill.payments = bill.payments.filter(p=>p.id !== btn.dataset.id);
+    await saveBilling(bill);
+    renderBillingView();
+  }));
+  $('#btnBillingExtra').addEventListener('click', async ()=>{
+    const label = $('#extraLabel').value.trim();
+    const amount = round2($('#extraAmount').value);
+    if(!label || !amount){ showToast('Indiquez un libellé et un montant.'); return; }
+    bill.extras = bill.extras || [];
+    bill.extras.push({ id:'x' + Date.now(), label, amount, date: new Date().toISOString() });
+    await saveBilling(bill);
+    renderBillingView();
+  });
+  box.querySelectorAll('.billing-del-extra').forEach(a=> a.addEventListener('click', async ()=>{
+    bill.extras = bill.extras.filter(x=>x.id !== a.dataset.id);
+    await saveBilling(bill);
+    renderBillingView();
+  }));
+  const archBtn = $('#btnBillingArchive');
+  if(archBtn) archBtn.addEventListener('click', async ()=>{
+    bill.archived = Array.from(new Set([...(bill.archived||[]), ...visible.filter(c=>c.state==='paye').map(c=>c.id)]));
+    await saveBilling(bill);
+    renderBillingView();
+  });
+  $('#billSettledBefore').addEventListener('change', async (e)=>{
+    if(e.target.value){
+      const ok = await askConfirm(`Tout ce qui a été commandé avant le ${formatDate(e.target.value)} sera considéré comme payé. Confirmer ?`);
+      if(!ok){ e.target.value = (bill.settledBefore||'').slice(0,10); return; }
+    }
+    bill.settledBefore = e.target.value ? new Date(e.target.value + 'T00:00:00').toISOString() : '';
+    await saveBilling(bill);
+    renderBillingView();
+  });
+}
+function wireBillingCommon(bill){
+  const box = $('#billingView');
+  box.querySelectorAll('.billing-back').forEach(btn=> btn.addEventListener('click', ()=> showTasksView('default')));
+  $('#billEnabled').addEventListener('change', async (e)=>{
+    bill.enabled = e.target.checked;
+    await saveBilling(bill);
+    renderBillingView();
+    renderBrands();
+  });
+}
+$('#btnShowBilling').addEventListener('click', ()=>{
+  if(isBrandView()) return;
+  showTasksView('billing');
+  renderBillingView();
+});
+
+function brandDueHTML(b){
+  const d = billingDue[b.id];
+  if(!d) return '';
+  const late = d.oldest && (Date.now() - new Date(d.oldest).getTime()) > 15*24*3600*1000;
+  return `<div class="brand-due ${d.due > 0 ? 'has-due' : ''}">À payer : ${euros(d.due)}${late ? ' · depuis le ' + formatDate(d.oldest) : ''}${d.missing ? ' · prix à compléter' : ''}</div>`;
+}
+
+/* ---------- Préparation automatique des visuels ----------
+   Même méthode que l'outil de personnalisation du site (printtex-perso.js) : on analyse le pourtour de l'image.
+   Fond déjà transparent ou photo : rien n'est retiré. Fond uni proche de la couleur du textile : on retire seulement
+   le fond relié aux bords (les aplats à l'intérieur du dessin restent), bords adoucis. Puis rognage au plus près
+   de ce qui est visible. En DTF, on demande avant de retirer le fond. Aucune fenêtre : le fichier est préparé à l'envoi. */
+const VE_COLOR_WORDS = { blanc:[255,255,255], noir:[17,17,17], gris:[163,163,163], marine:[31,42,68], bleu:[36,87,166], rouge:[179,38,30], bordeaux:[107,30,43], vert:[47,93,58], kaki:[91,91,58], beige:[217,199,167], 'crème':[241,233,216], creme:[241,233,216], sable:[216,195,160], rose:[242,201,208], jaune:[232,195,58], orange:[224,122,31], violet:[91,58,134], charbon:[51,51,51], anthracite:[58,58,58], naturel:[239,230,210], chocolat:[74,46,34] };
+const VE_TOL = 42;
+const veEcart = (d, i, c) => Math.max(Math.abs(d[i]-c[0]), Math.abs(d[i+1]-c[1]), Math.abs(d[i+2]-c[2]));
+function veTextileRgb(name){
+  const n = String(name || '').toLowerCase().split(',')[0].trim();
+  for(const w of Object.keys(VE_COLOR_WORDS)) if(n.includes(w)) return VE_COLOR_WORDS[w];
+  return null;
+}
+function veAnalyse(d, w, h){
+  const bord = [];
+  for(let x=0; x<w; x++) bord.push(x, (h-1)*w + x);
+  for(let y=1; y<h-1; y++) bord.push(y*w, y*w + w - 1);
+  if(bord.filter(p=> d[p*4+3] < 250).length > bord.length * 0.05) return { type:'transparent' };
+  const med = [0,1,2].map(c=>{ const v = bord.map(p=> d[p*4+c]).sort((a,b)=>a-b); return v[v.length >> 1]; });
+  const proches = bord.filter(p=> veEcart(d, p*4, med) <= VE_TOL).length;
+  return proches <= bord.length * 0.6 ? { type:'photo', fond:med } : { type:'uni', fond:med };
+}
+function veRetirerContour(d, w, h, fond){
+  const n = w*h, src = new Uint8ClampedArray(d), mask = new Uint8Array(n), pile = new Int32Array(n);
+  let top = 0;
+  const pousser = p => { if(!mask[p] && veEcart(src, p*4, fond) <= VE_TOL){ mask[p] = 1; pile[top++] = p; } };
+  for(let x=0; x<w; x++){ pousser(x); pousser((h-1)*w + x); }
+  for(let y=0; y<h; y++){ pousser(y*w); pousser(y*w + w - 1); }
+  while(top){
+    const p = pile[--top], x = p % w;
+    if(x > 0) pousser(p-1); if(x < w-1) pousser(p+1); if(p >= w) pousser(p-w); if(p < n-w) pousser(p+w);
+  }
+  for(let p=0; p<n; p++){
+    if(mask[p]){ d[p*4+3] = 0; continue; }
+    const x = p % w;
+    const voisin = (x > 0 && mask[p-1]) || (x < w-1 && mask[p+1]) || (p >= w && mask[p-w]) || (p < n-w && mask[p+w]);
+    if(voisin){ const e = veEcart(src, p*4, fond); if(e < VE_TOL*2.5) d[p*4+3] = Math.round(d[p*4+3] * Math.max(0, e - VE_TOL) / (VE_TOL*1.5)); }
+  }
+}
+function veBoiteVisible(d, w, h){
+  let y0 = 0, y1 = h-1, x0 = 0, x1 = w-1;
+  const ligneVide = y => { for(let x=0, i=y*w*4+3; x<w; x++, i+=4) if(d[i]) return false; return true; };
+  const colVide = (x, a, b) => { for(let y=a; y<=b; y++) if(d[(y*w + x)*4+3]) return false; return true; };
+  while(y0 < h && ligneVide(y0)) y0++;
+  if(y0 === h) return null;
+  while(ligneVide(y1)) y1--;
+  while(colVide(x0, y0, y1)) x0++;
+  while(colVide(x1, y0, y1)) x1--;
+  return { x0, y0, x1, y1 };
+}
+// Fenêtre de choix du fond : aperçu sur le textile, couleur retirée au choix (clic sur l'image), retrait autour du dessin seulement.
+function askBgChoice(src, w, h, fond, textile, dtf){
+  return new Promise(resolve=>{
+    const k = Math.min(1, 360 / Math.max(w, h));
+    const pw = Math.max(1, Math.round(w*k)), ph = Math.max(1, Math.round(h*k));
+    const small = document.createElement('canvas'); small.width = pw; small.height = ph;
+    const sx = small.getContext('2d', { willReadFrequently:true }); sx.drawImage(src, 0, 0, pw, ph);
+    const base = sx.getImageData(0, 0, pw, ph);
+    let color = fond.slice();
+    const view = $('#bgCanvas'); view.width = pw; view.height = ph;
+    const textileCss = textile ? `rgb(${textile.join(',')})` : '#FFFFFF';
+    const draw = ()=>{
+      const img = new ImageData(new Uint8ClampedArray(base.data), pw, ph);
+      veRetirerContour(img.data, pw, ph, color);
+      view.getContext('2d').putImageData(img, 0, 0);
+      $('#bgSwatch').style.background = `rgb(${color.join(',')})`;
+    };
+    $('#bgStage').style.background = textileCss;
+    $('#bgProd').style.display = textile ? '' : 'none';
+    $('#bgPreviewBtns').querySelectorAll('button').forEach(b=> b.onclick = ()=>{ $('#bgStage').style.background = b.dataset.bg === 'produit' ? textileCss : b.dataset.bg; });
+    $('#bgDtf').style.display = dtf ? 'block' : 'none';
+    view.onclick = e=>{
+      const r = view.getBoundingClientRect();
+      const x = Math.min(pw-1, Math.floor((e.clientX - r.left) * pw / r.width)), y = Math.min(ph-1, Math.floor((e.clientY - r.top) * ph / r.height));
+      const p = (y*pw + x)*4;
+      color = [base.data[p], base.data[p+1], base.data[p+2]];
+      draw();
+    };
+    const fin = res=>{ $('#bgOverlay').classList.remove('open'); resolve(res); };
+    $('#bgKeep').onclick = ()=> fin({ remove:false });
+    $('#bgRemove').onclick = ()=> fin({ remove:true, color });
+    draw();
+    $('#bgOverlay').classList.add('open');
+  });
+}
+// Renvoie le fichier préparé (PNG) ou le fichier d'origine s'il n'y a rien à faire.
+async function prepareVisual(file, opts){
+  if(!file || !/^image\/(png|jpe?g|webp)$/i.test(file.type)) return file;
+  try{
+    const img = await new Promise((ok, ko)=>{ const u = URL.createObjectURL(file); const i = new Image(); i.onload = ()=>{ URL.revokeObjectURL(u); ok(i); }; i.onerror = ()=>{ URL.revokeObjectURL(u); ko(new Error('image illisible')); }; i.src = u; });
+    const k = Math.min(1, Math.sqrt(16000000 / (img.naturalWidth * img.naturalHeight)));
+    const w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently:true });
+    ctx.drawImage(img, 0, 0, w, h);
+    const id = ctx.getImageData(0, 0, w, h);
+    const d = id.data;
+    const a = veAnalyse(d, w, h);
+    let retire = false;
+    if(a.type === 'uni'){
+      const textiles = String((opts && opts.couleur) || '').split(',').map(veTextileRgb).filter(Boolean);
+      const choix = await askBgChoice(c, w, h, a.fond, textiles[0] || null, /dtf/i.test((opts && opts.impression) || ''));
+      retire = choix.remove;
+      if(retire) veRetirerContour(d, w, h, choix.color);
+    }
+    const box = veBoiteVisible(d, w, h);
+    const rogne = box && (box.x0 > 0 || box.y0 > 0 || box.x1 < w-1 || box.y1 < h-1);
+    if(!retire && !rogne && k === 1) return file;
+    ctx.putImageData(id, 0, 0);
+    const b = box || { x0:0, y0:0, x1:w-1, y1:h-1 };
+    const out = document.createElement('canvas');
+    out.width = b.x1 - b.x0 + 1; out.height = b.y1 - b.y0 + 1;
+    out.getContext('2d').drawImage(c, b.x0, b.y0, out.width, out.height, 0, 0, out.width, out.height);
+    const blob = await new Promise(r=> out.toBlob(r, 'image/png'));
+    if(!blob) return file;
+    showToast(retire ? 'Visuel préparé : fond retiré et marges rognées' : 'Visuel préparé : marges rognées');
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.png', { type:'image/png' });
+  }catch(e){
+    return file;
+  }
+}
+
+/* ---------- Taille d'impression des visuels ----------
+   À chaque image ajoutée : emplacement sur le vêtement et largeur imprimée en cm (hauteur calculée).
+   Le PNG enregistré porte la résolution correspondante (bloc pHYs, comme l'outil de personnalisation du site) :
+   ouvert dans le logiciel d'impression (GTX Lab…), il fait directement la bonne taille réelle. */
+const PRINT_PLACES = ['Devant', 'Dos', 'Cœur (poitrine)', 'Manche gauche', 'Manche droite', 'Nuque', 'Autre emplacement'];
+const PREVIEW_PLACE = 'Aperçu seulement (pas à imprimer)';
+const SIZE_KEYS = ['emplacement', 'widthCm', 'heightCm', 'dpi'];
+function cleanSizeMeta(m){ const o = {}; if(m) SIZE_KEYS.forEach(k=>{ if(m[k] != null && m[k] !== '') o[k] = m[k]; }); return o; }
+function sizeLabel(im){
+  if(!im || !im.emplacement) return '';
+  return im.widthCm ? `${im.emplacement} · ${String(im.widthCm).replace('.', ',')} × ${String(im.heightCm).replace('.', ',')} cm` : im.emplacement;
+}
+const PX_CRC = Array.from({ length:256 }, (_, n)=>{ let c = n; for(let k=0; k<8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+const pxCrc32 = bytes => { let c = 0xffffffff; for(const b of bytes) c = PX_CRC[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+// Inscrit la résolution (points par pouce) dans le PNG, juste après l'en-tête IHDR.
+async function pngWithDpi(blob, dpi){
+  const png = new Uint8Array(await blob.arrayBuffer());
+  const ppm = Math.round(dpi / 0.0254);
+  const chunk = new Uint8Array(21);
+  const v = new DataView(chunk.buffer);
+  v.setUint32(0, 9);
+  chunk.set([0x70, 0x48, 0x59, 0x73], 4);
+  v.setUint32(8, ppm); v.setUint32(12, ppm); chunk[16] = 1;
+  v.setUint32(17, pxCrc32(chunk.subarray(4, 17)));
+  const ihdrEnd = 8 + 25;
+  return new Blob([png.subarray(0, ihdrEnd), chunk, png.subarray(ihdrEnd)], { type:'image/png' });
+}
+async function imageSize(file){
+  const u = URL.createObjectURL(file);
+  try{
+    const i = await new Promise((ok, ko)=>{ const im = new Image(); im.onload = ()=> ok(im); im.onerror = ko; im.src = u; });
+    return { w: i.naturalWidth, h: i.naturalHeight, url: u };
+  }catch(e){ URL.revokeObjectURL(u); return null; }
+}
+// Demande l'emplacement et la largeur imprimée. Renvoie { file, meta } ou null si annulé.
+async function askPrintSize(file){
+  const dim = /^image\//.test(file.type) ? await imageSize(file) : null;
+  return new Promise(resolve=>{
+    const ov = $('#printSizeOverlay');
+    $('#psPreview').innerHTML = dim ? `<img src="${dim.url}" alt="">` : `<div class="ps-file">${esc(file.name)}</div>`;
+    $('#psPlace').innerHTML = PRINT_PLACES.concat(PREVIEW_PLACE).map(p=>`<option>${esc(p)}</option>`).join('');
+    $('#psWidth').value = '';
+    $('#psHeight').textContent = '';
+    $('#psError').textContent = '';
+    const majHauteur = ()=>{
+      const wcm = Number(String($('#psWidth').value).replace(',', '.'));
+      $('#psHeight').textContent = dim && wcm > 0 ? `Hauteur : ${String(Math.round(wcm * dim.h / dim.w * 10) / 10).replace('.', ',')} cm` : '';
+    };
+    const majPlace = ()=>{ $('#psSizeRow').style.display = $('#psPlace').value === PREVIEW_PLACE ? 'none' : 'block'; };
+    $('#psWidth').oninput = majHauteur;
+    document.querySelectorAll('.ps-presets button').forEach(b=> b.onclick = ()=>{ $('#psWidth').value = b.dataset.w; majHauteur(); });
+    $('#psPlace').onchange = majPlace;
+    majPlace();
+    const fin = res=>{ ov.classList.remove('open'); if(dim) URL.revokeObjectURL(dim.url); resolve(res); };
+    $('#psCancel').onclick = ()=> fin(null);
+    $('#psOk').onclick = async ()=>{
+      const emplacement = $('#psPlace').value;
+      if(emplacement === PREVIEW_PLACE){ fin({ file, meta:{ emplacement:'Aperçu' } }); return; }
+      const wcm = Number(String($('#psWidth').value).replace(',', '.'));
+      if(!(wcm >= 1 && wcm <= 70)){ $('#psError').textContent = 'Indiquez la largeur imprimée en cm (entre 1 et 70).'; return; }
+      const meta = { emplacement, widthCm: Math.round(wcm * 10) / 10 };
+      if(!dim){ fin({ file, meta }); return; }
+      meta.heightCm = Math.round(wcm * dim.h / dim.w * 10) / 10;
+      meta.dpi = Math.round(dim.w / (wcm / 2.54));
+      let out = file;
+      try{
+        let png = file;
+        if(file.type !== 'image/png'){
+          const c = document.createElement('canvas'); c.width = dim.w; c.height = dim.h;
+          const img = $('#psPreview img'); c.getContext('2d').drawImage(img, 0, 0);
+          png = await new Promise(r=> c.toBlob(r, 'image/png'));
+        }
+        const blob = await pngWithDpi(png, meta.dpi);
+        out = new File([blob], file.name.replace(/\.[^.]+$/, '') + '.png', { type:'image/png' });
+      }catch(e){}
+      if(meta.dpi < 150) showToast(`Attention : résolution faible pour cette taille (${meta.dpi} ppp). Le rendu risque d'être flou.`);
+      fin({ file: out, meta });
+    };
+    ov.classList.add('open');
+    setTimeout(()=> $('#psWidth').focus(), 50);
+  });
+}
+
+/* ---------- Ruptures : suivi du réassort et message à la marque ----------
+   Sur une ligne en rupture : date de commande du textile et date de réception prévue (visibles par la marque).
+   « Prévenir la marque » prépare un message WhatsApp ou un email (rien n'est envoyé sans clic de Printtex). */
+function restockRowHTML(t){
+  return `<div class="restock-row">
+    <label>Commandé le <input type="date" class="restock-ordered" value="${esc((t.restockOrderedAt||'').slice(0,10))}"></label>
+    <label>Réception prévue <input type="date" class="restock-eta" value="${esc((t.restockEta||'').slice(0,10))}"></label>
+    <label>N° de suivi <input type="text" class="restock-tracking" value="${esc(t.restockTracking||'')}" placeholder="Numéro du transporteur"></label>
+    <button type="button" class="btn btn-ghost btn-sm restock-notify">Renvoyer le mail de rupture</button>
+    ${mailsSentHTML(t)}
+  </div>`;
+}
+function brandRestockHTML(t){
+  const parts = [];
+  if(t.restockOrderedAt) parts.push('textile commandé le ' + formatDate(t.restockOrderedAt));
+  if(t.restockEta) parts.push('attendu chez Printtex le ' + formatDate(t.restockEta));
+  let h = esc('Rupture de stock' + (parts.length ? ' : ' + parts.join(', ') : (t.restockTracking ? '' : ' : Printtex vous préviendra dès réception')));
+  if(t.restockTracking){
+    const tr = t.restockTracking;
+    h += ' · ' + (/^https?:\/\//i.test(tr) ? `<a href="${esc(tr)}" target="_blank" rel="noopener">suivre le colis</a>` : 'suivi : ' + esc(tr));
+  }
+  return h;
+}
+function brandOrderGroupsHTML(list){
+  const groups = new Map();
+  list.forEach(t=>{
+    const key = t.orderRef ? 'r:' + t.orderRef : t.shopifyOrder ? 's:' + t.shopifyOrder : 'd:' + (t.createdAt || '').slice(0,10);
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(t);
+  });
+  return [...groups.entries()].sort((a,b)=> (b[1][0].createdAt||'').localeCompare(a[1][0].createdAt||'')).map(([key, ts])=>{
+    const t0 = ts[0];
+    const titre = key.startsWith('r:') ? `Commande ${t0.orderRef} du ${formatDate(t0.createdAt)}` : key.startsWith('s:') ? `Commande Shopify ${t0.shopifyOrder} du ${formatDate(t0.createdAt)}` : `Commandé le ${formatDate(t0.createdAt)}`;
+    const pieces = ts.reduce((a,t)=> a + (Number(t.quantity)||0), 0);
+    const pretes = ts.reduce((a,t)=> a + (t.done ? (Number(t.quantity)||0) : Math.min(Number(t.readyQty)||0, Number(t.quantity)||0)), 0);
+    return `<div class="order-group">
+      <div class="order-group-head"><strong>${esc(titre)}</strong><span>${pretes} / ${pieces} pièces prêtes</span></div>
+      ${ts.map(taskCardHTML).join('')}
+    </div>`;
+  }).join('');
+}
+function brandRestockText(t){
+  let s = 'Rupture de stock';
+  if(t.restockOrderedAt) s += ' : textile commandé le ' + formatDate(t.restockOrderedAt);
+  if(t.restockEta) s += (t.restockOrderedAt ? ', réception prévue le ' : ' : réception prévue le ') + formatDate(t.restockEta);
+  if(t.restockTracking) s += ' · suivi : ' + t.restockTracking;
+  if(!t.restockOrderedAt && !t.restockEta && !t.restockTracking) s += ' : Printtex vous préviendra dès réception';
+  return s;
+}
+function longDate(d){ return d ? new Date(d).toLocaleDateString('fr-FR', { day:'numeric', month:'long' }) : ''; }
+function restockMessage(brandName, t){
+  const piece = [t.nom, t.taille && 'taille ' + t.taille, t.couleur, (Number(t.quantity)||0) + ' pièces'].filter(Boolean).join(', ');
+  const lignes = [`Bonjour ${brandName},`, '', `Le textile de la commande « ${piece} » est en rupture de stock chez notre fournisseur.`];
+  if(t.restockOrderedAt) lignes.push(`Nous l'avons commandé le ${longDate(t.restockOrderedAt)}.`);
+  if(t.restockEtaPrev && t.restockEta && t.restockEtaPrev !== t.restockEta) lignes.push(`Nouveau délai : réception prévue le ${longDate(t.restockEta)} (au lieu du ${longDate(t.restockEtaPrev)}).`);
+  else if(t.restockEta) lignes.push(`Réception prévue le ${longDate(t.restockEta)}.`);
+  else lignes.push('Nous vous communiquerons la date de réception dès que possible.');
+  lignes.push('Nous lançons la production dès réception.', '', 'Printtex');
+  return lignes.join('\n');
+}
+function wireRestockRow(card, task){
+  const row = card.querySelector('.restock-row');
+  if(!row) return;
+  const ord = row.querySelector('.restock-ordered'), eta = row.querySelector('.restock-eta');
+  ord.addEventListener('change', async ()=>{
+    const had = !!task.restockOrderedAt;
+    if(ord.value) task.restockOrderedAt = new Date(ord.value + 'T12:00:00').toISOString(); else delete task.restockOrderedAt;
+    await saveTaskDoc(currentTasksBrandId, task);
+    renderTasksTable();
+    if(task.restockOrderedAt && !had) sendBrandMail('commande', task);
+  });
+  const trk = row.querySelector('.restock-tracking');
+  trk.addEventListener('change', async ()=>{
+    const v = trk.value.trim();
+    const isNew = v && v !== (task.restockTracking || '');
+    if(v) task.restockTracking = v; else delete task.restockTracking;
+    await saveTaskDoc(currentTasksBrandId, task);
+    renderTasksTable();
+    if(isNew) sendBrandMail('suivi', task);
+  });
+  eta.addEventListener('change', async ()=>{
+    const v = eta.value ? new Date(eta.value + 'T12:00:00').toISOString() : '';
+    const changedEta = !!(task.restockEta && v && v !== task.restockEta);
+    if(changedEta){ task.restockEtaPrev = task.restockEta; task.restockEtaChangedAt = new Date().toISOString(); }
+    if(v) task.restockEta = v; else delete task.restockEta;
+    await saveTaskDoc(currentTasksBrandId, task);
+    renderTasksTable();
+    if(changedEta) sendBrandMail('delai', task);
+  });
+  row.querySelector('.restock-notify').addEventListener('click', ()=> sendBrandMail('rupture', task, true));
+}
+
+/* ---------- Mails automatiques aux marques (Brevo, via le service Cloudflare) ----------
+   Envoyés quand Printtex change une ligne : rupture, textile commandé, nouveau délai, numéro de suivi, textile reçu, commande prête.
+   Interrupteur dans Paramètres (adminNotes/settings). En démo, rien n'est envoyé. */
+const MAIL_KINDS = { rupture:'Rupture de stock', commande:'Textile commandé', delai:'Nouveau délai', suivi:'Textile expédié', recu:'Textile reçu', prete:'Prête (récapitulatif de 16 h)' };
+let appSettings = null;
+async function loadAppSettings(){
+  if(appSettings) return appSettings;
+  appSettings = { autoMails:true };
+  if(!db) return appSettings;
+  try{ const d = await withTimeout(db.collection('adminNotes').doc('settings').get(), 8000); if(d.exists) Object.assign(appSettings, d.data()); }catch(e){}
+  return appSettings;
+}
+async function saveAppSettings(){
+  if(!db) return;
+  try{ await withTimeout(db.collection('adminNotes').doc('settings').set(JSON.parse(JSON.stringify(appSettings))), 8000); }
+  catch(e){ showToast('Erreur paramètres : ' + e.message); }
+}
+function mailPiece(t){ return [t.nom, t.taille && 'taille ' + t.taille, t.couleur, (Number(t.quantity)||0) + ' pièce(s)'].filter(Boolean).join(', '); }
+function brandMail(kind, brandName, t){
+  const p = `« ${mailPiece(t)} »`;
+  const L = [`Bonjour ${brandName},`, ''];
+  if(kind === 'rupture'){
+    L.push(`Le textile de votre commande ${p} est en rupture de stock chez notre fournisseur.`);
+    L.push(t.restockOrderedAt ? `Nous l'avons commandé le ${longDate(t.restockOrderedAt)}.` : 'Nous le commandons et vous préviendrons dès que la commande est passée.');
+    if(t.restockEta) L.push(`Réception prévue le ${longDate(t.restockEta)}.`);
+  }else if(kind === 'commande'){
+    L.push(`Nous avons commandé le textile de votre commande ${p} le ${longDate(t.restockOrderedAt)}.`);
+    L.push(t.restockEta ? `Réception prévue le ${longDate(t.restockEta)}.` : 'Nous vous indiquerons la date de réception dès que possible.');
+  }else if(kind === 'delai'){
+    L.push(`Le délai de réception du textile de votre commande ${p} a changé.`);
+    L.push(`Nouvelle date de réception prévue : ${longDate(t.restockEta)}${t.restockEtaPrev ? ` (au lieu du ${longDate(t.restockEtaPrev)})` : ''}.`);
+  }else if(kind === 'suivi'){
+    L.push(`Le textile de votre commande ${p} a été expédié par notre fournisseur.`);
+    L.push(`Numéro de suivi : ${t.restockTracking}.`);
+  }else if(kind === 'recu'){
+    L.push(`Le textile de votre commande ${p} est arrivé : la production est lancée.`);
+  }else if(kind === 'prete'){
+    L.push(`Votre commande ${p} est prête.`);
+  }
+  L.push('', 'Vous pouvez suivre l\'avancement dans votre espace Printtex.', '', 'Printtex', '(Message envoyé automatiquement : vous pouvez y répondre.)');
+  return { subject: `${MAIL_KINDS[kind]} : ${t.nom || 'votre commande'}`, text: L.join('\n') };
+}
+// Côté Printtex seulement : envoie le mail et le note sur la ligne. force = renvoi manuel.
+const pendingMails = new Map();
+function renderMailUndo(){
+  const box = $('#mailUndo');
+  if(!pendingMails.size){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = [...pendingMails.entries()].map(([id, m])=> `<div>Mail « ${esc(MAIL_KINDS[m.kind])} » à ${esc(m.brandName)} dans 1 minute. <a href="javascript:void(0)" data-id="${id}">Annuler</a></div>`).join('');
+  box.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=>{ const m = pendingMails.get(a.dataset.id); if(m){ clearTimeout(m.timer); pendingMails.delete(a.dataset.id); renderMailUndo(); showToast('Mail annulé'); } }));
+}
+window.addEventListener('beforeunload', (e)=>{ if(pendingMails.size){ e.preventDefault(); e.returnValue = ''; } });
+async function sendBrandMail(kind, task, force, brandId, immediate){
+  if(isBrandView() || !task) return;
+  brandId = brandId || currentTasksBrandId;
+  const settings = await loadAppSettings();
+  if(!settings.autoMails && !force) return;
+  const b = brands.find(x=>x.id===brandId);
+  if(b && !immediate && !force && kind !== 'prete'){
+    const id = 'm' + Date.now() + Math.random().toString(36).slice(2,5);
+    const timer = setTimeout(()=>{ pendingMails.delete(id); renderMailUndo(); sendBrandMail(kind, task, true, brandId, true); }, 60000);
+    pendingMails.set(id, { kind, brandName: b.name, timer });
+    renderMailUndo();
+    return;
+  }
+  if(!b) return;
+  if(!b.ownerEmail && !/@/.test(b.contact || '')){ showToast(`Mail non envoyé : aucun email pour ${b.name}.`); return; }
+  if(kind === 'prete'){
+    const ligne = mailPiece(task);
+    if(DEMO_MODE) showToast(`Démo : « ${ligne} » ajoutée au récapitulatif de 16 h pour ${b.name}`);
+    else{
+      try{ await shopifyCall('/digest', { post:true, body:{ brandId:b.id, line: ligne } }); }
+      catch(e){ showToast('Récapitulatif non mis à jour : ' + e.message); return; }
+      showToast(`Ajoutée au récapitulatif « prêt » de 16 h pour ${b.name}`);
+    }
+    task.mails = task.mails || {};
+    task.mails.prete = new Date().toISOString();
+    await saveTaskDoc(brandId, task);
+    if(brandId === currentTasksBrandId) renderTasksTable();
+    return;
+  }
+  const m = brandMail(kind, b.name, task);
+  if(DEMO_MODE){
+    showToast(`Démo : mail « ${MAIL_KINDS[kind]} » à ${b.name} (non envoyé)`);
+  }else{
+    try{ await shopifyCall('/mail', { post:true, body:{ brandId:b.id, subject:m.subject, text:m.text } }); }
+    catch(e){ showToast('Mail non envoyé : ' + e.message); return; }
+    showToast(`Mail « ${MAIL_KINDS[kind]} » envoyé à ${b.name}`);
+  }
+  task.mails = task.mails || {};
+  task.mails[kind] = new Date().toISOString();
+  await saveTaskDoc(brandId, task);
+  if(brandId === currentTasksBrandId) renderTasksTable();
+}
+
+/* ---------- Réassort : suivi automatique des commandes fournisseurs ----------
+   À l'ouverture de l'outil (Printtex) : la liste des lignes en rupture est publiée sur le service Cloudflare ;
+   la tâche quotidienne (Claude, lecture de Gmail) y dépose les dates de commande et numéros de suivi trouvés
+   dans les mails des fournisseurs ; ils sont appliqués ici et la marque est prévenue par mail. */
+async function syncSupplierUpdates(){
+  if(DEMO_MODE || isBrandView()) return;
+  try{
+    if(!brandsLoaded){ brandsLoaded = true; await loadBrands(); }
+    const byBrand = {};
+    const ruptures = [];
+    for(const b of brands){
+      if(!b.taskTotal || (b.taskDone||0) >= b.taskTotal) continue;
+      const tasks = await loadBrandTasks(b.id);
+      byBrand[b.id] = tasks;
+      tasks.filter(t=> t.outOfStock && !t.done).forEach(t=> ruptures.push({
+        brandId: b.id, marque: b.name, taskId: t.id, produit: t.nom || '', vetement: t.siteName || t.blankOther || t.blank || '',
+        siteHandle: t.siteHandle || '', couleur: t.couleur || '', taille: t.taille || '',
+        quantite: Math.max(0, (Number(t.quantity)||0) - (Number(t.readyQty)||0)), depuis: t.createdAt || '',
+        commandeLe: t.restockOrderedAt || '', suivi: t.restockTracking || '', fournisseur: t.restockSupplier || ''
+      }));
+    }
+    await shopifyCall('/ruptures', { post:true, body:{ ruptures } });
+    const { updates } = await shopifyCall('/updates');
+    const applied = [];
+    for(const u of updates || []){
+      const tasks = byBrand[u.brandId] || (byBrand[u.brandId] = await loadBrandTasks(u.brandId));
+      const t = tasks.find(x=>x.id===u.taskId);
+      if(!t){ applied.push(u.id); continue; }
+      const kinds = [];
+      if(u.restockOrderedAt && !t.restockOrderedAt){ t.restockOrderedAt = u.restockOrderedAt; kinds.push('commande'); }
+      if(u.restockEta && u.restockEta !== t.restockEta){
+        if(t.restockEta){ t.restockEtaPrev = t.restockEta; t.restockEtaChangedAt = new Date().toISOString(); if(!kinds.includes('commande')) kinds.push('delai'); }
+        t.restockEta = u.restockEta;
+      }
+      if(u.restockTracking && u.restockTracking !== t.restockTracking){ t.restockTracking = u.restockTracking; kinds.push('suivi'); }
+      if(u.supplier) t.restockSupplier = u.supplier;
+      await saveTaskDoc(u.brandId, t);
+      for(const k of kinds) await sendBrandMail(k, t, false, u.brandId, true);
+      applied.push(u.id);
+    }
+    if(applied.length){
+      await shopifyCall('/updates/ack', { post:true, body:{ ids: applied } });
+      showToast(`${applied.length} mise(s) à jour fournisseur appliquée(s)`);
+    }
+  }catch(e){ showToast('Suivi fournisseurs : ' + e.message); }
+}
+function mailsSentHTML(t){
+  const m = t.mails || {};
+  const done = Object.keys(MAIL_KINDS).filter(k=>m[k]).map(k=>`${MAIL_KINDS[k]} (${formatDate(m[k])})`);
+  return done.length ? `<span class="restock-note">Mails envoyés : ${esc(done.join(', '))}</span>` : '';
+}
+async function renderParamsMails(){
+  const box = $('#paramsMails');
+  if(!box) return;
+  const settings = await loadAppSettings();
+  let status = 'Mode démo : aucun mail n\'est envoyé.';
+  if(!DEMO_MODE){
+    try{ const st = await shopifyCall('/mail/status'); status = st.configured ? `Brevo est configuré : les mails partent de ${st.from}.` : 'Brevo n\'est pas encore configuré : aucun mail ne part pour l\'instant.'; }
+    catch(e){ status = 'État de Brevo inconnu (' + e.message + ').'; }
+  }
+  box.innerHTML = `
+    <label class="check-inline"><input type="checkbox" id="setAutoMails" ${settings.autoMails ? 'checked' : ''}> Envoyer automatiquement les mails aux marques</label>
+    <p class="hint">Rupture, textile commandé, nouveau délai, numéro de suivi, textile reçu : envoyés une minute après la modification (annulables). Commandes prêtes : un seul mail par marque et par jour, à 16 h. ${esc(status)}</p>`;
+  $('#setAutoMails').addEventListener('change', async (e)=>{ settings.autoMails = e.target.checked; await saveAppSettings(); showToast(settings.autoMails ? 'Mails automatiques activés' : 'Mails automatiques désactivés'); });
+}
+
+/* ---------- Liaison Shopify (marques) ----------
+   La marque relie sa boutique une fois, coche les produits fabriqués chez Printtex et indique le produit Printtex correspondant.
+   Les commandes de ses clients sur ces produits deviennent des lignes de suivi : à chaque ouverture de son espace,
+   et pour Printtex à l'ouverture de l'outil (au plus toutes les 6 heures par marque). Le jeton Shopify reste sur le service Cloudflare. */
+const SHOPIFY_SYNC_URL = 'https://printtex-shopify.printtex75.workers.dev';
+const DEMO_SHOP = { connected:false };
+const DEMO_STORE = { orders: null };
+function demoShopify(path, opts){
+  if(path.startsWith('/store/products')) return { platform:'shopify', storeUrl:'zoo-demo.com', products:[
+    { id:'s1', title:'T-shirt Tigre', image:'https://cdn.shopify.com/s/files/1/0833/8459/8874/files/am018_black_ft.jpg' },
+    { id:'s2', title:'Hoodie Cœur', image:'https://cdn.shopify.com/s/files/1/0833/8459/8874/files/jh501_airforceblue_ft.jpg' },
+    { id:'s3', title:'Mug Zoo', image:'' }, { id:'s4', title:'Sticker Zoo', image:'' } ] };
+  if(path.startsWith('/stores')) return { ok:true };
+  if(path.startsWith('/storeorders/ack')){ DEMO_STORE.orders = []; return { ok:true }; }
+  if(path.startsWith('/storeorders')){
+    if(DEMO_STORE.orders === null) DEMO_STORE.orders = [{ ref:'#1050', date:new Date(Date.now()-5*3600*1000).toISOString(), lines:[
+      { title:'T-shirt Tigre', variant:'Noir / L', quantity:2, options:'Emplacement : Dos' }, { title:'Mug Zoo', variant:'', quantity:1, options:'' } ] }];
+    return { orders: DEMO_STORE.orders };
+  }
+  if(path.startsWith('/connect')){ DEMO_SHOP.connected = true; return { ok:true, shop:'demo' }; }
+  if(path.startsWith('/disconnect')){ DEMO_SHOP.connected = false; return { ok:true }; }
+  if(path.startsWith('/status')) return DEMO_SHOP.connected ? { connected:true, shop:'demo' } : { connected:false };
+  if(path.startsWith('/products')) return { products: [
+    { id:'9001', title:'T-shirt Tigre (impression dos ou devant)', image:'https://cdn.shopify.com/s/files/1/0833/8459/8874/files/am018_black_ft.jpg' },
+    { id:'9002', title:'Hoodie Logo cœur', image:'https://cdn.shopify.com/s/files/1/0833/8459/8874/files/jh501_airforceblue_ft.jpg' },
+    { id:'9003', title:'Mug (fabriqué ailleurs)', image:'' } ] };
+  const h = n => new Date(Date.now() - n*3600*1000).toISOString();
+  return { orders: [
+    { id:'5001', name:'#1041', created_at:h(30), lines:[
+      { id:'7001', product_id:'9001', variant_title:'Noir / M', quantity:2, properties:[{ name:'Emplacement', value:'Dos' }] },
+      { id:'7002', product_id:'9003', variant_title:'', quantity:1, properties:[] } ]},
+    { id:'5002', name:'#1042', created_at:h(20), lines:[
+      { id:'7003', product_id:'9001', variant_title:'Noir / L', quantity:1, properties:[{ name:'Emplacement', value:'Devant' }] },
+      { id:'7004', product_id:'9002', variant_title:'Marine / XL', quantity:1, properties:[] } ]},
+    { id:'5003', name:'#1043', created_at:h(2), lines:[
+      { id:'7005', product_id:'9002', variant_title:'Marine / M', quantity:3, properties:[] } ]} ] };
+}
+async function shopifyCall(path, opts){
+  if(DEMO_MODE) return demoShopify(path, opts);
+  const token = auth && auth.currentUser ? await auth.currentUser.getIdToken() : '';
+  const post = !!(opts && opts.post);
+  const r = await withTimeout(fetch(SHOPIFY_SYNC_URL + path, {
+    method: post ? 'POST' : 'GET',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: post ? JSON.stringify(opts.body || {}) : undefined
+  }), 20000);
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error || ('Erreur ' + r.status));
+  return data;
+}
+function parseVariantTitle(vt){
+  const parts = String(vt || '').split(' / ').map(x=>x.trim()).filter(Boolean);
+  const isSize = x => /^(XXS|XS|S|M|L|XL|XXL|[2-6]XL|OS|TU|Taille unique|S\/M|L\/XL|\d+(\/\d+)? ans)$/i.test(x);
+  return { taille: parts.find(isSize) || '', couleur: parts.filter(x=>!isSize(x)).join(' / ') };
+}
+async function importShopifyOrders(brand, tasks, products){
+  const map = brand.shopifyMap || {};
+  if(!Object.keys(map).length) return 0;
+  const q = '/orders?brandId=' + encodeURIComponent(brand.id) + (brand.shopifySince ? '&since=' + encodeURIComponent(brand.shopifySince) : '');
+  const data = await shopifyCall(q);
+  let created = 0;
+  for(const o of data.orders || []){
+    if(o.cancelled){
+      for(const t of tasks.filter(t=> t.id.startsWith('shopify_' + o.id + '_') && !t.shopifyCancelled)){ t.shopifyCancelled = true; await saveTaskDoc(brand.id, t); }
+      continue;
+    }
+    for(const l of o.lines || []){
+      const pid = map[l.product_id];
+      if(!pid) continue;
+      const id = 'shopify_' + o.id + '_' + l.id;
+      if(tasks.some(t=>t.id===id)) continue;
+      const p = products.find(x=>x.id===pid);
+      if(!p) continue;
+      const v = parseVariantTitle(l.variant_title);
+      const options = (l.properties || []).map(x=>x.name + ' : ' + x.value).join(' · ');
+      const task = {
+        id, nom: p.nom, blank: p.blank || '', blankOther: p.blankOther || '',
+        taille: v.taille, couleur: v.couleur || p.couleurs || '', impression: p.impression || '',
+        productId: p.id, quantity: Number(l.quantity) || 0, remarque: ['Shopify ' + o.name, options].filter(Boolean).join(' · '),
+        mockup: (p.images || []).slice(0,4), done:false, readyQty:0,
+        createdAt: o.created_at || new Date().toISOString(), shopifyOrder: o.name || '', shopifyOrderId: String(o.id)
+      };
+      const faces = (options.match(/\b(dos|devant|manche|poitrine|nuque)\b/gi) || []).length;
+      if(faces) task.faces = faces;
+      if(p.siteProductId){
+        task.siteProductId = p.siteProductId; task.siteHandle = p.siteHandle || '';
+        task.siteName = p.siteName || ''; task.siteImage = p.siteImage || '';
+      }
+      tasks.push(task);
+      await saveTaskDoc(brand.id, task);
+      created++;
+    }
+  }
+  brand.shopifyLastImport = new Date().toISOString();
+  return created;
+}
+// Espace marque (ou admin dans la fiche d'une marque) : import immédiat pour la marque ouverte.
+async function importShopifyForCurrentBrand(showNone){
+  const b = brands.find(x=>x.id===currentTasksBrandId);
+  if(!b || !b.shopifyConnected) return;
+  try{
+    const created = await importShopifyOrders(b, currentTasks, currentBrandProducts);
+    await saveBrandDoc(b);
+    if(created){ renderTasksTable(); await updateBrandSummary(); }
+    if(created || showNone) showToast(created ? `${created} ligne(s) Shopify ajoutée(s)` : 'Aucune nouvelle commande Shopify.');
+  }catch(e){ showToast('Shopify : ' + e.message); }
+}
+// Printtex : à l'ouverture de l'outil, import pour toutes les marques reliées (au plus toutes les 6 heures par marque).
+async function autoImportShopifyAll(){
+  try{
+    if(!brandsLoaded){ brandsLoaded = true; await loadBrands(); }
+    let total = 0;
+    for(const b of brands){
+      if(!b.shopifyConnected || !b.shopifyMap) continue;
+      if(b.shopifyLastImport && Date.now() - new Date(b.shopifyLastImport).getTime() < 6*3600*1000) continue;
+      const tasks = await loadBrandTasks(b.id);
+      const products = await loadBrandProducts(b.id);
+      const created = await importShopifyOrders(b, tasks, products);
+      b.taskTotal = tasks.length;
+      b.taskDone = tasks.filter(t=>t.done).length;
+      const pending = tasks.filter(t=>!t.done && t.createdAt).map(t=>t.createdAt).sort();
+      if(pending.length) b.oldestPendingDate = pending[0];
+      await saveBrandDoc(b);
+      total += created;
+    }
+    if(total){ showToast(`${total} ligne(s) Shopify importée(s) chez les marques`); renderBrands(); }
+  }catch(e){ showToast('Import Shopify : ' + e.message); }
+}
+async function renderShopifyView(){
+  const box = $('#shopifyView');
+  const b = brands.find(x=>x.id===currentTasksBrandId);
+  if(!b) return;
+  box.innerHTML = '<div class="hint">Vérification de la boutique…</div>';
+  let st;
+  try{ st = await shopifyCall('/status?brandId=' + encodeURIComponent(b.id)); }
+  catch(e){ box.innerHTML = `<div class="auth-error">Shopify : ${esc(e.message)}</div><button type="button" class="btn btn-ghost btn-sm shopify-back">← Retour</button>`; wireShopifyBack(); return; }
+  if(!st.connected){
+    box.innerHTML = `
+      <div class="shopify-connect">
+        <h3>Relier votre boutique Shopify</h3>
+        <p class="hint">Les commandes de vos clients sur les produits fabriqués chez Printtex arriveront ici toutes seules : plus besoin de les saisir.</p>
+        <ol class="shopify-steps">
+          <li>Dans Shopify : <strong>Paramètres → Applications et canaux de vente → Développer des applications</strong>, puis « Créer une application » (nom : Printtex).</li>
+          <li>« Configurer les niveaux d'accès de l'API Admin » : cochez <strong>read_orders</strong> et <strong>read_products</strong>, puis enregistrez.</li>
+          <li>« Installer l'application », puis « Révéler le jeton une fois » et copiez-le (il commence par shpat_).</li>
+        </ol>
+        <label for="shopifyShop">Adresse de la boutique</label>
+        <input type="text" id="shopifyShop" placeholder="votre-boutique.myshopify.com" autocomplete="off">
+        <label for="shopifyToken">Jeton d'accès</label>
+        <input type="password" id="shopifyToken" placeholder="shpat_…" autocomplete="off">
+        <div class="auth-error" id="shopifyError"></div>
+        <div class="modal-actions">
+          <div class="left"><button type="button" class="btn btn-ghost btn-sm shopify-back">← Retour</button></div>
+          <div class="right">
+            <button type="button" class="btn btn-ghost" id="btnShopifyDemo">Essayer avec une boutique de démonstration</button>
+            <button type="button" class="btn btn-primary" id="btnShopifyConnect">Relier la boutique</button>
+          </div>
+        </div>
+      </div>`;
+    const connect = async (shop, token)=>{
+      $('#shopifyError').textContent = '';
+      try{
+        await shopifyCall('/connect', { post:true, body:{ brandId:b.id, shop, token } });
+        b.shopifyConnected = true;
+        b.shopifySince = new Date(Date.now() - 7*24*3600*1000).toISOString();
+        await saveBrandDoc(b);
+        renderShopifyView();
+      }catch(e){ $('#shopifyError').textContent = e.message; }
+    };
+    $('#btnShopifyConnect').addEventListener('click', ()=> connect($('#shopifyShop').value, $('#shopifyToken').value));
+    $('#btnShopifyDemo').addEventListener('click', ()=> connect('demo', ''));
+    wireShopifyBack();
+    return;
+  }
+  let products = [];
+  try{ products = (await shopifyCall('/products?brandId=' + encodeURIComponent(b.id))).products || []; }
+  catch(e){ showToast('Shopify : ' + e.message); }
+  const map = b.shopifyMap || {};
+  box.innerHTML = `
+    <div class="shopify-status">Boutique reliée : <strong>${esc(st.shop === 'demo' ? 'boutique de démonstration' : st.shop)}</strong>
+      <button type="button" class="btn btn-ghost btn-sm" id="btnShopifyDisconnect">Délier</button></div>
+    <p class="hint">Cochez les produits de votre boutique que Printtex fabrique et choisissez le produit Printtex correspondant. Les commandes de vos clients sur ces produits arriveront dans votre suivi, avec les options choisies (dos, devant…).</p>
+    ${currentBrandProducts.length ? '' : '<div class="auth-error">Créez d\'abord vos produits Printtex avec « + Nouveau produit », puis reliez-les ici.</div>'}
+    <div class="shopify-products">${products.map(p=>`
+      <div class="shopify-prod ${map[p.id] ? 'on' : ''}" data-id="${esc(p.id)}">
+        ${p.image ? `<img src="${esc(siteImg(p.image, 160))}" alt="">` : '<div class="shopify-noimg">Shopify</div>'}
+        <div class="shopify-prod-body">
+          <div class="shopify-prod-title">${esc(p.title)}</div>
+          <label class="check-inline"><input type="checkbox" class="shopify-made" ${map[p.id] ? 'checked' : ''}> Fabriqué chez Printtex</label>
+          <select class="shopify-match">
+            <option value="">Produit Printtex correspondant…</option>
+            ${currentBrandProducts.map(cp=>`<option value="${esc(cp.id)}" ${map[p.id]===cp.id ? 'selected' : ''}>${esc(cp.nom)}</option>`).join('')}
+          </select>
+        </div>
+      </div>`).join('')}</div>
+    <div class="modal-actions">
+      <div class="left"><button type="button" class="btn btn-ghost btn-sm shopify-back">← Retour</button></div>
+      <div class="right">
+        <button type="button" class="btn btn-ghost" id="btnShopifyImport">Récupérer les commandes maintenant</button>
+        <button type="button" class="btn btn-primary" id="btnShopifySaveMap">Enregistrer</button>
+      </div>
+    </div>`;
+  box.querySelectorAll('.shopify-made').forEach(c=> c.addEventListener('change', ()=> c.closest('.shopify-prod').classList.toggle('on', c.checked)));
+  const saveMap = async ()=>{
+    const newMap = {};
+    let missing = 0;
+    box.querySelectorAll('.shopify-prod').forEach(el=>{
+      if(!el.querySelector('.shopify-made').checked) return;
+      const match = el.querySelector('.shopify-match').value;
+      if(match) newMap[el.dataset.id] = match; else missing++;
+    });
+    if(missing){ showToast('Choisissez le produit Printtex pour chaque produit coché.'); return false; }
+    b.shopifyMap = newMap;
+    b.shopifyConnected = true;
+    await saveBrandDoc(b);
+    return true;
+  };
+  $('#btnShopifySaveMap').addEventListener('click', async ()=>{ if(await saveMap()) showToast('Produits reliés enregistrés'); });
+  $('#btnShopifyImport').addEventListener('click', async ()=>{
+    if(!(await saveMap())) return;
+    await importShopifyForCurrentBrand(true);
+    showTasksView('default');
+  });
+  $('#btnShopifyDisconnect').addEventListener('click', async ()=>{
+    const ok = await askConfirm('Délier la boutique Shopify ? Les commandes déjà importées restent dans le suivi.');
+    if(!ok) return;
+    try{ await shopifyCall('/disconnect?brandId=' + encodeURIComponent(b.id), { post:true }); }catch(e){ showToast('Shopify : ' + e.message); return; }
+    b.shopifyConnected = false;
+    await saveBrandDoc(b);
+    renderShopifyView();
+  });
+  wireShopifyBack();
+}
+function wireShopifyBack(){
+  $('#shopifyView').querySelectorAll('.shopify-back').forEach(btn=> btn.addEventListener('click', ()=> showTasksView('default')));
+}
+$('#btnShowShopify').addEventListener('click', ()=>{ storeWizard = null; showTasksView('shopify'); renderStoreView(); });
+
+/* ---------- Boutique en ligne : connexion simple, sans application (Shopify, Big Cartel) ----------
+   1. La marque tape l'adresse de sa boutique : ses produits sont lus publiquement (service Cloudflare).
+   2. Elle coche ceux que Printtex fabrique et les relie à ses produits Printtex.
+   3. Elle ajoute l'adresse de Printtex aux notifications de commande de sa boutique.
+   La tâche quotidienne lit ces mails, garde les produits cochés et les dépose sur le service ; les lignes sont créées
+   à l'ouverture de l'espace de la marque ou de l'outil Printtex. */
+const STORE_MAIL = 'printtex75+commandes@gmail.com';
+let storeWizard = null;
+// Comparaison des titres sans accents ni ponctuation (les mails et la tâche automatique peuvent abîmer les accents).
+function storeKey(t){ return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+async function publishStore(b){
+  if(!b.storeConnected) return;
+  const produits = Object.entries(b.storeMap || {}).map(([titre, pid])=>{ const p = (b.id === currentTasksBrandId ? currentBrandProducts : []).find(x=>x.id===pid); return { titre, printtexId: pid, printtexNom: p ? p.nom : '' }; });
+  try{ await shopifyCall('/stores', { post:true, body:{ brandId:b.id, marque:b.name, storeUrl:b.storeUrl, platform:b.storePlatform, produits } }); }catch(e){}
+}
+async function importStoreOrders(b, tasks, products){
+  if(!b.storeConnected || !b.storeMap) return 0;
+  const data = await shopifyCall('/storeorders?brandId=' + encodeURIComponent(b.id));
+  const map = {};
+  Object.entries(b.storeMap).forEach(([t, pid])=> map[storeKey(t)] = pid);
+  let created = 0;
+  const refs = [];
+  for(const o of data.orders || []){
+    (o.lines || []).forEach((l, i)=> l._i = i);
+    for(const l of o.lines || []){
+      const pid = map[storeKey(l.title)];
+      const p = pid && products.find(x=>x.id===pid);
+      if(!p) continue;
+      const id = 'store_' + String(o.ref).replace(/[^A-Za-z0-9]/g, '') + '_' + l._i;
+      if(tasks.some(t=>t.id===id)) continue;
+      const v = parseVariantTitle(l.variant);
+      const task = {
+        id, nom: p.nom, blank: p.blank || '', blankOther: p.blankOther || '', taille: v.taille, couleur: v.couleur || p.couleurs || '',
+        impression: p.impression || '', quantity: Number(l.quantity) || 0, productId: p.id,
+        remarque: ['Commande ' + o.ref, l.options].filter(Boolean).join(' · '), mockup: (p.images || []).slice(0,4),
+        done:false, readyQty:0, createdAt: o.date ? new Date(o.date).toISOString() : new Date().toISOString(), storeOrder: String(o.ref)
+      };
+      const faces = (String(l.options || '').match(/\b(dos|devant|manche|poitrine|nuque)\b/gi) || []).length;
+      if(faces) task.faces = faces;
+      if(p.siteProductId){ task.siteProductId = p.siteProductId; task.siteHandle = p.siteHandle || ''; task.siteName = p.siteName || ''; task.siteImage = p.siteImage || ''; }
+      tasks.push(task);
+      await saveTaskDoc(b.id, task);
+      created++;
+    }
+    refs.push(o.ref);
+  }
+  if(refs.length){
+    await shopifyCall('/storeorders/ack', { post:true, body:{ brandId:b.id, refs } });
+    b.storeLastOrderAt = new Date().toISOString();
+    await saveBrandDoc(b);
+  }
+  return created;
+}
+async function autoImportStoresAll(){
+  try{
+    if(!brandsLoaded){ brandsLoaded = true; await loadBrands(); }
+    let total = 0;
+    for(const b of brands){
+      if(!b.storeConnected) continue;
+      const tasks = await loadBrandTasks(b.id);
+      const products = await loadBrandProducts(b.id);
+      const created = await importStoreOrders(b, tasks, products);
+      if(created){
+        b.taskTotal = tasks.length; b.taskDone = tasks.filter(t=>t.done).length;
+        await saveBrandDoc(b);
+        total += created;
+      }
+    }
+    if(total){ showToast(`${total} ligne(s) reçue(s) des boutiques en ligne`); renderBrands(); }
+  }catch(e){ showToast('Boutiques en ligne : ' + e.message); }
+}
+async function importStoreForCurrentBrand(showNone){
+  const b = brands.find(x=>x.id===currentTasksBrandId);
+  if(!b || !b.storeConnected) return;
+  try{
+    const created = await importStoreOrders(b, currentTasks, currentBrandProducts);
+    if(created){ renderTasksTable(); await updateBrandSummary(); }
+    if(created || showNone) showToast(created ? `${created} ligne(s) reçue(s) de votre boutique` : 'Aucune nouvelle commande de votre boutique pour l\'instant.');
+  }catch(e){ showToast('Boutique : ' + e.message); }
+}
+function storeStepsHTML(n){
+  return `<div class="store-steps">${['Adresse', 'Produits', 'Commandes'].map((s,i)=>`<span class="${i+1===n ? 'on' : (i+1<n ? 'done' : '')}">${i+1}. ${s}</span>`).join('')}</div>`;
+}
+async function renderStoreView(){
+  const b = brands.find(x=>x.id===currentTasksBrandId);
+  if(!b) return;
+  if(b.shopifyConnected && !b.storeConnected && !storeWizard) return renderShopifyView();
+  const box = $('#shopifyView');
+  const back = '<button type="button" class="btn btn-ghost btn-sm shopify-back">← Retour</button>';
+  if(b.storeConnected && !storeWizard){
+    const items = Object.entries(b.storeMap || {});
+    box.innerHTML = `
+      <div class="shopify-connect">
+        <h3>Ma boutique en ligne</h3>
+        <div class="shopify-status">Boutique connectée : <strong>${esc(b.storeUrl || '')}</strong> (${b.storePlatform === 'bigcartel' ? 'Big Cartel' : 'Shopify'})</div>
+        <p class="hint">${b.storeLastOrderAt ? 'Dernières commandes reçues le ' + formatDate(b.storeLastOrderAt) + '.' : 'En attente de la première commande : elles arrivent deux fois par jour, à 9 h et 16 h.'}</p>
+        <div class="store-list">${items.length ? items.map(([t, pid])=>{ const p = currentBrandProducts.find(x=>x.id===pid); return `<div>${esc(t)} <span class="hint">→ ${esc(p ? p.nom : 'produit supprimé')}</span></div>`; }).join('') : '<div class="hint">Aucun produit coché.</div>'}</div>
+        <div class="modal-actions">
+          <div class="left">${back}</div>
+          <div class="right">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnStoreEdit">Modifier les produits</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnStoreMail">Adresse à ajouter</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnStoreOff">Déconnecter</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btnStoreNow">Récupérer les commandes</button>
+          </div>
+        </div>
+      </div>`;
+    $('#btnStoreEdit').onclick = ()=>{ storeWizard = { step:1, url:b.storeUrl, auto:true }; renderStoreView(); };
+    $('#btnStoreMail').onclick = ()=>{ storeWizard = { step:3, platform:b.storePlatform, url:b.storeUrl, map:b.storeMap || {}, revoir:true }; renderStoreView(); };
+    $('#btnStoreNow').onclick = ()=> importStoreForCurrentBrand(true);
+    $('#btnStoreOff').onclick = async ()=>{
+      if(!(await askConfirm('Déconnecter votre boutique ? Les commandes déjà reçues restent dans votre suivi. Pensez à retirer l\'adresse de Printtex de vos notifications.', 'Déconnecter', 'Garder'))) return;
+      try{ await shopifyCall('/stores', { post:true, body:{ brandId:b.id, remove:true } }); }catch(e){}
+      b.storeConnected = false;
+      await saveBrandDoc(b);
+      renderStoreView();
+    };
+    wireShopifyBack();
+    return;
+  }
+  if(!storeWizard) storeWizard = { step:1 };
+  const W = storeWizard;
+  if(W.step === 1){
+    box.innerHTML = `
+      <div class="shopify-connect">
+        <h3>Connecter ma boutique</h3>
+        <p class="hint">Shopify ou Big Cartel. Seuls les produits que vous cochez seront envoyés à Printtex : le reste de vos commandes ne nous parvient pas.</p>
+        ${storeStepsHTML(1)}
+        <label for="storeUrl">Adresse de votre boutique</label>
+        <input type="text" id="storeUrl" placeholder="Ex. maboutique.com ou maboutique.bigcartel.com" value="${esc(W.url || b.storeUrl || '')}" autocomplete="off">
+        <div class="auth-error" id="storeError"></div>
+        <div class="modal-actions">
+          <div class="left">${back}</div>
+          <div class="right"><button type="button" class="btn btn-primary" id="btnStoreFind">Afficher mes produits</button></div>
+        </div>
+      </div>`;
+    const go = async ()=>{
+      const url = $('#storeUrl').value.trim();
+      if(!url){ $('#storeError').textContent = 'Indiquez l\'adresse de votre boutique.'; return; }
+      $('#btnStoreFind').disabled = true; $('#btnStoreFind').textContent = 'Recherche…';
+      try{
+        const r = await shopifyCall('/store/products?brandId=' + encodeURIComponent(b.id) + '&url=' + encodeURIComponent(url));
+        storeWizard = { step:2, url: r.storeUrl, platform: r.platform, products: r.products || [], map: Object.assign({}, b.storeMap || {}) };
+        renderStoreView();
+      }catch(e){ $('#storeError').textContent = e.message; $('#btnStoreFind').disabled = false; $('#btnStoreFind').textContent = 'Afficher mes produits'; }
+    };
+    $('#btnStoreFind').onclick = go;
+    $('#storeUrl').addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); go(); } });
+    if(W.auto){ W.auto = false; go(); }
+    wireShopifyBack();
+    return;
+  }
+  if(W.step === 2){
+    const map = W.map || {};
+    const q = (W.q || '').toLowerCase();
+    const list = W.products.filter(p=> !q || (p.title||'').toLowerCase().includes(q));
+    box.innerHTML = `
+      <div class="shopify-connect">
+        <h3>Vos produits</h3>
+        ${storeStepsHTML(2)}
+        <p class="hint">${W.products.length} produits trouvés sur ${esc(W.url)} (${W.platform === 'bigcartel' ? 'Big Cartel' : 'Shopify'}). Cochez ceux que Printtex fabrique et choisissez le produit Printtex correspondant.</p>
+        ${currentBrandProducts.length ? '' : '<div class="auth-error">Créez d\'abord vos produits Printtex avec « + Nouveau produit », puis revenez ici.</div>'}
+        <input type="search" id="storeSearch" placeholder="Rechercher un produit" value="${esc(W.q || '')}">
+        <div class="shopify-products">${list.map(p=>{ const sel = map[p.title]; return `
+          <div class="shopify-prod ${sel ? 'on' : ''}" data-title="${esc(p.title)}">
+            ${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : '<div class="shopify-noimg">Produit</div>'}
+            <div class="shopify-prod-body">
+              <div class="shopify-prod-title">${esc(p.title)}</div>
+              <label class="check-inline"><input type="checkbox" class="shopify-made" ${sel ? 'checked' : ''}> Fabriqué chez Printtex</label>
+              <select class="shopify-match">
+                <option value="">Produit Printtex correspondant…</option>
+                ${currentBrandProducts.map(cp=>`<option value="${esc(cp.id)}" ${sel===cp.id ? 'selected' : ''}>${esc(cp.nom)}</option>`).join('')}
+              </select>
+            </div>
+          </div>`; }).join('')}</div>
+        <div class="auth-error" id="storeError"></div>
+        <div class="modal-actions">
+          <div class="left"><button type="button" class="btn btn-ghost btn-sm" id="btnStorePrev">← Adresse</button></div>
+          <div class="right"><span class="order-total">${Object.keys(map).length} coché(s)</span><button type="button" class="btn btn-primary" id="btnStoreNext">Continuer</button></div>
+        </div>
+      </div>`;
+    const sync = ()=>{
+      box.querySelectorAll('.shopify-prod').forEach(el=>{
+        const t = el.dataset.title, made = el.querySelector('.shopify-made').checked, pid = el.querySelector('.shopify-match').value;
+        el.classList.toggle('on', made);
+        if(made && pid) map[t] = pid; else if(!made) delete map[t];
+      });
+      W.map = map;
+    };
+    box.querySelectorAll('.shopify-made, .shopify-match').forEach(i=> i.addEventListener('change', sync));
+    $('#storeSearch').addEventListener('input', e=>{ sync(); W.q = e.target.value; renderStoreView(); setTimeout(()=>{ const s = $('#storeSearch'); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }, 0); });
+    $('#btnStorePrev').onclick = ()=>{ sync(); storeWizard = { step:1, url:W.url }; renderStoreView(); };
+    $('#btnStoreNext').onclick = ()=>{
+      sync();
+      const missing = [...box.querySelectorAll('.shopify-prod')].filter(el=> el.querySelector('.shopify-made').checked && !el.querySelector('.shopify-match').value).length;
+      if(missing){ $('#storeError').textContent = 'Choisissez le produit Printtex pour chaque produit coché.'; return; }
+      if(!Object.keys(map).length){ $('#storeError').textContent = 'Cochez au moins un produit fabriqué chez Printtex.'; return; }
+      W.step = 3; renderStoreView();
+    };
+    return;
+  }
+  // Étape 3 : adresse à ajouter aux notifications de commande
+  const shopifyGuide = `<ol class="shopify-steps">
+      <li>Ouvrez votre Shopify : <a href="https://admin.shopify.com/" target="_blank" rel="noopener">admin.shopify.com</a></li>
+      <li>Allez dans <strong>Paramètres</strong>, puis <strong>Notifications</strong>, puis <strong>Notifications pour le personnel</strong>.</li>
+      <li>Cliquez <strong>Ajouter un destinataire</strong>, collez l'adresse ci-dessus et enregistrez.</li>
+    </ol>`;
+  const bigcartelGuide = `<ol class="shopify-steps">
+      <li>Big Cartel envoie les mails de commande à l'adresse de votre compte.</li>
+      <li>Dans votre messagerie, créez un <strong>transfert automatique</strong> des mails « nouvelle commande » de Big Cartel vers l'adresse ci-dessus (Gmail : Paramètres, puis Transfert, ou un filtre « Transférer à »).</li>
+    </ol>`;
+  box.innerHTML = `
+    <div class="shopify-connect">
+      <h3>Dernière étape : recevoir vos commandes</h3>
+      ${storeStepsHTML(3)}
+      <p class="hint">Ajoutez cette adresse aux notifications de commande de votre boutique. Printtex ne garde que les produits que vous avez cochés.</p>
+      <div class="store-mail"><code id="storeMailAddr">${STORE_MAIL}</code><button type="button" class="btn btn-ghost btn-sm" id="btnStoreCopy">Copier l'adresse</button></div>
+      ${W.platform === 'bigcartel' ? bigcartelGuide : shopifyGuide}
+      <div class="modal-actions">
+        <div class="left"><button type="button" class="btn btn-ghost btn-sm" id="btnStorePrev2">${W.revoir ? '← Retour' : '← Produits'}</button></div>
+        <div class="right"><button type="button" class="btn btn-primary" id="btnStoreDone">${W.revoir ? 'Fermer' : 'J\'ai ajouté l\'adresse, terminer'}</button></div>
+      </div>
+    </div>`;
+  $('#btnStoreCopy').onclick = async ()=>{ try{ await navigator.clipboard.writeText(STORE_MAIL); showToast('Adresse copiée'); }catch(e){ showToast('Copiez l\'adresse : ' + STORE_MAIL); } };
+  $('#btnStorePrev2').onclick = ()=>{ if(W.revoir){ storeWizard = null; } else { W.step = 2; } renderStoreView(); };
+  $('#btnStoreDone').onclick = async ()=>{
+    if(W.revoir){ storeWizard = null; renderStoreView(); return; }
+    b.storeConnected = true;
+    b.storeUrl = W.url; b.storePlatform = W.platform; b.storeMap = W.map;
+    b.storeConnectedAt = b.storeConnectedAt || new Date().toISOString();
+    await saveBrandDoc(b);
+    await publishStore(b);
+    storeWizard = null;
+    showToast('Boutique connectée');
+    renderStoreView();
+  };
+}
+
+/* ---------- Catalogue du site printtex.fr ----------
+   Les vêtements proposés aux marques sont lus en direct sur printtex.fr (produits de type « clothes »),
+   pour que chaque produit de marque soit relié au même article que celui du site (couleurs, tailles, variantes). */
+const SITE_URL = 'https://printtex.fr';
+let siteCatalog = null;
+let siteCatalogPromise = null;
+let currentSiteChoice = '';      // 'site' | 'client' | 'autre' | 'ancien' | ''
+let currentSiteProduct = null;   // { id, handle, nom, image }
+function loadSiteCatalog(){
+  if(siteCatalogPromise) return siteCatalogPromise;
+  siteCatalogPromise = withTimeout(fetch(SITE_URL + '/products.json?limit=250').then(r=>r.json()), 12000).then(j=>{
+    siteCatalog = (j.products||[]).filter(p=>p.product_type === 'clothes').map(p=>{
+      const opts = p.options || [];
+      const iC = opts.findIndex(o=>/^(couleur|teinte)$/i.test(o.name));
+      const iT = opts.findIndex(o=>/^taille$/i.test(o.name));
+      return {
+        id: String(p.id), handle: p.handle, nom: p.title,
+        image: ((p.images||[])[0]||{}).src || '',
+        couleurs: iC > -1 ? opts[iC].values : [],
+        tailles: iT > -1 ? opts[iT].values : [],
+        variants: (p.variants||[]).map(v=>({ id: String(v.id), c: iC > -1 ? v['option'+(iC+1)] : '', t: iT > -1 ? v['option'+(iT+1)] : '' }))
+      };
+    });
+    return siteCatalog;
+  }).catch(e=>{
+    siteCatalogPromise = null;
+    showToast('Catalogue printtex.fr indisponible (' + (e && e.message ? e.message : 'erreur') + ')');
+    return [];
+  });
+  return siteCatalogPromise;
+}
+function siteImg(src, w){ return src ? src + (src.includes('?') ? '&' : '?') + 'width=' + (w||300) : ''; }
+async function renderSitePicker(){
+  const box = $('#sitePicker');
+  if(!siteCatalog) box.innerHTML = '<div class="hint">Chargement des vêtements de printtex.fr…</div>';
+  const list = await loadSiteCatalog();
+  const q = ($('#sitePickerSearch').value || '').trim().toLowerCase();
+  const items = list.filter(p=> !q || p.nom.toLowerCase().includes(q));
+  box.innerHTML = items.map(p=>`
+    <button type="button" class="site-card ${currentSiteChoice==='site' && currentSiteProduct && currentSiteProduct.id===p.id ? 'on' : ''}" data-site="${esc(p.id)}">
+      <img src="${esc(siteImg(p.image))}" alt="" loading="lazy"><span>${esc(p.nom)}</span>
+    </button>`).join('') + `
+    <button type="button" class="site-card site-card-special ${currentSiteChoice==='client' ? 'on' : ''}" data-choice="client"><span>Vêtement apporté par le client</span></button>
+    <button type="button" class="site-card site-card-special ${currentSiteChoice==='autre' ? 'on' : ''}" data-choice="autre"><span>Pas sur le site (à préciser)</span></button>`;
+  box.querySelectorAll('[data-site]').forEach(b=> b.addEventListener('click', ()=> chooseSiteProduct(list.find(p=>p.id===b.dataset.site))));
+  box.querySelectorAll('[data-choice]').forEach(b=> b.addEventListener('click', ()=> chooseSiteSpecial(b.dataset.choice)));
+}
+function chooseSiteProduct(p){
+  if(!p) return;
+  currentSiteChoice = 'site';
+  currentSiteProduct = { id:p.id, handle:p.handle, nom:p.nom, image:p.image };
+  $('#siteOtherName').style.display = 'none';
+  renderSitePicker();
+  renderSiteColors(p);
+}
+function chooseSiteSpecial(choice){
+  currentSiteChoice = choice;
+  currentSiteProduct = null;
+  $('#siteOtherName').style.display = choice === 'autre' ? 'block' : 'none';
+  $('#siteColors').innerHTML = '';
+  renderSitePicker();
+}
+function renderSiteColors(p){
+  const box = $('#siteColors');
+  if(!p || !p.couleurs.length){ box.innerHTML = ''; return; }
+  const chosen = $('#prodCouleurs').value.split(',').map(x=>x.trim()).filter(Boolean);
+  box.innerHTML = `<div class="site-colors-label">Couleurs disponibles : cliquez pour choisir</div>` + p.couleurs.map(c=>
+    `<button type="button" class="site-color ${chosen.includes(c) ? 'on' : ''}" data-color="${esc(c)}">${esc(c)}</button>`).join('');
+  box.querySelectorAll('.site-color').forEach(b=> b.addEventListener('click', ()=>{
+    const list = $('#prodCouleurs').value.split(',').map(x=>x.trim()).filter(Boolean);
+    const c = b.dataset.color;
+    const i = list.indexOf(c);
+    if(i > -1) list.splice(i,1); else list.push(c);
+    $('#prodCouleurs').value = list.join(', ');
+    renderSiteColors(p);
+  }));
+}
+function resetSitePicker(){
+  currentSiteChoice = '';
+  currentSiteProduct = null;
+  $('#sitePickerSearch').value = '';
+  $('#siteOtherName').value = '';
+  $('#siteOtherName').style.display = 'none';
+  $('#siteColors').innerHTML = '';
+  renderSitePicker();
+}
+function restoreSitePicker(p){
+  resetSitePicker();
+  if(p.siteProductId){
+    currentSiteChoice = 'site';
+    currentSiteProduct = { id:p.siteProductId, handle:p.siteHandle||'', nom:p.siteName||'', image:p.siteImage||'' };
+    loadSiteCatalog().then(list=>{ const sp = list.find(x=>x.id===p.siteProductId); if(sp) renderSiteColors(sp); });
+  }else if(p.blank === 'Ramener par le client'){
+    currentSiteChoice = 'client';
+  }else if(p.blank === 'Autre'){
+    currentSiteChoice = 'autre';
+    $('#siteOtherName').value = p.blankOther || '';
+    $('#siteOtherName').style.display = 'block';
+  }else if(p.blank){
+    currentSiteChoice = 'ancien';
+  }
+  renderSitePicker();
+}
+$('#sitePickerSearch').addEventListener('input', renderSitePicker);
 
 /* ---------- Catalogue produits (par marque) ---------- */
 async function loadBrandProducts(brandId){
-  if(!db) return [];
+  if(!db) return DEMO_MODE ? (DEMO.products[brandId] || (DEMO.products[brandId] = [])) : [];
   try{
     const snap = await withTimeout(db.collection('brands').doc(brandId).collection('products').get(), 10000);
     return snap.docs.map(d=>d.data());
   }catch(e){ return []; }
 }
 async function saveProductDoc(brandId, product){
-  if(!db) return { ok:false, error:'Firebase non configuré' };
+  if(!db) return DEMO_MODE ? { ok:true } : { ok:false, error:'Firebase non configuré' };
   try{
     await withTimeout(db.collection('brands').doc(brandId).collection('products').doc(product.id).set(product), 10000);
     return { ok:true };
@@ -2535,7 +4237,7 @@ async function saveProductImages(brandId, productId, images){
       try{
         const path = `brands/${brandId}/products/${productId}/img_${Date.now()}_${i}`;
         const url = await uploadImageFile(im.file, path);
-        images[i] = { name: im.name, url, path };
+        images[i] = { name: im.name, url, path, ...cleanSizeMeta(im) };
       }catch(e){}
     }
   }
@@ -2548,14 +4250,15 @@ function productMetaLine(p){
   if(p.impression) bits.push(p.impression);
   const blankLabel = p.blank === 'Autre' ? p.blankOther : p.blank;
   if(blankLabel) bits.push(blankLabel);
-  return bits.join(' · ');
+  return esc(bits.join(' · '));
 }
 
 function renderProductImgRow(){
   const boxes = currentProductImages.map((im,i)=>`
     <div class="product-img-slot filled" data-i="${i}">
-      <img src="${im.url}" alt="">
+      <img src="${esc(im.url)}" alt="">
       <button type="button" class="rm" data-i="${i}">×</button>
+      ${sizeLabel(im) ? `<div class="img-size">${esc(sizeLabel(im))}</div>` : ''}
     </div>`).join('');
   const addBox = currentProductImages.length < 5 ? `<div class="product-img-slot" id="prodImgAddBox"><div class="plus">+</div></div>` : '';
   $('#prodImgRow').innerHTML = boxes + addBox;
@@ -2572,11 +4275,16 @@ function renderProductImgRow(){
   const addBoxEl = document.getElementById('prodImgAddBox');
   if(addBoxEl) addBoxEl.addEventListener('click', ()=> $('#prodImgInput').click());
 }
-$('#prodImgInput').addEventListener('change', (e)=>{
-  const file = e.target.files[0];
+$('#prodImgInput').addEventListener('change', async (e)=>{
+  let file = e.target.files[0];
   e.target.value = '';
   if(!file || currentProductImages.length >= 5) return;
-  currentProductImages.push({ name:file.name, file, url:URL.createObjectURL(file), path:null, pendingFile:true });
+  file = await prepareVisual(file, { impression: $('#prodImpression').value, couleur: $('#prodCouleurs').value });
+  if(!file) return;
+  const sized = await askPrintSize(file);
+  if(!sized) return;
+  file = sized.file;
+  currentProductImages.push({ name:file.name, file, url:URL.createObjectURL(file), path:null, pendingFile:true, ...cleanSizeMeta(sized.meta) });
   renderProductImgRow();
 });
 $('#prodBlank').addEventListener('change', (e)=>{
@@ -2590,8 +4298,8 @@ function renderProductsCatalog(){
   }
   $('#productsCatalog').innerHTML = currentBrandProducts.map(p=>`
     <div class="product-card" data-id="${p.id}">
-      ${p.images && p.images[0] ? `<img class="product-card-img" src="${p.images[0].url}" alt="">` : `<div class="product-card-img"></div>`}
-      <div class="product-card-name">${p.nom || '(sans nom)'}</div>
+      ${productThumb(p) ? `<img class="product-card-img" src="${esc(productThumb(p))}" alt="">` : `<div class="product-card-img"></div>`}
+      <div class="product-card-name">${esc(p.nom || '(sans nom)')}</div>
       <div class="product-card-meta">${productMetaLine(p)}</div>
       <div class="product-card-actions">
         <button type="button" class="edit-prod">Modifier</button>
@@ -2622,6 +4330,7 @@ function resetProductForm(){
   $('#prodBlankOther').value = '';
   $('#prodBlankOther').style.display = 'none';
   $('#prodRemarque').value = '';
+  resetSitePicker();
   currentProductImages = [];
   renderProductImgRow();
   $('#btnSaveProduct').textContent = 'Enregistrer le produit';
@@ -2638,6 +4347,7 @@ function openProductForEdit(id){
   $('#prodBlankOther').value = p.blankOther || '';
   $('#prodBlankOther').style.display = p.blank === 'Autre' ? 'block' : 'none';
   $('#prodRemarque').value = p.remarque || '';
+  restoreSitePicker(p);
   currentProductImages = JSON.parse(JSON.stringify(p.images || []));
   renderProductImgRow();
   $('#btnSaveProduct').textContent = 'Mettre à jour le produit';
@@ -2648,6 +4358,8 @@ $('#btnBackFromProduct').addEventListener('click', ()=> showTasksView('default')
 $('#btnSaveProduct').addEventListener('click', async ()=>{
   const nom = $('#prodNom').value.trim();
   if(!nom){ showToast('Le nom du produit est obligatoire.'); return; }
+  if(!currentSiteChoice){ showToast('Choisissez le vêtement utilisé (ou « apporté par le client »).'); return; }
+  if(currentSiteChoice === 'autre' && !$('#siteOtherName').value.trim()){ showToast('Précisez le nom du vêtement.'); return; }
   const id = currentEditProductId || ('prod_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
   const btn = $('#btnSaveProduct');
   btn.disabled = true; btn.textContent = 'Enregistrement…';
@@ -2657,12 +4369,18 @@ $('#btnSaveProduct').addEventListener('click', async ()=>{
     id, nom,
     couleurs: $('#prodCouleurs').value.trim(),
     impression: $('#prodImpression').value,
-    blank: $('#prodBlank').value,
-    blankOther: $('#prodBlank').value === 'Autre' ? $('#prodBlankOther').value.trim() : '',
+    blank: currentSiteChoice === 'client' ? 'Ramener par le client' : (currentSiteChoice === 'site' || currentSiteChoice === 'autre') ? 'Autre' : $('#prodBlank').value,
+    blankOther: currentSiteChoice === 'site' ? currentSiteProduct.nom : currentSiteChoice === 'autre' ? $('#siteOtherName').value.trim() : ($('#prodBlank').value === 'Autre' ? $('#prodBlankOther').value.trim() : ''),
     remarque: $('#prodRemarque').value.trim(),
     images,
     createdAt: existing ? existing.createdAt : new Date().toISOString()
   };
+  if(currentSiteChoice === 'site' && currentSiteProduct){
+    product.siteProductId = currentSiteProduct.id;
+    product.siteHandle = currentSiteProduct.handle || '';
+    product.siteName = currentSiteProduct.nom || '';
+    product.siteImage = currentSiteProduct.image || '';
+  }
   const result = await saveProductDoc(currentTasksBrandId, product);
   btn.disabled = false;
   if(!result.ok){ showToast('Erreur : ' + (result.error||'inconnue')); btn.textContent = currentEditProductId ? 'Mettre à jour le produit' : 'Enregistrer le produit'; return; }
@@ -2671,29 +4389,55 @@ $('#btnSaveProduct').addEventListener('click', async ()=>{
   const wasEditing = !!currentEditProductId;
   resetProductForm();
   showToast(wasEditing ? 'Produit mis à jour' : 'Produit créé');
+  if(!wasEditing && isBrandView() && await askConfirm('Produit créé. Voulez-vous le commander maintenant ?', 'Commander maintenant', 'Plus tard')){
+    showTasksView('newOrder'); renderOrderCatalog();
+  }
 });
 
 /* ---------- Nouvelle commande depuis le catalogue ---------- */
-function renderOrderCatalog(){
+function productThumb(p){ return (p.images && p.images[0] && p.images[0].url) || p.siteImage || ''; }
+function productOrderColors(p){
+  const c = String(p.couleurs || '').split(',').map(x=>x.trim()).filter(Boolean);
+  return c.length ? c : [''];
+}
+function productOrderSizes(p){
+  const site = p.siteProductId && siteCatalog ? siteCatalog.find(x=>x.id===p.siteProductId) : null;
+  if(site) return site.tailles.length ? site.tailles : ['OS'];
+  return TASK_SIZES.filter(s=>s);
+}
+async function renderOrderCatalog(){
   if(!currentBrandProducts.length){
-    $('#orderCatalog').innerHTML = '<div class="order-empty">Aucun produit dans le catalogue. Crée d\'abord un produit dans l\'onglet "+ Nouveau produit".</div>';
+    $('#orderCatalog').innerHTML = '<div class="order-empty">Aucun produit dans le catalogue. Créez d\'abord un produit avec le bouton « + Nouveau produit ».</div>';
     return;
   }
-  $('#orderCatalog').innerHTML = currentBrandProducts.map(p=>`
+  if(currentBrandProducts.some(p=>p.siteProductId)) await loadSiteCatalog();
+  $('#orderCatalog').innerHTML = currentBrandProducts.map(p=>{
+    const thumb = productThumb(p);
+    const sizes = productOrderSizes(p);
+    return `
     <div class="order-cat-card" data-id="${p.id}">
-      ${p.images && p.images[0] ? `<img class="order-cat-img" src="${p.images[0].url}" alt="">` : `<div class="order-cat-img"></div>`}
-      <div class="order-cat-name">${p.nom || '(sans nom)'}</div>
+      ${thumb ? `<img class="order-cat-img" src="${esc(thumb)}" alt="">` : `<div class="order-cat-img"></div>`}
+      <div class="order-cat-name">${esc(p.nom || '(sans nom)')}</div>
       <div class="order-cat-meta">${productMetaLine(p)}</div>
-      <div class="order-cat-sizes">
-        ${TASK_SIZES.filter(s=>s).map(s=>`
-          <div class="order-cat-size-cell">
-            <label>${s}</label>
-            <input type="number" min="0" class="order-cat-size-input" data-size="${s}" placeholder="0">
-          </div>`).join('')}
-      </div>
-    </div>`).join('');
+      ${productOrderColors(p).map(c=>`
+        ${c ? `<div class="order-cat-color">${esc(c)}</div>` : ''}
+        <div class="order-cat-sizes">
+          ${sizes.map(s=>`
+            <div class="order-cat-size-cell">
+              <label>${esc(s)}</label>
+              <input type="number" min="0" class="order-cat-size-input" data-size="${esc(s)}" data-color="${esc(c)}" placeholder="0">
+            </div>`).join('')}
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  const majTotal = ()=>{
+    const n = [...$('#orderCatalog').querySelectorAll('.order-cat-size-input')].reduce((a,i)=> a + (Number(i.value)||0), 0);
+    $('#orderTotal').textContent = n + (n > 1 ? ' pièces' : ' pièce');
+  };
+  $('#orderCatalog').querySelectorAll('.order-cat-size-input').forEach(i=> i.addEventListener('input', majTotal));
+  majTotal();
 }
-$('#btnShowNewOrder').addEventListener('click', ()=>{ renderOrderCatalog(); showTasksView('newOrder'); });
+$('#btnShowNewOrder').addEventListener('click', async ()=>{ showTasksView('newOrder'); await renderOrderCatalog(); });
 $('#btnBackFromOrder').addEventListener('click', ()=> showTasksView('default'));
 $('#btnCreateOrderFromCatalog').addEventListener('click', async ()=>{
   const cards = $('#orderCatalog').querySelectorAll('.order-cat-card');
@@ -2703,21 +4447,37 @@ $('#btnCreateOrderFromCatalog').addEventListener('click', async ()=>{
     if(!p) return;
     card.querySelectorAll('.order-cat-size-input').forEach(input=>{
       const qty = Number(input.value) || 0;
-      if(qty > 0) toCreate.push({ product:p, qty, taille: input.dataset.size });
+      if(qty > 0) toCreate.push({ product:p, qty, taille: input.dataset.size, couleur: input.dataset.color || p.couleurs || '' });
     });
   });
-  if(!toCreate.length){ showToast('Renseigne au moins une quantité.'); return; }
+  if(!toCreate.length){ showToast('Indiquez au moins une quantité.'); return; }
+  const total = toCreate.reduce((a,x)=>a+x.qty, 0);
+  const groupes = {};
+  toCreate.forEach(x=>{ const k = x.product.nom + (x.couleur ? ' · ' + x.couleur : ''); (groupes[k] = groupes[k] || []).push(x); });
+  const wanted = $('#orderWanted').value;
+  const note = $('#orderNote').value.trim();
+  const recap = Object.entries(groupes).map(([k, xs])=> `- ${k} : ${xs.map(x=> (x.taille || 'taille unique') + ' × ' + x.qty).join(', ')} (${xs.reduce((a,x)=>a+x.qty,0)})`).join('\n');
+  const ok = await askConfirm(`Votre commande :\n${recap}\n\nTotal : ${total} pièce(s)${wanted ? '\nDate souhaitée : ' + formatDate(wanted) : ''}${note ? '\nRemarque : ' + note : ''}`, 'Valider la commande', 'Modifier');
+  if(!ok) return;
+  const orderRef = 'C' + Date.now().toString(36).toUpperCase().slice(-6);
   const btn = $('#btnCreateOrderFromCatalog');
   btn.disabled = true; btn.textContent = 'Création…';
-  for(const { product, qty, taille } of toCreate){
+  for(const { product, qty, taille, couleur } of toCreate){
     const task = {
       id: 'task_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
       nom: product.nom, blank: product.blank, blankOther: product.blankOther || '',
-      taille: taille || '', couleur: product.couleurs || '', impression: product.impression || '',
-      quantity: qty, remarque: product.remarque || '',
+      taille: taille || '', couleur, impression: product.impression || '',
+      quantity: qty, remarque: [product.remarque, note].filter(Boolean).join(' · '), productId: product.id, orderRef,
       mockup: (product.images||[]).slice(0,4),
       done:false, readyQty:0, createdAt:new Date().toISOString()
     };
+    if(wanted) task.wantedDate = wanted;
+    if(product.siteProductId){
+      task.siteProductId = product.siteProductId;
+      task.siteHandle = product.siteHandle || '';
+      task.siteName = product.siteName || '';
+      task.siteImage = product.siteImage || '';
+    }
     currentTasks.push(task);
     await saveTaskDoc(currentTasksBrandId, task);
   }
@@ -2725,38 +4485,111 @@ $('#btnCreateOrderFromCatalog').addEventListener('click', async ()=>{
   btn.disabled = false; btn.textContent = 'Créer la commande';
   renderTasksTable();
   showTasksView('default');
-  showToast(`${toCreate.length} produit(s) ajouté(s) à la commande`);
+  $('#orderWanted').value = ''; $('#orderNote').value = '';
+  showToast(`Commande enregistrée : ${total} pièce(s)`);
 });
+
 const TASK_SIZES = ['', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'OS'];
 const TASK_PRINT_METHODS = ['', 'Sérigraphie', 'Broderie', 'DTF (transfert numérique)', 'DTG', 'Flocage', 'Sublimation', 'Vinyle transfert', 'Autre'];
 $('#prodImpression').innerHTML = TASK_PRINT_METHODS.filter(m=>m).map(m=>`<option value="${m}">${m}</option>`).join('');
 $('#prodBlank').innerHTML = BLANK_OPTIONS.map(b=>`<option value="${b}">${b||'—'}</option>`).join('');
 
+/* Espace marque : la marque suit ses commandes mais ne modifie pas l'avancement (réservé à Printtex). */
+function isBrandView(){ return document.body.classList.contains('role-brand'); }
+function brandTaskStatus(t){
+  const qty = Number(t.quantity)||0, ready = Number(t.readyQty)||0;
+  if(t.shopifyCancelled) return { label:'Annulée sur Shopify', cls:'' };
+  if(t.done) return { label:'Prête à récupérer', cls:'pay-paye' };
+  if(t.outOfStock) return { label:'En attente de réassort', cls:'' };
+  if(ready > 0) return { label:`En production (${ready}/${qty} prêtes)`, cls:'pay-partiel' };
+  return { label:'Reçue, en attente de production', cls:'' };
+}
+function brandTaskCardHTML(t){
+  const mockup = t.mockup || [];
+  const st = brandTaskStatus(t);
+  const started = t.done || t.outOfStock || (Number(t.readyQty)||0) > 0;
+  const blankLabel = t.blank === 'Autre' ? t.blankOther : t.blank;
+  const details = [t.taille && 'Taille ' + t.taille, t.couleur, t.impression, blankLabel].filter(Boolean).join(' · ');
+  return `
+    <div class="task-card ${t.done?'done':''} ${t.outOfStock?'out-of-stock':''}" data-id="${t.id}">
+      <div class="task-thumb-wrap">
+        <div class="task-thumb" data-open-gallery="${t.id}">
+          ${mockup[0] ? `<img src="${esc(mockup[0].url)}" alt="">` : '<span class="thumb-empty">Ajouter un visuel</span>'}
+          ${mockup.length > 1 ? `<span class="task-thumb-count">+${mockup.length-1}</span>` : ''}
+        </div>
+        <button type="button" class="task-thumb-add" title="Ajouter un visuel">+</button>
+      </div>
+      <div class="task-card-body">
+        <div class="task-title-row">
+          <strong class="task-nom-ro">${esc(t.nom || '(sans nom)')}</strong>
+          <span class="task-date-badge">Commandé le ${formatDate(t.createdAt)}</span>
+        </div>
+        ${details ? `<div class="task-meta-ro">${esc(details)}</div>` : ''}
+        ${t.remarque ? `<div class="task-meta-ro">Remarque : ${esc(t.remarque)}</div>` : ''}
+        ${t.outOfStock ? `<div class="stock-badge">${brandRestockHTML(t)}</div>` : ''}
+        ${t.wantedDate ? `<div class="task-meta-ro">Souhaitée pour le ${formatDate(t.wantedDate)}</div>` : ''}
+        ${Number(t.quantity)>0 ? `
+        <div class="task-progress-row">
+          <div class="task-progress-track"><div class="task-progress-fill ${t.done?'full':''}" style="width:${Math.min(100, Math.round((Number(t.readyQty)||0)/Number(t.quantity)*100))}%"></div></div>
+          <span class="task-progress-label ${t.done?'full':''}">${Number(t.readyQty)||0} / ${t.quantity} prêtes</span>
+        </div>` : ''}
+      </div>
+      <div class="task-qty-block">
+        <div class="task-qty-ro">${Number(t.quantity)||0}</div>
+        <div class="qty-label">pièces</div>
+      </div>
+      <div class="task-actions-block">
+        <span class="badge-status ${st.cls}">${st.label}</span>
+        ${started ? '' : '<button type="button" class="btn btn-ghost btn-sm brand-cancel-task">Annuler cette ligne</button>'}
+      </div>
+    </div>`;
+}
+function wireBrandTaskCard(card, task, id){
+  card.querySelector('.task-thumb').addEventListener('click', ()=> openMockupGallery(id));
+  card.querySelector('.task-thumb-add').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    activeMockupTaskId = id;
+    $('#taskMockupInput').click();
+  });
+  const cancelBtn = card.querySelector('.brand-cancel-task');
+  if(cancelBtn) cancelBtn.addEventListener('click', async ()=>{
+    const ok = await askConfirm(`Annuler la ligne « ${task.nom || 'sans nom'} » (${task.quantity || 0} pièces) ?`, 'Oui, annuler la ligne', 'Garder la ligne');
+    if(!ok) return;
+    currentTasks = currentTasks.filter(t=>t.id!==id);
+    renderTasksTable();
+    await deleteTaskDoc(currentTasksBrandId, id);
+    await updateBrandSummary();
+    showToast('Ligne annulée.');
+  });
+}
 function taskCardHTML(t){
+  if(isBrandView()) return brandTaskCardHTML(t);
   const mockup = t.mockup || [];
   return `
     <div class="task-card ${t.done?'done':''} ${t.outOfStock?'out-of-stock':''}" data-id="${t.id}">
       <div class="task-thumb-wrap">
         <div class="task-thumb" data-open-gallery="${t.id}">
-          ${mockup[0] ? `<img src="${mockup[0].url}" alt="">` : '<span style="font-size:20px;">🖼</span>'}
+          ${mockup[0] ? `<img src="${esc(mockup[0].url)}" alt="">` : '<span class="thumb-empty">Ajouter un visuel</span>'}
           ${mockup.length > 1 ? `<span class="task-thumb-count">+${mockup.length-1}</span>` : ''}
         </div>
         <button type="button" class="task-thumb-add" title="Ajouter une photo">+</button>
       </div>
       <div class="task-card-body">
         <div class="task-title-row">
-          <input type="text" class="task-remarque" value="${(t.remarque||'').replace(/"/g,'&quot;')}" placeholder="Remarque…">
-          <input type="text" class="task-nom" value="${(t.nom||'').replace(/"/g,'&quot;')}" placeholder="Ex. T-shirt col rond">
+          <input type="text" class="task-remarque" value="${esc(t.remarque)}" placeholder="Remarque…">
+          <input type="text" class="task-nom" value="${esc(t.nom)}" placeholder="Ex. T-shirt col rond">
           <span class="task-date-badge">${formatDate(t.createdAt)}</span>
         </div>
         <div class="task-meta-row">
           <select class="task-blank">${BLANK_OPTIONS.map(b=>`<option value="${b}" ${t.blank===b?'selected':''}>${b||'—'}</option>`).join('')}</select>
-          ${t.blank === 'Autre' ? `<input type="text" class="task-blank-other" value="${(t.blankOther||'').replace(/"/g,'&quot;')}" placeholder="Préciser">` : ''}
-          <select class="task-taille">${TASK_SIZES.map(s=>`<option value="${s}" ${t.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select>
-          <input type="text" class="task-couleur" value="${(t.couleur||'').replace(/"/g,'&quot;')}" placeholder="Couleur">
+          ${t.blank === 'Autre' ? `<input type="text" class="task-blank-other" value="${esc(t.blankOther)}" placeholder="Préciser">` : ''}
+          <select class="task-taille">${t.taille && !TASK_SIZES.includes(t.taille) ? `<option value="${esc(t.taille)}" selected>${esc(t.taille)}</option>` : ''}${TASK_SIZES.map(s=>`<option value="${s}" ${t.taille===s?'selected':''}>${s||'—'}</option>`).join('')}</select>
+          <input type="text" class="task-couleur" value="${esc(t.couleur)}" placeholder="Couleur">
           <select class="task-impression">${TASK_PRINT_METHODS.map(m=>`<option value="${m}" ${t.impression===m?'selected':''}>${m||'—'}</option>`).join('')}</select>
         </div>
         ${t.outOfStock ? '<div class="stock-badge">Rupture de stock, en attente de réassort</div>' : ''}
+        ${t.outOfStock ? restockRowHTML(t) : ''}
+        ${t.shopifyCancelled ? (t.done || Number(t.readyQty) > 0 ? '<div class="stock-badge">Annulée sur Shopify après fabrication : les pièces faites restent facturées</div>' : '<div class="stock-badge">Commande annulée sur Shopify : ne pas produire, non facturée</div>') : ''}
         ${Number(t.quantity)>0 ? `
         <div class="task-progress-row">
           <div class="task-progress-track"><div class="task-progress-fill ${t.done?'full':''}" style="width:${Math.min(100, Math.round((Number(t.readyQty)||0)/Number(t.quantity)*100))}%"></div></div>
@@ -2782,11 +4615,13 @@ function wireTaskCard(card){
   const id = card.dataset.id;
   const task = currentTasks.find(t=>t.id===id);
   if(!task) return;
+  if(isBrandView()) return wireBrandTaskCard(card, task, id);
   card.querySelector('.task-ready-qty').addEventListener('change', async (e)=>{
     const qty = Number(task.quantity) || 0;
     let ready = Number(e.target.value) || 0;
     if(ready < 0) ready = 0;
     if(qty > 0 && ready > qty) ready = qty;
+    const wasDone = !!task.done;
     task.readyQty = ready;
     task.closed = false;
     task.done = qty > 0 && ready >= qty;
@@ -2794,18 +4629,25 @@ function wireTaskCard(card){
     renderTasksTable();
     await saveTaskDoc(currentTasksBrandId, task);
     await updateBrandSummary();
+    if(task.done && !wasDone) sendBrandMail('prete', task);
   });
   card.querySelector('.task-done').addEventListener('change', async (e)=>{
+    const wasDone = !!task.done;
     task.closed = e.target.checked;
     task.done = e.target.checked;
     renderTasksTable();
     await saveTaskDoc(currentTasksBrandId, task);
     await updateBrandSummary();
+    if(task.done && !wasDone) sendBrandMail('prete', task);
   });
   card.querySelector('.task-outofstock').addEventListener('change', async (e)=>{
+    const wasOut = !!task.outOfStock;
     task.outOfStock = e.target.checked;
     renderTasksTable();
     await saveTaskDoc(currentTasksBrandId, task);
+    if(task.outOfStock && !wasOut) sendBrandMail('rupture', task);
+    if(!task.outOfStock && wasOut) sendBrandMail('recu', task);
+    if($('#notepadPanel').style.display === 'flex') renderToOrderAuto();
   });
   card.querySelector('.task-nom').addEventListener('change', async (e)=>{
     task.nom = e.target.value.trim();
@@ -2854,7 +4696,9 @@ function wireTaskCard(card){
     activeMockupTaskId = id;
     $('#taskMockupInput').click();
   });
+  wireRestockRow(card, task);
   card.querySelector('.del-row').addEventListener('click', async ()=>{
+    if(await billingBlocksDelete(task)){ showToast('Ligne faite et pas encore payée : enregistrez le paiement avant de la supprimer.'); return; }
     currentTasks = currentTasks.filter(t=>t.id!==id);
     renderTasksTable();
     await deleteTaskDoc(currentTasksBrandId, id);
@@ -2867,10 +4711,10 @@ function renderTasksTable(){
 
   if(!pending.length){
     $('#tasksTableBody').innerHTML = currentTasks.length
-      ? '<div class="order-empty">Toutes les commandes de cette marque sont faites 🎉</div>'
+      ? '<div class="order-empty">Toutes les commandes de cette marque sont faites.</div>'
       : '<div class="order-empty">Aucune commande pour l\'instant.</div>';
   }else{
-    $('#tasksTableBody').innerHTML = pending.map(taskCardHTML).join('');
+    $('#tasksTableBody').innerHTML = isBrandView() ? brandOrderGroupsHTML(pending) : pending.map(taskCardHTML).join('');
   }
   $('#tasksTableBody').querySelectorAll('.task-card').forEach(wireTaskCard);
 
@@ -2917,8 +4761,9 @@ function renderMockupGallery(){
   }
   $('#mockupGalleryGrid').innerHTML = imgs.map((im,i)=>`
     <div class="gallery-item">
-      <img src="${im.url}" alt="">
+      <a href="${esc(im.url)}" target="_blank" rel="noopener" download title="Ouvrir le fichier (taille réelle)"><img src="${esc(im.url)}" alt=""></a>
       <button type="button" class="gallery-del" data-i="${i}">×</button>
+      ${sizeLabel(im) ? `<div class="img-size">${esc(sizeLabel(im))}</div>` : ''}
     </div>`).join('');
   $('#mockupGalleryGrid').querySelectorAll('.gallery-del').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
@@ -2977,10 +4822,11 @@ async function updateBrandSummary(){
     b.oldestPendingDate = oldestPendingDate;
     if(changed) await saveBrandDoc(b);
   }
+  if(!isBrandView()) refreshBillingDue();
 }
 let activeMockupTaskId = null;
 async function uploadTaskMockupFile(brandId, taskId, file){
-  if(!storageRef) return null;
+  if(!storageRef) return DEMO_MODE ? { name: file.name, url: URL.createObjectURL(file), path: null } : null;
   try{
     const path = `brands/${brandId}/tasks/${taskId}/mockup_${Date.now()}_${Math.random().toString(36).slice(2,5)}`;
     const ref = storageRef.child(path);
@@ -2991,7 +4837,7 @@ async function uploadTaskMockupFile(brandId, taskId, file){
     return null;
   }
 }
-async function handleTaskMockupFile(taskId, file){
+async function handleTaskMockupFile(taskId, file, meta){
   const task = currentTasks.find(t=>t.id===taskId);
   if(!task) return;
   if(!task.mockup) task.mockup = [];
@@ -3003,7 +4849,7 @@ async function handleTaskMockupFile(taskId, file){
   const uploaded = await uploadTaskMockupFile(currentTasksBrandId, taskId, file);
   const idx = task.mockup.indexOf(tempEntry);
   if(uploaded && idx > -1){
-    task.mockup[idx] = uploaded;
+    task.mockup[idx] = Object.assign(uploaded, cleanSizeMeta(meta));
     await saveTaskDoc(currentTasksBrandId, task);
   }else if(idx > -1){
     task.mockup.splice(idx,1);
@@ -3034,7 +4880,13 @@ $('#taskMockupInput').addEventListener('change', async (e)=>{
   const file = e.target.files[0];
   e.target.value = '';
   if(!file || !activeMockupTaskId) return;
-  await handleTaskMockupFile(activeMockupTaskId, file);
+  const taskId = activeMockupTaskId;
+  const t = currentTasks.find(x=>x.id===taskId);
+  const prepared = await prepareVisual(file, { impression: t && t.impression, couleur: t && t.couleur });
+  if(!prepared) return;
+  const sized = await askPrintSize(prepared);
+  if(!sized) return;
+  await handleTaskMockupFile(taskId, sized.file, sized.meta);
 });
 
 $('#btnTasksClose').addEventListener('click', closeTasksModal);
@@ -3049,6 +4901,62 @@ $('#navMarques').addEventListener('click', async ()=>{
   $('#commandesSection').style.display='none'; $('#marquesSection').style.display='block'; $('#vectorizerSection').style.display='none';
   if(!brandsLoaded){ brandsLoaded = true; await loadBrands(); }
 });
+/* ---------- Paramètres (Printtex seulement) ---------- */
+function showParams(){
+  ['navCommandes','navMarques','navVectorizer'].forEach(id=> $('#'+id).classList.remove('active'));
+  $('#navParams').classList.add('active');
+  ['commandesSection','marquesSection','vectorizerSection'].forEach(id=> $('#'+id).style.display = 'none');
+  $('#paramsSection').style.display = 'block';
+  renderParamsBrands();
+  renderParamsMails();
+}
+async function renderParamsBrands(){
+  const box = $('#paramsBrands');
+  if(!brandsLoaded){ box.innerHTML = '<div class="hint">Chargement…</div>'; brandsLoaded = true; await loadBrands(); }
+  const list = brands.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+  box.innerHTML = list.length ? list.map(b=>`
+    <div class="params-brand" data-id="${esc(b.id)}">
+      <div><strong>${esc(b.name)}</strong><div class="hint">${esc(b.ownerEmail || 'compte créé par Printtex')}</div></div>
+      <div class="params-brand-right">
+        <span class="params-state ${b.disabled ? 'off' : 'on'}">${b.disabled ? 'Accès suspendu' : 'Accès actif'}</span>
+        <a href="javascript:void(0)" class="params-toggle">${b.disabled ? 'Rendre l\'accès' : 'Suspendre l\'accès…'}</a>
+      </div>
+      <div class="params-confirm" style="display:none;">
+        <span>Pour confirmer, tapez le nom de la marque :</span>
+        <input type="text" class="params-confirm-input" placeholder="${esc(b.name)}">
+        <button type="button" class="btn btn-primary btn-sm params-confirm-ok">Suspendre l'accès</button>
+        <a href="javascript:void(0)" class="params-confirm-cancel">Annuler</a>
+      </div>
+    </div>`).join('') : '<div class="hint">Aucune marque.</div>';
+  box.querySelectorAll('.params-brand').forEach(row=>{
+    const b = brands.find(x=>x.id===row.dataset.id);
+    row.querySelector('.params-toggle').addEventListener('click', async ()=>{
+      if(b.disabled){
+        const ok = await askConfirm(`Rendre l'accès à ${b.name} ?`);
+        if(!ok) return;
+        delete b.disabled;
+        await saveBrandDoc(b);
+        renderParamsBrands(); renderBrands();
+        return;
+      }
+      row.querySelector('.params-confirm').style.display = 'flex';
+      row.querySelector('.params-confirm-input').focus();
+    });
+    row.querySelector('.params-confirm-cancel').addEventListener('click', ()=>{ row.querySelector('.params-confirm').style.display = 'none'; });
+    row.querySelector('.params-confirm-ok').addEventListener('click', async ()=>{
+      const typed = row.querySelector('.params-confirm-input').value.trim().toLowerCase();
+      if(typed !== (b.name||'').trim().toLowerCase()){ showToast('Le nom tapé ne correspond pas.'); return; }
+      b.disabled = true;
+      const r = await saveBrandDoc(b);
+      if(!r.ok){ showToast('Échec : ' + r.error); return; }
+      showToast(`Accès de ${b.name} suspendu`);
+      renderParamsBrands(); renderBrands();
+    });
+  });
+}
+$('#navParams').addEventListener('click', showParams);
+['navCommandes','navMarques','navVectorizer'].forEach(id=> $('#'+id).addEventListener('click', ()=>{ $('#navParams').classList.remove('active'); $('#paramsSection').style.display = 'none'; }));
+
 $('#navVectorizer').addEventListener('click', ()=>{
   $('#navVectorizer').classList.add('active'); $('#navCommandes').classList.remove('active'); $('#navMarques').classList.remove('active');
   $('#commandesSection').style.display='none'; $('#marquesSection').style.display='none'; $('#vectorizerSection').style.display='block';
@@ -3060,7 +4968,7 @@ let vecResultSvg = null;
 let vecDebounceTimer = null;
 
 function loadVecFile(file){
-  if(!file || !file.type.startsWith('image/')){ showToast('Choisis un fichier image.'); return; }
+  if(!file || !file.type.startsWith('image/')){ showToast('Choisissez un fichier image.'); return; }
   const reader = new FileReader();
   reader.onload = (e)=>{
     vecImageDataUrl = e.target.result;
@@ -3186,6 +5094,105 @@ $('#btnDownloadSvg').addEventListener('click', ()=>{
   URL.revokeObjectURL(url);
 });
 
+/* ---------- Mode démo (version de test) ----------
+   ?demo=1 : vue Printtex avec de fausses commandes et marques ; ?demo=marque : espace de la marque Zoo.
+   Rien n'est enregistré : tout reste dans la page et disparaît au rechargement. */
+const DEMO = (()=>{
+  const img = n => 'https://cdn.shopify.com/s/files/1/0833/8459/8874/files/' + n;
+  const day = d => { const x = new Date(); x.setDate(x.getDate()+d); return x.toISOString(); };
+  const date = d => day(d).slice(0,10);
+  const sizes = o => Object.assign(emptySizesMap(), o);
+  const item = (product, impression, couleur, sz) => {
+    const it = newOrderItem();
+    Object.assign(it, { product, impression, couleur, sizes: sizes(sz) });
+    it.quantity = Object.values(it.sizes).reduce((a,b)=>a+(Number(b)||0),0);
+    return it;
+  };
+  const order = (n, clientName, clientContact, status, items, extra) => ({
+    id:'demo_order_'+n, orderNumber:n, clientName, clientContact, items,
+    quantity: items.reduce((a,it)=>a+it.quantity,0),
+    product: items.length === 1 ? items[0].product : items.length + ' produits', productOther:'',
+    printMethod: items.length === 1 ? items[0].impression : 'Divers',
+    prodTime:'', prodTimeUnit:'jours', status, priority:'normale', priceAmount:'', depositAmount:'',
+    toCheckOnReceipt:false, notes:'', thumbnails:[], imageCount:0, archived:false, createdAt: day(-6),
+    ...extra
+  });
+  const orders = [
+    order(1201, 'Restaurant Le Comptoir', '06 12 34 56 78', 'attente_production',
+      [item('Tablier', 'Broderie', 'Noir', {OS:12})],
+      { deadline: date(5), priceAmount:'264', depositAmount:'100', thumbnails:[img('BLS_205_1_b_front.jpg')], imageCount:1 }),
+    order(1202, 'Association Sportive 11e', 'contact@as11.fr', 'production',
+      [item('T-shirt', 'Sérigraphie', 'Vert armée', {S:10, M:25, L:20, XL:8}), item('Short', 'Sérigraphie', 'Noir', {M:15, L:15})],
+      { deadline: date(2), priceAmount:'1180', depositAmount:'500', priority:'haute', thumbnails:[img('tr010_armygreen_ft.jpg'), img('tr507_black_ft.jpg')], imageCount:2 }),
+    order(1203, 'Mariage Sarah & Yanis', '07 98 76 54 32', 'prete',
+      [item('Sweat', 'DTF (transfert numérique)', 'Rose pâle', {S:4, M:6, L:2})],
+      { deadline: date(-1), readyAt: day(-4), priceAmount:'420', depositAmount:'420', thumbnails:[img('jh030_airforceblue_ft2.jpg')], imageCount:1 }),
+    order(1204, 'Agence Mère', 'studio@agence-mere.fr', 'attente_production',
+      [item('Hoodie', 'Broderie', 'Marine', {M:8, L:8, XL:4})],
+      { deadline: date(12), priceAmount:'960', depositAmount:'', thumbnails:[img('jh501_airforceblue_ft.jpg')], imageCount:1 }),
+    order(1205, 'Café Belleville', '06 55 44 33 22', 'production',
+      [item('Casquette', 'Broderie', 'Noir et blanc', {OS:30})],
+      { deadline: date(1), priceAmount:'540', depositAmount:'200', toCheckOnReceipt:true, thumbnails:[img('bc645_black_black_ft2.jpg')], imageCount:1 }),
+    order(1206, 'Lycée Voltaire', 'bde@voltaire.fr', 'prete',
+      [item('T-shirt', 'Sérigraphie', 'Blanc', {S:20, M:40, L:30, XL:10})],
+      { deadline: date(3), readyAt: day(-1), priceAmount:'1150', depositAmount:'600', thumbnails:[img('at004_arcticwhite_ft.jpg')], imageCount:1 })
+  ];
+  const brands = [
+    { id:'demo_zoo', name:'Zoo', contact:'06 11 22 33 44', notes:'', ownerEmail:'demo@zoo.fr', taskTotal:4, taskDone:1, createdAt: day(-40) },
+    { id:'demo_flex', name:'Flex Like', contact:'', notes:'', ownerEmail:'demo@flexlike.fr', taskTotal:2, taskDone:0, oldestPendingDate: day(-9), createdAt: day(-30) },
+    { id:'demo_bg', name:'Les Bons Gars', contact:'', notes:'', ownerEmail:'demo@lesbonsgars.fr', taskTotal:3, taskDone:2, createdAt: day(-25) },
+    { id:'demo_fmc', name:'FMC', contact:'', notes:'', ownerEmail:'demo@fmc.fr', taskTotal:1, taskDone:1, createdAt: day(-22) }
+  ];
+  const product = (id, nom, couleurs, impression, blank, image, site) =>
+    ({ id, nom, couleurs, impression, blank, blankOther: site ? site.siteName : '', remarque:'', images: image ? [{ url: img(image), path:null }] : [],
+       ...(site ? { ...site, siteImage: img(image) } : {}), createdAt: day(-20) });
+  const products = {
+    demo_zoo: [
+      product('demo_p1', 'T-shirt Zoo tigre dos', 'Noir', 'DTF (transfert numérique)', 'Autre', 'am018_black_ft.jpg', { siteProductId:'11034662830426', siteHandle:'t-shirt-280', siteName:'T-shirt extra épais 280 g' }),
+      product('demo_p2', 'Hoodie Zoo logo cœur', 'Marine', 'Broderie', 'Autre', 'jh501_airforceblue_ft.jpg', { siteProductId:'11034664042842', siteHandle:'hoodie-280', siteName:'Hoodie classique 280 g' }),
+      product('demo_p3', 'Casquette Zoo', 'Noir', 'Broderie', 'Autre', 'bc645_black_black_ft2.jpg', { siteProductId:'11034731938138', siteHandle:'casquette-trucker', siteName:'Casquette trucker vintage' })
+    ],
+    demo_flex: [ product('demo_p4', 'T-shirt Flex Like boxy', 'Blanc', 'Sérigraphie', '', 'at004_arcticwhite_ft.jpg') ],
+    demo_bg: [ product('demo_p5', 'T-shirt Les Bons Gars', 'Blanc', 'Sérigraphie', 'Autre', 'at004_arcticwhite_ft.jpg', { siteProductId:'11034663223642', siteHandle:'t-shirt-court-240', siteName:'T-shirt court boxy 240 g' }) ],
+    demo_fmc: [ product('demo_p6', 'Zip hoodie FMC', 'Noir', 'Broderie', 'Autre', 'jh050_jetblack_ft.jpg', { siteProductId:'11034126713178', siteHandle:'zip-hoodie-280', siteName:'Zip hoodie classique 280 g' }) ]
+  };
+  const task = (id, p, taille, quantity, extra) => ({
+    id, nom:p.nom, blank:p.blank, blankOther:p.blankOther, taille, couleur:p.couleurs, impression:p.impression,
+    ...(p.siteProductId ? { siteProductId:p.siteProductId, siteHandle:p.siteHandle, siteName:p.siteName, siteImage:p.siteImage } : {}),
+    quantity, remarque:'', mockup:p.images.slice(), done:false, readyQty:0, createdAt: day(-5), productId: p.id, ...extra
+  });
+  const z = products.demo_zoo, f = products.demo_flex, bg = products.demo_bg, fm = products.demo_fmc;
+  const tasks = {
+    demo_zoo: [
+      task('demo_t1', z[0], 'M', 24, { readyQty:10, remarque:'Impression dos, format A3' }),
+      task('demo_t2', z[0], 'L', 18),
+      task('demo_t3', z[1], 'XL', 6, { outOfStock:true }),
+      task('demo_t4', z[2], 'OS', 15, { done:true, readyQty:15, createdAt: day(-15) })
+    ],
+    demo_flex: [ task('demo_t5', f[0], 'S', 12, { createdAt: day(-9) }), task('demo_t6', f[0], 'M', 20, { createdAt: day(-9) }) ],
+    demo_bg: [ task('demo_t7', bg[0], 'M', 40, { done:true, readyQty:40, createdAt: day(-12) }), task('demo_t8', bg[0], 'L', 30, { done:true, readyQty:30, createdAt: day(-12) }), task('demo_t9', bg[0], 'XL', 20) ],
+    demo_fmc: [ task('demo_t10', fm[0], 'L', 12, { done:true, readyQty:12, createdAt: day(-20) }) ]
+  };
+  const zp = { textile:0, marquage:6.5, extra:2, faces:1 };
+  const billing = {
+    demo_zoo: { brandId:'demo_zoo', enabled:true, prices:{ demo_p1:zp, demo_p2:zp, demo_p3:zp }, extras:[], payments:[], archived:[], settledBefore:'',
+      dueTotal:162.5, oldestDue: day(-15), missingPrices:0, defaultMode:'Espèces' },
+    demo_bg: { brandId:'demo_bg', enabled:true, prices:{ demo_p5:{ textile:4.5, marquage:3, faces:1 } }, extras:[], archived:[], settledBefore:'',
+      payments:[{ id:'pay_demo1', amount:200, mode:'Virement', date: day(-5), note:'Acompte' }], dueTotal:325, oldestDue: day(-12), missingPrices:0 },
+    demo_fmc: { brandId:'demo_fmc', enabled:true, prices:{ demo_p6:{ textile:16, marquage:8, faces:1 } }, extras:[], archived:[], settledBefore:'',
+      payments:[{ id:'pay_demo2', amount:288, mode:'Virement', date: day(-3) }], dueTotal:0, oldestDue:'', missingPrices:0 }
+  };
+  return { orders, brands, products, tasks, billing };
+})();
+function startDemo(){
+  const banner = $('#testBanner');
+  if(banner){ banner.textContent = 'Mode démo : fausses commandes et fausses marques, rien n\'est enregistré.'; banner.style.display = 'block'; }
+  if(DEMO_MODE === 'marque'){ showBrandPortal(DEMO.brands[0]); return; }
+  showApp();
+  loadOrders();
+  autoImportShopifyAll().then(autoImportStoresAll);
+}
+
 /* ---------- Authentification ---------- */
 const ADMIN_EMAIL = "printtex75@gmail.com";
 function isAllowedEmail(email){
@@ -3226,7 +5233,10 @@ async function showBrandPortal(brand){
   $('#brandPortalHeader').style.display = 'flex';
   $('#brandPortalName').textContent = brand.name;
   brands = [brand];
+  loadSiteCatalog();
   await openTasksModal(brand.id);
+  importShopifyForCurrentBrand(false);
+  importStoreForCurrentBrand(false);
 }
 
 /* ---------- Bloc-notes admin "À commander" ---------- */
@@ -3249,8 +5259,49 @@ async function saveAdminNote(){
     $('#notepadStatus').textContent = "Échec de l'enregistrement";
   }
 }
+/* Ruptures des marques : liste automatique en haut du bloc-notes, reliée aux produits de printtex.fr. */
+async function renderToOrderAuto(){
+  const box = $('#toOrderAuto');
+  if(!box) return;
+  box.innerHTML = '<div class="hint">Recherche des ruptures chez les marques…</div>';
+  if(!brandsLoaded){ brandsLoaded = true; await loadBrands(); }
+  const lines = [];
+  for(const b of brands){
+    const tasks = await loadBrandTasks(b.id);
+    tasks.filter(t=>t.outOfStock && !t.done).forEach(t=>{
+      const missing = Math.max(0, (Number(t.quantity)||0) - (Number(t.readyQty)||0));
+      if(missing) lines.push({ brand: b.name, t, missing });
+    });
+  }
+  if(!lines.length){ box.innerHTML = '<div class="to-order-empty">Aucune rupture en cours chez les marques.</div>'; return; }
+  const cat = await loadSiteCatalog();
+  const cart = {};
+  const html = lines.map(({ brand, t, missing })=>{
+    const sp = t.siteProductId ? cat.find(p=>p.id===t.siteProductId) : null;
+    const v = sp ? sp.variants.find(v=> (!v.c || v.c === t.couleur) && (!v.t || v.t === t.taille)) : null;
+    if(v) cart[v.id] = (cart[v.id] || 0) + missing;
+    const name = t.siteName || (sp && sp.nom) || t.blankOther || t.blank || t.nom || '(sans nom)';
+    const img = t.siteImage || (sp && sp.image) || '';
+    return `<div class="to-order-line">
+      ${img ? `<img src="${esc(siteImg(img, 120))}" alt="">` : '<div class="to-order-noimg">?</div>'}
+      <div class="to-order-info">
+        <div class="to-order-name">${esc(name)}</div>
+        <div class="to-order-meta">${esc([t.couleur, t.taille].filter(Boolean).join(' · '))} : <strong>${missing} pièce(s)</strong></div>
+        <div class="to-order-meta">Pour ${esc(brand)} · ${esc(t.nom || '')}</div>
+        ${t.restockOrderedAt ? `<div class="to-order-meta"><strong>Déjà commandé le ${formatDate(t.restockOrderedAt)}${t.restockSupplier ? ' chez ' + esc(t.restockSupplier) : ''}</strong>${t.restockEta ? ' · réception prévue le ' + formatDate(t.restockEta) : ''}</div>` : ''}
+        ${sp ? `<a href="${SITE_URL}/products/${encodeURIComponent(sp.handle)}" target="_blank" rel="noopener">Voir sur printtex.fr</a>`
+             : '<span class="to-order-warn">Pas relié à un produit du site</span>'}
+        ${sp && !v ? '<span class="to-order-warn">Couleur ou taille introuvable sur le site</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+  const cartIds = Object.keys(cart);
+  box.innerHTML = `<div class="to-order-title">Ruptures des marques (${lines.length})</div>` + html +
+    (cartIds.length ? `<a class="btn btn-primary btn-sm to-order-cart" href="${SITE_URL}/cart/${cartIds.map(id=>id+':'+cart[id]).join(',')}" target="_blank" rel="noopener">Tout mettre dans le panier printtex.fr</a>` : '');
+}
 $('#notepadTab').addEventListener('click', ()=>{
   $('#notepadPanel').style.display = 'flex';
+  renderToOrderAuto();
   $('#notepadText').focus();
 });
 $('#btnNotepadClose').addEventListener('click', ()=>{
@@ -3302,7 +5353,7 @@ async function doForgotPassword(){
   $('#authError').textContent = '';
   const email = $('#authEmail').value.trim();
   if(!email){
-    $('#authError').textContent = "Renseigne ton email dans le champ ci-dessus, puis clique à nouveau sur « Mot de passe oublié ? ».";
+    $('#authError').textContent = "Saisissez votre email dans le champ ci-dessus, puis cliquez à nouveau sur « Mot de passe oublié ? ».";
     $('#authEmail').focus();
     return;
   }
@@ -3411,6 +5462,7 @@ if(auth){
     if(isAllowedEmail(user.email)){
       showApp();
       loadOrders();
+      autoImportShopifyAll().then(autoImportStoresAll).then(syncSupplierUpdates);
     }else{
       const { brand, error } = await findBrandByOwner(user.uid);
       if(error){
@@ -3424,9 +5476,18 @@ if(auth){
         await auth.signOut();
         return;
       }
+      if(brand.disabled){
+        const msg = 'Votre accès est suspendu. Contactez Printtex.';
+        showToast(msg);
+        await auth.signOut();
+        setTimeout(()=>{ const el = $('#authError'); if(el) el.textContent = msg; }, 400);
+        return;
+      }
       showBrandPortal(brand);
     }
   });
+}else if(DEMO_MODE){
+  startDemo();
 }else{
   showApp();
   loadOrders();

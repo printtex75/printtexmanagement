@@ -40,3 +40,9 @@ Kanban + vue liste, recherche (client, produit, n° de commande, archives), comm
 - Accélérer le chargement : ne charger que les commandes actives au démarrage (attention aux stats « Livrées » et à l'archivage qui lisent toutes les commandes).
 - Problème de connexion d'un client (Flex Like, Fayçal) : en attente du message d'erreur exact affiché. Vérifier dans la console Firebase : domaine `printtex75.github.io` autorisé (Authentication → Settings), compte non désactivé, bonne adresse email (`fayssoule@yahoo.com` ou `faycalsellah@yahoo.com`).
 - Idées : étiquettes de colis, statistiques simples, modèles de commandes répétitives.
+
+## Nouvelle version (19/10/2026)
+- Préparée et validée sur la version de test : dépôt printtex75/printtex-nouvelle-version (données beta_, mode démo ?demo=1 / ?demo=marque).
+- Service Cloudflare : code dans printtex-nouvelle-version/worker ; service définitif « printtex-shopify » (wrangler.production.toml, collections brands / adminNotes). Secrets BREVO_API_KEY et ROUTINE_KEY (clé locale C:\Users\print\.printtex\routine-key-prod.txt).
+- Tâche planifiée « printtex-suivi-fournisseurs » : lit Gmail (commandes des boutiques via printtex75+commandes@gmail.com, mails fournisseurs) et dépose les informations sur le service ; l'outil les applique à son ouverture.
+- Facturation et réglages : adminNotes/billing_<marque>, adminNotes/settings (admin seulement).
