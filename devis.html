@@ -130,11 +130,31 @@
   /* Interrupteur discret du tarif partenaire (l'écran peut être vu par le client) : un simple point. */
   .prix-amis{margin-left:auto;font-family:var(--body);font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;border:1px solid var(--line);background:transparent;color:var(--ink-2);border-radius:999px;padding:4px 10px;min-height:30px;opacity:.7;}
   .prix-amis[aria-pressed="true"]{background:var(--line);opacity:1;}
+  /* Devis validé : feuille affichée par-dessus la page, seule imprimée avec « Imprimer ce devis » */
+  .devis-vue{position:fixed;inset:0;background:rgba(20,18,16,.55);z-index:60;overflow:auto;padding:20px 12px;}
+  .devis-vue[hidden]{display:none;}
+  .devis-vue .feuille{background:#fff;max-width:800px;margin:0 auto;border-radius:12px;padding:26px 28px;box-shadow:0 24px 60px rgba(20,18,16,.3);animation:ptx-apparait .25s ease-out;}
+  .devis-entete{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;background:#141210;background-image:var(--cuir-grain);color:#F7F3EE;border-radius:12px;padding:14px 18px;position:relative;}
+  .devis-entete::after{content:"";position:absolute;inset:5px;border:1px dashed rgba(247,243,238,.5);border-radius:9px;pointer-events:none;}
+  .devis-entete .marque{font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:1px;}
+  .devis-entete .coord{text-align:right;font-size:11px;line-height:1.5;color:#E0B48C;}
+  .devis-titre{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:16px 0 4px;flex-wrap:wrap;}
+  .devis-titre h3{font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.5px;margin:0;color:#141210;}
+  .devis-titre span{font-size:12px;color:#5A4A3E;}
+  .devis-conditions{margin-top:14px;font-size:11px;color:#5A4A3E;line-height:1.55;}
+  .devis-accord{margin-top:12px;border:1px dashed #B9A87F;border-radius:8px;padding:10px 14px;height:56px;font-size:11px;color:#5A4A3E;}
+  .actions-devis{margin-top:16px;justify-content:flex-end;}
+  @media print{
+    body.impr-devis .wrap, body.impr-devis .barre-prix, body.impr-devis .toast{display:none !important;}
+    body.impr-devis .devis-vue{position:static;background:none;padding:0;overflow:visible;}
+    body.impr-devis .devis-vue .feuille{box-shadow:none;border-radius:0;padding:0;max-width:none;animation:none;}
+    body.impr-devis .actions-devis{display:none !important;}
+  }
   /* Impression : récapitulatif complet à la place du tableau d'écran */
-  #recap table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10pt;}
-  #recap th{background:#141210;color:#F7F3EE;text-align:left;padding:6px 8px;font-size:8.5pt;text-transform:uppercase;}
-  #recap td{padding:6px 8px;border-bottom:1px solid #E5DED4;vertical-align:top;}
-  #recap .infos{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:10pt;margin-top:6px;}
+  #recap table, #recapDevis table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10pt;}
+  #recap th, #recapDevis th{background:#141210;color:#F7F3EE;text-align:left;padding:6px 8px;font-size:8.5pt;text-transform:uppercase;}
+  #recap td, #recapDevis td{padding:6px 8px;border-bottom:1px solid #E5DED4;vertical-align:top;}
+  #recap .infos, #recapDevis .infos{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:10pt;margin-top:6px;}
   @media print{ .ecran-seul{display:none !important;} }
   .paliers{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
   .paliers button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 10px;min-height:36px;font-size:12px;font-weight:600;}
@@ -145,7 +165,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-recap-sans-bat</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-devis-valider</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -216,7 +236,8 @@
         <label for="nom">Nom de l'estimation (pour la retrouver)</label>
         <input type="text" id="nom" placeholder="ex. Marcus – 20 manches longues">
         <div class="row" style="margin-top:10px;">
-          <button type="button" class="btn btn-primary" id="btnImprimer">Imprimer</button>
+          <button type="button" class="btn btn-primary" id="btnValider">Valider : voir le devis</button>
+          <button type="button" class="btn" id="btnImprimer">Imprimer l'estimation</button>
           <button type="button" class="btn" id="btnEnregistrer">Garder pour faire le devis</button>
           <button type="button" class="btn" id="btnNouveau">Nouvelle estimation</button>
         </div>
@@ -230,6 +251,15 @@
   </div>
 </div>
 <div class="barre-prix" id="barrePrix" aria-live="polite"><div><strong id="barreTotal"></strong><div class="muted" style="color:#C9C1B6;" id="barreDetail"></div></div><button type="button" id="barreVoir">Voir le détail</button></div>
+<div class="devis-vue" id="devisVue" hidden role="dialog" aria-modal="true" aria-label="Devis">
+  <div class="feuille">
+    <div id="devisContenu"></div>
+    <div class="row actions-devis">
+      <button type="button" class="btn btn-primary" id="btnImprimerDevis">Imprimer ce devis</button>
+      <button type="button" class="btn" id="btnFermerDevis">Modifier</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-app-compat.min.js"></script>
@@ -469,6 +499,33 @@ if(typeof firebase === 'undefined'){
     $("barrePrix").classList.add("visible");
   }
   $("nom").addEventListener("input", () => { $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : ""; calculer(); });
+  // Devis : mêmes informations que le récapitulatif, mis en page comme un devis, avec ses conditions.
+  $("btnValider").addEventListener("click", () => {
+    if(!S.res){ toast("Choisissez d'abord un produit et une quantité."); return; }
+    const d = new Date(), v = new Date(d.getTime() + 30*864e5), pad = n => String(n).padStart(2, "0");
+    const fr = x => x.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+    const ref = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+    $("devisContenu").innerHTML = `
+      <div class="devis-entete"><div class="marque">PRINTTEX</div><div class="coord">5 rue Planchat, 75020 Paris<br>01 86 04 31 65 · info@printtex.fr<br>printtex.fr</div></div>
+      <div class="devis-titre"><h3>Devis${$("nom").value ? " – " + esc($("nom").value) : ""}</h3><span>Réf. ${ref} · le ${fr(d)} · valable jusqu'au ${fr(v)}</span></div>
+      <div id="recapDevis">${$("recap").innerHTML}</div>
+      <div class="devis-conditions"><b>Conditions</b><br>
+        Prix TTC (TVA 20 %), textile et impression compris, sauf impression seule sur vos vêtements.
+        ${S.sansBat ? "Production lancée directement après validation de votre visuel." : "La première pièce de chaque produit sert de BAT (bon à tirer) : la série est lancée après votre validation."}<br>
+        Règlement à la commande (acompte de 50 % pour les séries), par carte ou virement. Retrait gratuit à l'atelier ; livraison Colissimo sur demande.<br>
+        Produits personnalisés : pas de droit de rétractation (article L221-28 du Code de la consommation).</div>
+      <div class="devis-accord">Bon pour accord – date, nom et signature :</div>
+      <p style="margin-top:12px;text-align:center;font-size:10px;color:#8C8072;">Printtex SARL · RCS Paris 929 245 918 · TVA FR58929245918 · 5 rue Planchat, 75020 Paris</p>`;
+    $("devisVue").hidden = false; $("btnImprimerDevis").focus();
+  });
+  $("btnFermerDevis").addEventListener("click", () => { $("devisVue").hidden = true; });
+  $("devisVue").addEventListener("click", e => { if(e.target === $("devisVue")) $("devisVue").hidden = true; });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("devisVue").hidden) $("devisVue").hidden = true; });
+  $("btnImprimerDevis").addEventListener("click", () => {
+    document.body.classList.add("impr-devis");
+    window.print();
+    setTimeout(() => document.body.classList.remove("impr-devis"), 500);
+  });
   $("btnImprimer").addEventListener("click", () => {
     if(!S.res){ toast("Choisissez d'abord un produit et une quantité."); return; }
     $("dateJour").textContent = new Date().toLocaleDateString("fr-FR");
