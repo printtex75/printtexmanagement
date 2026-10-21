@@ -83,7 +83,7 @@
         if (choisi != null && choisi > kNormal) add('info', `${nom} : tarif ${libPaliers[k]} pièces accordé pour ${q} pièce${q > 1 ? 's' : ''} (normalement ${libPaliers[kNormal]}).`);
         if (q > (base.palier_max || 200)) add('attention', `${nom} : ${q} pièces, au-delà de 200 : palier ${libPaliers[k]} appliqué, prix sur mesure possible.`);
         // Petits marquages en plus (manches, étiquette) : supplément par pièce selon le palier, table frais.supplements.
-        const nbManches = Math.min(2, Math.max(0, Number(l.manches) || 0)), etiq = l.etiquette ? 1 : 0;
+        const nbManches = Math.min(2, Math.max(0, Number(l.manches) || 0)), etiq = l.etiquette === true ? 1 : Math.max(0, Number(l.etiquette) || 0);
         const sup = frais.supplements || {};
         const supplement = (kk) => (sup.manche ? sup.manche[kk] * nbManches : 0) + (sup.etiquette ? sup.etiquette[kk] * etiq : 0); // TTC, ajouté avant le passage en HT
         if ((nbManches && !sup.manche) || (etiq && !sup.etiquette)) add('attention', `${nom} : prix des manches ou de l'étiquette absent de la base, non compté.`);
@@ -118,7 +118,7 @@
         const couleursTxt = (l.couleurs || []).filter((c) => quantiteLigne({ type: 'grille', couleurs: [c] }))
           .map((c) => `${c.nom || 'couleur'} : ${Object.entries(c.tailles || {}).filter(([, n]) => Number(n) > 0).map(([t, n]) => `${t} ×${n}`).join(', ')}`).join(' · ');
         const emplTxt = (l.emplacements || []).filter((e) => e.lieu).map((e) => e.lieu + (e.dim ? ` (${e.dim})` : '')).join(', ');
-        const petits = [nbManches ? `${nbManches} manche${nbManches > 1 ? 's' : ''}` : '', etiq ? 'étiquette' : ''].filter(Boolean).join(' + ');
+        const petits = [nbManches ? `${nbManches} manche${nbManches > 1 ? 's' : ''}` : '', etiq ? (etiq > 1 ? `${etiq} étiquettes` : 'étiquette') : ''].filter(Boolean).join(' + ');
         const detail = [`${nbMarq} emplacement${nbMarq > 1 ? 's' : ''}${petits ? ' + ' + petits : ''}, impression ${l.technique || 'DTF'}`, emplTxt, couleursTxt].filter(Boolean).join(' · ');
         if (gentil) {
           if (dosOffert) add('info', `${nom} : tarif marque, le dos est offert.`);
@@ -134,7 +134,7 @@
         // Suppléments par pièce : +2 € par emplacement en plus (manche, cœur), +1,20 € par étiquette.
         const g = frais.impression_seule, tech = g.grilles[l.technique];
         if (!tech) { add('bloquant', `${nom} : technique inconnue (${l.technique}).`); return; }
-        const faces = Math.min(2, Math.max(1, Number(l.faces) || 1)), petits = Math.max(0, Number(l.manches) || 0), etiq = l.etiquette ? 1 : 0;
+        const faces = Math.min(2, Math.max(1, Number(l.faces) || 1)), petits = Math.max(0, Number(l.manches) || 0), etiq = l.etiquette === true ? 1 : Math.max(0, Number(l.etiquette) || 0);
         const grille = tech[l.charge ? 'charge' : 'normal'][String(faces)];
         const sansBatT = !!devis.sansBat;
         const k = Math.max(indicePalier(g.paliers, q), sansBatT ? 1 : 0), sup = petits * g.supplement_emplacement + etiq * g.etiquette;
@@ -148,7 +148,7 @@
         if (cp == null) { coutConnu = false; add('info', `${nom} : coût de l'impression seule non renseigné, marge non calculée.`); }
         else { coutTotal += cp * q; if (pu < cp) add('attention', `${nom} : prix par pièce inférieur au coût estimé.`); }
         const libT = { 'dtg-blanc': 'DTG sur textile blanc', 'dtg-fonce': 'DTG sur textile foncé', 'dtf': 'DTF' }[l.technique] || l.technique;
-        const detail = [`${faces === 2 ? 'Face + dos' : '1 face'}${petits ? ` + ${petits} emplacement${petits > 1 ? 's' : ''}` : ''}${etiq ? ' + étiquette' : ''}`, libT, l.charge ? 'visuel chargé' : ''].filter(Boolean).join(' · ');
+        const detail = [`${faces === 2 ? 'Face + dos' : '1 face'}${petits ? ` + ${petits} emplacement${petits > 1 ? 's' : ''}` : ''}${etiq ? (etiq > 1 ? ` + ${etiq} étiquettes` : ' + étiquette') : ''}`, libT, l.charge ? 'visuel chargé' : ''].filter(Boolean).join(' · ');
         if (sansBatT) client.push({ desc: l.designation || 'Impression sur textile fourni par le client', detail: detail + ` · tarif ${g.libelles[k]} pièces, sans BAT`, qte: q, pu });
         else client.push({ desc: `${l.designation || 'Impression sur textile fourni par le client'} – 1re pièce (BAT)`, detail, qte: 1, pu: bat });
         if (q > 1 && !sansBatT) client.push({ desc: `${l.designation || 'Impression sur textile fourni par le client'} – pièces suivantes`, detail: `Tarif ${g.libelles[k]} pièces`, qte: q - 1, pu });

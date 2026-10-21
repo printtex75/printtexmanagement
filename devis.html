@@ -127,14 +127,37 @@
   .aucun{padding:12px 0;color:var(--ink-2);font-size:14px;}
   /* Paliers cliquables (tarif préférentiel accordé à la main) */
   .paliers[hidden]{display:none;}
+  .btn-plus{width:52px;height:52px;min-height:52px;border-radius:50%;padding:0;font-size:28px;line-height:1;font-weight:500;}
+  .compteur{display:inline-flex;align-items:center;gap:10px;}
+  .compteur button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line-strong);background:#fff;font-size:20px;}
   /* Interrupteur discret du tarif partenaire (l'écran peut être vu par le client) : un simple point. */
   .prix-amis{margin-left:auto;font-family:var(--body);font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;border:1px solid var(--line);background:transparent;color:var(--ink-2);border-radius:999px;padding:4px 10px;min-height:30px;opacity:.7;}
   .prix-amis[aria-pressed="true"]{background:var(--line);opacity:1;}
+  /* Devis validé : feuille affichée par-dessus la page, seule imprimée avec « Imprimer ce devis » */
+  .devis-vue{position:fixed;inset:0;background:rgba(20,18,16,.55);z-index:60;overflow:auto;padding:20px 12px;}
+  .devis-vue[hidden]{display:none;}
+  .devis-vue .feuille{background:#fff;max-width:800px;margin:0 auto;border-radius:12px;padding:26px 28px;box-shadow:0 24px 60px rgba(20,18,16,.3);animation:ptx-apparait .25s ease-out;}
+  .devis-entete{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;background:#141210;background-image:var(--cuir-grain);color:#F7F3EE;border-radius:12px;padding:14px 18px;position:relative;}
+  .devis-entete::after{content:"";position:absolute;inset:5px;border:1px dashed rgba(247,243,238,.5);border-radius:9px;pointer-events:none;}
+  .devis-entete .marque{font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:1px;}
+  .devis-entete .coord{text-align:right;font-size:11px;line-height:1.5;color:#E0B48C;}
+  .devis-titre{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:16px 0 4px;flex-wrap:wrap;}
+  .devis-titre h3{font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.5px;margin:0;color:#141210;}
+  .devis-titre span{font-size:12px;color:#5A4A3E;}
+  .devis-conditions{margin-top:14px;font-size:11px;color:#5A4A3E;line-height:1.55;}
+  .devis-accord{margin-top:12px;border:1px dashed #B9A87F;border-radius:8px;padding:10px 14px;height:56px;font-size:11px;color:#5A4A3E;}
+  .actions-devis{margin-top:16px;justify-content:flex-end;}
+  @media print{
+    body.impr-devis .wrap, body.impr-devis .barre-prix, body.impr-devis .toast{display:none !important;}
+    body.impr-devis .devis-vue{position:static;background:none;padding:0;overflow:visible;}
+    body.impr-devis .devis-vue .feuille{box-shadow:none;border-radius:0;padding:0;max-width:none;animation:none;}
+    body.impr-devis .actions-devis{display:none !important;}
+  }
   /* Impression : récapitulatif complet à la place du tableau d'écran */
-  #recap table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10pt;}
-  #recap th{background:#141210;color:#F7F3EE;text-align:left;padding:6px 8px;font-size:8.5pt;text-transform:uppercase;}
-  #recap td{padding:6px 8px;border-bottom:1px solid #E5DED4;vertical-align:top;}
-  #recap .infos{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:10pt;margin-top:6px;}
+  #recap table, #recapDevis table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10pt;}
+  #recap th, #recapDevis th{background:#141210;color:#F7F3EE;text-align:left;padding:6px 8px;font-size:8.5pt;text-transform:uppercase;}
+  #recap td, #recapDevis td{padding:6px 8px;border-bottom:1px solid #E5DED4;vertical-align:top;}
+  #recap .infos, #recapDevis .infos{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:10pt;margin-top:6px;}
   @media print{ .ecran-seul{display:none !important;} }
   .paliers{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
   .paliers button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 10px;min-height:36px;font-size:12px;font-weight:600;}
@@ -145,7 +168,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-recap-sans-bat</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-emplacements</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -174,13 +197,11 @@
     </div>
 
     <div class="panel" id="etape2">
-      <div class="etape"><span class="num">2</span><h2>Nombre de faces imprimées</h2></div>
-      <div class="choix" id="faces"></div>
-      <div id="extrasBox" style="margin-top:12px;">
-        <label>En plus</label>
-        <div class="choix" id="manches"></div>
-        <div class="choix" id="etiquetteBox" style="margin-top:8px;"></div>
-      </div>
+      <div class="etape"><span class="num">2</span><h2>Emplacements à imprimer</h2></div>
+      <p class="muted" style="margin:0 0 8px;">Touchez chaque emplacement à imprimer.</p>
+      <div class="choix" id="emplacements"></div>
+      <div class="row" id="etiquetteNb" style="margin-top:10px;"></div>
+      <div id="visuelBox"></div>
     </div>
 
     <div class="panel" id="etape3">
@@ -188,7 +209,7 @@
       <input type="number" id="quantite" min="1" step="1" inputmode="numeric" placeholder="ex. 50" aria-label="Quantité">
       <div class="rapides" id="rapides"><button type="button" data-q="10">10</button><button type="button" data-q="25">25</button><button type="button" data-q="50">50</button><button type="button" data-q="100">100</button></div>
       <div class="row" style="margin-top:10px;">
-        <button type="button" class="btn" id="btnAjouter">+ Ajouter ce produit et en choisir un autre</button>
+        <button type="button" class="btn btn-plus" id="btnAjouter" aria-label="Ajouter un autre produit" title="Ajouter un autre produit">+</button><span class="muted">un autre produit</span>
       </div>
       <div id="autresLignes"></div>
       <label class="no-print" id="cumulBox" style="display:none;align-items:center;gap:8px;margin-top:10px;font-weight:500;"><input type="checkbox" id="cumul" style="width:20px;height:20px;"> Additionner les produits pour atteindre un meilleur tarif</label>
@@ -216,7 +237,8 @@
         <label for="nom">Nom de l'estimation (pour la retrouver)</label>
         <input type="text" id="nom" placeholder="ex. Marcus – 20 manches longues">
         <div class="row" style="margin-top:10px;">
-          <button type="button" class="btn btn-primary" id="btnImprimer">Imprimer</button>
+          <button type="button" class="btn btn-primary" id="btnValider">Valider : voir le devis</button>
+          <button type="button" class="btn" id="btnImprimer">Imprimer l'estimation</button>
           <button type="button" class="btn" id="btnEnregistrer">Garder pour faire le devis</button>
           <button type="button" class="btn" id="btnNouveau">Nouvelle estimation</button>
         </div>
@@ -230,6 +252,15 @@
   </div>
 </div>
 <div class="barre-prix" id="barrePrix" aria-live="polite"><div><strong id="barreTotal"></strong><div class="muted" style="color:#C9C1B6;" id="barreDetail"></div></div><button type="button" id="barreVoir">Voir le détail</button></div>
+<div class="devis-vue" id="devisVue" hidden role="dialog" aria-modal="true" aria-label="Devis">
+  <div class="feuille">
+    <div id="devisContenu"></div>
+    <div class="row actions-devis">
+      <button type="button" class="btn btn-primary" id="btnImprimerDevis">Imprimer ce devis</button>
+      <button type="button" class="btn" id="btnFermerDevis">Modifier</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-app-compat.min.js"></script>
@@ -322,11 +353,14 @@ if(typeof firebase === 'undefined'){
       ${PHOTOS[k] ? `<img src="${esc(PHOTOS[k])}" alt="" loading="lazy">` : `<span class="sans-photo">${esc(p.libelle.slice(0,1))}</span>`}${esc(p.libelle)}</button>`).join("")
       : (client ? "" : `<div class="aucun">Aucun produit ne correspond à « ${esc($("recherche").value)} ».</div>`));
   }
+  // Emplacements d'une ligne en clair (les anciennes estimations n'ont que faces / manches / étiquette).
+  const posTxt = l => { const dv = l.devant ?? true, ds = l.dos ?? l.faces === 2, m = l.manches || 0, et = l.etiquette === true ? 1 : Number(l.etiquette) || 0;
+    return [dv ? "devant" : "", ds ? "dos" : "", m ? (estClient(l) ? m + " emplacement" + (m > 1 ? "s" : "") + " en plus" : m + " manche" + (m > 1 ? "s" : "")) : "", et ? (et > 1 ? et + " étiquettes" : "étiquette") : ""].filter(Boolean).join(" + "); };
   const TECHNIQUES = { "dtg-blanc": "DTG sur textile blanc", "dtg-fonce": "DTG sur textile foncé", "dtf": "DTF" };
   const estClient = c => c.produit === "__client";
   $("recherche").addEventListener("input", rendreProduits);
   $("recherche").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); const b = $("produits").querySelector(".carte-produit"); if(b) b.click(); } });
-  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; S.gentil = false; S.sansBat = false; majMode(); $("recherche").value = ""; afficherEtapes(); calculer(); }
+  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:0, devant:true, dos:false, mancheG:false, mancheD:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; S.gentil = false; S.sansBat = false; majMode(); $("recherche").value = ""; afficherEtapes(); calculer(); }
   function afficherEtapes(){
     const c = S.courant, p = estClient(c) ? { max_marquages: 2 } : S.base.produits[c.produit];
     rendreProduits();
@@ -341,19 +375,23 @@ if(typeof firebase === 'undefined'){
       $("teinte").innerHTML = teintes.map(t => `<button type="button" data-v="${t}" aria-pressed="${t===c.teinte}">${t==="blanc"?"Blanc":"Couleur (noir, marine…)"}</button>`).join("");
     }
     const maxF = p ? (p.max_marquages || 2) : 2;
-    $("faces").innerHTML = Array.from({length:maxF}, (_,i)=>i+1).map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.faces}">${n} face${n>1?"s":""}${n===2?" (devant + dos)":""}</button>`).join("");
     // Manches et étiquette : seulement pour les vêtements qui en ont (pas les sacs, casquettes, tabliers…).
     const sansManche = /tote|casquet|bob|jogging|debardeur|crop|doudoune|short|tablier/.test(c.produit);
     const sansEtiquette = /tote|casquet|bob|tablier/.test(c.produit);
-    if(sansManche) c.manches = 0; if(sansEtiquette) c.etiquette = false;
-    $("extrasBox").style.display = p && !(sansManche && sansEtiquette) ? "" : "none";
-    $("manches").style.display = sansManche ? "none" : "";
-    $("manches").innerHTML = [0,1,2].map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.manches}">${estClient(c) ? (n ? "+ " + n + " emplacement" + (n>1?"s":"") + " (manche, cœur)" : "Pas d'emplacement en plus") : (n ? n + " manche" + (n>1?"s":"") : "Sans manche")}</button>`).join("");
-    $("etiquetteBox").style.display = sansEtiquette ? "none" : "";
-    $("etiquetteBox").innerHTML = `<button type="button" data-t="etiquette" aria-pressed="${!!c.etiquette}">${c.etiquette ? "Étiquette dans le cou : oui" : "+ Étiquette dans le cou"}</button>`
-      + (estClient(c) ? `<div style="width:100%;margin-top:4px;"><label style="margin-bottom:6px;${c.charge == null ? "color:#9A2F29;" : ""}">Visuel : à indiquer obligatoirement</label><div class="choix">
+    if(c.devant === undefined){ c.devant = true; c.dos = c.faces === 2; c.mancheG = (c.manches || 0) >= 1; c.mancheD = (c.manches || 0) >= 2; }
+    if(maxF < 2) c.dos = false; if(!c.devant && !c.dos) c.devant = true;
+    if(sansManche){ c.mancheG = false; c.mancheD = false; }
+    c.etiquette = sansEtiquette ? 0 : (c.etiquette === true ? 1 : Math.max(0, Number(c.etiquette) || 0));
+    c.faces = (c.devant ? 1 : 0) + (c.dos ? 1 : 0); c.manches = (c.mancheG ? 1 : 0) + (c.mancheD ? 1 : 0);
+    const opts = [["devant","Devant"], ...(maxF > 1 ? [["dos","Dos"]] : []),
+      ...(sansManche ? [] : [["mancheG", estClient(c) ? "Manche ou cœur" : "Manche gauche"], ["mancheD", estClient(c) ? "2e manche ou cœur" : "Manche droite"]]),
+      ...(sansEtiquette ? [] : [["etiquette","Étiquette dans le cou"]])];
+    $("emplacements").innerHTML = p ? opts.map(([k,lib]) => `<button type="button" data-e="${k}" aria-pressed="${k === "etiquette" ? c.etiquette > 0 : !!c[k]}">${lib}</button>`).join("") : "";
+    $("etiquetteNb").innerHTML = c.etiquette > 0 ? `<label style="margin:0;">Nombre de formats étiquette par pièce</label>
+      <span class="compteur"><button type="button" data-nb="-1" aria-label="Une étiquette de moins">−</button><strong>${c.etiquette}</strong><button type="button" data-nb="1" aria-label="Une étiquette de plus">+</button></span>` : "";
+    $("visuelBox").innerHTML = estClient(c) ? `<div style="margin-top:12px;"><label style="margin-bottom:6px;${c.charge == null ? "color:#9A2F29;" : ""}">Visuel : à indiquer obligatoirement</label><div class="choix">
           <button type="button" data-visuel="normal" aria-pressed="${c.charge === false}">Visuel normal (jusqu'à 8 cc d'encre)</button>
-          <button type="button" data-visuel="charge" aria-pressed="${c.charge === true}">Visuel chargé (plus de 8 cc, photo)</button></div></div>` : "");
+          <button type="button" data-visuel="charge" aria-pressed="${c.charge === true}">Visuel chargé (plus de 8 cc, photo)</button></div></div>` : "";
     $("quantite").value = c.quantite;
     $("etape1").classList.toggle("fait", !!p);
     $("etape2").classList.toggle("fait", !!p);
@@ -361,7 +399,7 @@ if(typeof firebase === 'undefined'){
     $("etape4").classList.toggle("fait", !!$("date").value);
     $("autresLignes").innerHTML = S.lignes.map((l,i) => `<div class="ligne-recap"><span>${esc(libelleLigne(l))}</span><button type="button" class="x" data-retirer="${i}" aria-label="Retirer">×</button></div>`).join("");
   }
-  const libelleLigne = l => estClient(l) ? `Impression seule, ${TECHNIQUES[l.technique] || 'DTG'} · ${l.faces === 2 ? 'face + dos' : '1 face'}${l.manches ? ` + ${l.manches} emplacement${l.manches>1?'s':''}` : ''}${l.etiquette ? ' + étiquette' : ''}${l.charge ? ' · visuel chargé' : l.charge === false ? ' · visuel normal' : ' · visuel à préciser'} · ${l.quantite} pièce${l.quantite>1?'s':''}` : `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""}${l.manches ? ` + ${l.manches} manche${l.manches>1?"s":""}` : ""}${l.etiquette ? " + étiquette" : ""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
+  const libelleLigne = l => estClient(l) ? `Impression seule, ${TECHNIQUES[l.technique] || 'DTG'} · ${posTxt(l)}${l.charge ? ' · visuel chargé' : l.charge === false ? ' · visuel normal' : ' · visuel à préciser'} · ${l.quantite} pièce${l.quantite>1?'s':''}` : `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${posTxt(l)} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
   $("produits").addEventListener("click", e => {
     const b = e.target.closest(".carte-produit"); if(!b) return;
     const p = S.base.produits[b.dataset.k];
@@ -369,7 +407,7 @@ if(typeof firebase === 'undefined'){
     if(b.dataset.k === "__client"){ S.courant.technique = S.courant.technique || "dtg-blanc"; if(S.courant.charge === undefined) S.courant.charge = null; S.courant.faces = Math.min(S.courant.faces, 2); afficherEtapes(); calculer(); suivant("etape1"); return; }
     if(p){ S.courant.teinte = p.teinte_fixe || (p.grilles.couleur ? "couleur" : Object.keys(p.grilles)[0]); S.courant.faces = Math.min(S.courant.faces, p.max_marquages || 2); }
     afficherEtapes(); calculer();
-    if(p) suivant(S.base.produits[S.courant.produit].max_marquages > 1 ? "etape2" : "etape3");
+    if(p) suivant("etape2");
   });
   // Étape suivante : on la fait venir à l'écran, et le curseur va dans la quantité.
   function suivant(id){
@@ -381,11 +419,13 @@ if(typeof firebase === 'undefined'){
   $("quantite").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); suivant("zoneEstimation"); } });
   $("barreVoir").addEventListener("click", () => suivant("zoneEstimation"));
   $("teinte").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; if(estClient(S.courant)) S.courant.technique = v; else S.courant.teinte = v; afficherEtapes(); calculer(); if(estClient(S.courant)) suivant("etape2"); });
-  $("manches").addEventListener("click", e => { const v = e.target.dataset.v; if(v == null) return; S.courant.manches = Number(v); afficherEtapes(); calculer(); });
-  $("etiquetteBox").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return;
-    if(b.dataset.visuel) S.courant.charge = b.dataset.visuel === "charge"; else S.courant.etiquette = !S.courant.etiquette;
+  $("emplacements").addEventListener("click", e => { const k = e.target.dataset.e; if(!k) return; const c = S.courant;
+    if(k === "etiquette") c.etiquette = c.etiquette > 0 ? 0 : 1;
+    else if((k === "devant" || k === "dos") && c[k] && !(k === "devant" ? c.dos : c.devant)){ toast("Gardez au moins le devant ou le dos."); return; }
+    else c[k] = !c[k];
     afficherEtapes(); calculer(); });
-  $("faces").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.faces = Number(v); afficherEtapes(); calculer(); suivant("etape3"); });
+  $("etiquetteNb").addEventListener("click", e => { const n = Number(e.target.dataset.nb); if(!n) return; S.courant.etiquette = Math.max(1, Math.min(4, S.courant.etiquette + n)); afficherEtapes(); calculer(); });
+  $("visuelBox").addEventListener("click", e => { const v = e.target.dataset.visuel; if(!v) return; S.courant.charge = v === "charge"; afficherEtapes(); calculer(); });
   $("quantite").addEventListener("input", () => { S.courant.quantite = $("quantite").value; afficherEtapes(); $("quantite").focus(); calculer(); });
   ["date","livraison"].forEach(id => $(id).addEventListener("input", () => { $("etape4").classList.toggle("fait", !!$("date").value); calculer(); }));
   $("btnAjouter").addEventListener("click", () => {
@@ -393,7 +433,7 @@ if(typeof firebase === 'undefined'){
     if(!c.produit || !(Number(c.quantite) > 0)){ toast("Choisissez d'abord un produit et une quantité."); return; }
     if(estClient(c) && c.charge == null){ toast("Indiquez si le visuel est normal ou chargé."); return; }
     S.lignes.push({ ...c, quantite:Number(c.quantite) });
-    S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
+    S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:0, devant:true, dos:false, mancheG:false, mancheD:false, quantite:"" };
     $("recherche").value = ""; afficherEtapes(); calculer(); $("recherche").focus();
   });
   $("resultat").addEventListener("click", e => {
@@ -416,7 +456,7 @@ if(typeof firebase === 'undefined'){
     return l;
   }
   function versDevis(lignes){
-    return { lignes: lignes.map(l => estClient(l) ? { type:"textile_fourni", technique:l.technique || "dtg-blanc", faces:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, charge:!!l.charge, quantite:l.quantite, ajustement:{ mode:"aucun" } } : ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
+    return { lignes: lignes.map(l => estClient(l) ? { type:"textile_fourni", technique:l.technique || "dtg-blanc", faces:l.faces, manches:l.manches || 0, etiquette:Number(l.etiquette) || 0, charge:!!l.charge, quantite:l.quantite, ajustement:{ mode:"aucun" } } : ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, manches:l.manches || 0, etiquette:Number(l.etiquette) || 0, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
       cumulerPaliers: $("cumul").checked, modeMarque: S.gentil, sansBat: !!S.sansBat, livraison: $("livraison").checked ? "colissimo" : "retrait" };
   }
   function calculer(){
@@ -455,7 +495,7 @@ if(typeof firebase === 'undefined'){
         <div><b>BAT :</b> ${S.sansBat ? "sans BAT, production directe après validation du visuel" : "1re pièce de chaque produit = BAT à valider avant la série"}</div></div>
       <table><thead><tr><th>Produit et impression</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix / pièce</th><th style="text-align:right">Total</th></tr></thead><tbody>
       ${r.lignes.map((d,i) => { const l = lignes[i]; const det = estClient(l) ? libelleLigne(l).replace(/ · [0-9]+ pièces?$/, "")
-          : `${S.base.produits[l.produit].libelle}${S.base.produits[l.produit].teinte_fixe ? "" : l.teinte === "blanc" ? " · textile blanc" : " · textile de couleur"} · ${l.faces === 2 ? "face + dos" : "1 face"}${l.manches ? " + " + l.manches + " manche" + (l.manches>1?"s":"") : ""}${l.etiquette ? " + étiquette dans le cou" : ""}`;
+          : `${S.base.produits[l.produit].libelle}${S.base.produits[l.produit].teinte_fixe ? "" : l.teinte === "blanc" ? " · textile blanc" : " · textile de couleur"} · ${posTxt(l)}`;
         const prixTxt = d.bat === d.pu || d.q === 1 ? eur(Math.round(d.pu*1.2)) : `1re (BAT) ${eur(Math.round(d.bat*1.2))}<br>puis ${eur(Math.round(d.pu*1.2))}`;
         return `<tr><td>${esc(det)}</td><td style="text-align:right">${d.q}</td><td style="text-align:right">${prixTxt}</td><td style="text-align:right">${eur(Math.round(d.total*1.2))}</td></tr>`; }).join("")}
       <tr><td>${esc(liv.desc)}</td><td></td><td></td><td style="text-align:right">${liv.pu ? eur(Math.round(liv.pu*1.2)) : "offert"}</td></tr>
@@ -469,6 +509,33 @@ if(typeof firebase === 'undefined'){
     $("barrePrix").classList.add("visible");
   }
   $("nom").addEventListener("input", () => { $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : ""; calculer(); });
+  // Devis : mêmes informations que le récapitulatif, mis en page comme un devis, avec ses conditions.
+  $("btnValider").addEventListener("click", () => {
+    if(!S.res){ toast("Choisissez d'abord un produit et une quantité."); return; }
+    const d = new Date(), v = new Date(d.getTime() + 30*864e5), pad = n => String(n).padStart(2, "0");
+    const fr = x => x.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+    const ref = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+    $("devisContenu").innerHTML = `
+      <div class="devis-entete"><div class="marque">PRINTTEX</div><div class="coord">5 rue Planchat, 75020 Paris<br>01 86 04 31 65 · info@printtex.fr<br>printtex.fr</div></div>
+      <div class="devis-titre"><h3>Devis${$("nom").value ? " – " + esc($("nom").value) : ""}</h3><span>Réf. ${ref} · le ${fr(d)} · valable jusqu'au ${fr(v)}</span></div>
+      <div id="recapDevis">${$("recap").innerHTML}</div>
+      <div class="devis-conditions"><b>Conditions</b><br>
+        Prix TTC (TVA 20 %), textile et impression compris, sauf impression seule sur vos vêtements.
+        ${S.sansBat ? "Production lancée directement après validation de votre visuel." : "La première pièce de chaque produit sert de BAT (bon à tirer) : la série est lancée après votre validation."}<br>
+        Règlement à la commande (acompte de 50 % pour les séries), par carte ou virement. Retrait gratuit à l'atelier ; livraison Colissimo sur demande.<br>
+        Produits personnalisés : pas de droit de rétractation (article L221-28 du Code de la consommation).</div>
+      <div class="devis-accord">Bon pour accord – date, nom et signature :</div>
+      <p style="margin-top:12px;text-align:center;font-size:10px;color:#8C8072;">Printtex SARL · RCS Paris 929 245 918 · TVA FR58929245918 · 5 rue Planchat, 75020 Paris</p>`;
+    $("devisVue").hidden = false; $("btnImprimerDevis").focus();
+  });
+  $("btnFermerDevis").addEventListener("click", () => { $("devisVue").hidden = true; });
+  $("devisVue").addEventListener("click", e => { if(e.target === $("devisVue")) $("devisVue").hidden = true; });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("devisVue").hidden) $("devisVue").hidden = true; });
+  $("btnImprimerDevis").addEventListener("click", () => {
+    document.body.classList.add("impr-devis");
+    window.print();
+    setTimeout(() => document.body.classList.remove("impr-devis"), 500);
+  });
   $("btnImprimer").addEventListener("click", () => {
     if(!S.res){ toast("Choisissez d'abord un produit et une quantité."); return; }
     $("dateJour").textContent = new Date().toLocaleDateString("fr-FR");
@@ -491,7 +558,7 @@ if(typeof firebase === 'undefined'){
     if(!S.sauves[id].estimation){ toast("Ancien format : à refaire."); return; }
     const d = JSON.parse(S.sauves[id].estimation);
     $("cumul").checked = !!d.cumul; S.gentil = !!d.gentil; S.sansBat = !!d.sansBat; majMode();
-    S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
+    S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:0, devant:true, dos:false, mancheG:false, mancheD:false, quantite:"" };
     $("nom").value = S.sauves[id].titre; $("date").value = d.date || ""; $("livraison").checked = !!d.livraison;
     afficherEtapes(); calculer(); window.scrollTo({top:0, behavior:"smooth"}); toast("Estimation reprise.");
   });
