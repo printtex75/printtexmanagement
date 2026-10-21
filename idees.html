@@ -210,7 +210,7 @@
 
     <section class="panel" id="settings">
       <h2>Avis de Claude</h2>
-      <p class="sub">Par défaut, Claude passe toutes les heures de 8 h à 20 h et écrit son avis sous chaque nouvelle idée, compris dans l'abonnement. Si un jour vous voulez l'avis dans la minute, collez ici une clé API (payante à l'usage, <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>). Elle est rangée dans Firestore, visible uniquement par vous deux.</p>
+      <p class="sub">Par défaut, Claude passe deux fois par jour (vers 9 h et 18 h) et écrit son avis sous chaque nouvelle idée, compris dans l'abonnement. Si un jour vous voulez l'avis dans la minute, collez ici une clé API (payante à l'usage, <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>). Elle est rangée dans Firestore, visible uniquement par vous deux.</p>
       <div class="field"><label for="apiKey">Clé API Claude (facultatif)</label><input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off"></div>
       <div class="row end">
         <div class="status grow" id="settingsStatus"></div>
@@ -478,7 +478,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     return json;
   }
   const copyFor = e => ({
-    no_key:"Pas de clé Claude sur cette page : l'idée est bien dans la boîte, Claude passera l'analyser dans l'heure.",
+    no_key:"Pas de clé Claude sur cette page : l'idée est bien dans la boîte, Claude passera l'analyser vers 9 h ou 18 h.",
     bad_key:"La clé Claude est refusée. Vérifie-la dans ⚙ Claude.",
     rate_limited:"Trop de demandes ou crédit épuisé sur ta clé Claude. Réessaie dans un moment.",
     bad_request:"Requête refusée par l'API : " + (e && e.message || "détail inconnu"),
@@ -537,7 +537,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
       setStatus("statutEnvoi","");
       S.filter = "all"; try{ localStorage.setItem("ptx-idees-filter","all"); }catch(e){}
       S.expanded.add(ref.id);
-      toast(getKey() ? "Dans la boîte. Claude regarde…" : "Dans la boîte. Claude passe dans l'heure.");
+      toast(getKey() ? "Dans la boîte. Claude regarde…" : "Dans la boîte. Claude passe vers 9 h ou 18 h.");
     }catch(e){
       setStatus("statutEnvoi", e && e.code === "permission-denied" ? "Firestore refuse l'écriture : la collection idees n'est pas encore autorisée dans les règles (voir README)." : "L'envoi a échoué : " + (e && e.message || "inconnu"), "err");
       btn.disabled = false; return;
@@ -615,7 +615,7 @@ Règles : français, tutoiement proscrit, phrases courtes, pas de jargon. "simil
     if(!a && st2 === "en_cours") body.append(el("div",{class:"status busy"}, "Claude analyse cette idée… (15 à 60 secondes)"));
     else if(!a && st2 === "en_attente") body.append(el("div",{class:"status busy"}, "Claude va regarder…"));
     else if(!a && st2 === "erreur") body.append(el("div",{class:"note warn"}, el("strong",null,"L'analyse n'a pas abouti"), el("span",null, i.analyseErreur || ""), " ", el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Relancer l'analyse")));
-    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"En attente de l'avis de Claude"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse maintenant") : el("span",null,"Claude passe toutes les heures entre 8 h et 20 h. Son avis s'affichera ici, puis le chef tranche.")));
+    else if(!a) body.append(el("div",{class:"note info"}, el("strong",null,"En attente de l'avis de Claude"), getKey() ? el("button",{class:"link",type:"button",onclick:()=>analyserIdee(i)}, "Lancer l'analyse maintenant") : el("span",null,"Claude passe deux fois par jour, vers 9 h et 18 h. Son avis s'affichera ici, puis le chef tranche. Pressé ? Dis « boîte » à Claude.")));
     if(a){
       const vk = VERDICTS[a.verdict] ? a.verdict : "oui_mais";
       const vrai = a.probleme_reel || a.resume;
