@@ -35,7 +35,7 @@
   .num{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;flex:none;}
   .etape h2{margin:0;}
   label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:4px;}
-  input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],select{width:100%;background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;min-height:46px;}
+  input[type=text],input[type=search],input[type=email],input[type=password],input[type=number],input[type=date],select{width:100%;background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;min-height:46px;}
   .choix{display:flex;gap:8px;flex-wrap:wrap;}
   .choix button{flex:1 1 120px;min-height:52px;border:2px solid var(--line-strong);background:#fff;border-radius:10px;font-weight:600;}
   .choix button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff;}
@@ -116,13 +116,26 @@
     .barre-prix button{background:#F7F3EE;color:#141210;border:none;border-radius:8px;padding:10px 14px;min-height:44px;font-weight:600;}
     .wrap{padding-bottom:110px;}
   }
-  @media print{ .barre-prix{display:none !important;} }
+  @media print{ .barre-prix, .paliers{display:none !important;} }
+  /* Produits : recherche + bandeau de cartes qu'on fait défiler */
+  .produits{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;padding:10px 2px 12px;margin-top:4px;-webkit-overflow-scrolling:touch;}
+  .carte-produit{flex:0 0 128px;scroll-snap-align:start;border:2px solid var(--line);background:#fff;border-radius:12px;padding:8px;text-align:center;font-size:13px;font-weight:600;line-height:1.3;transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;}
+  .carte-produit:hover{border-color:var(--line-strong);transform:translateY(-2px);}
+  .carte-produit[aria-pressed="true"]{border-color:#141210;box-shadow:0 6px 16px rgba(20,18,16,0.16);}
+  .carte-produit img,.carte-produit .sans-photo{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:#F5F5F5;border-radius:8px;margin-bottom:6px;}
+  .carte-produit .sans-photo{display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:22px;color:#B9A87F;}
+  .aucun{padding:12px 0;color:var(--ink-2);font-size:14px;}
+  /* Paliers cliquables (tarif préférentiel accordé à la main) */
+  .paliers{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .paliers button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 10px;min-height:36px;font-size:12px;font-weight:600;}
+  .paliers button[aria-pressed="true"]{background:#141210;color:#F7F3EE;border-color:#141210;}
+  .paliers button.normal:not([aria-pressed="true"]){border-style:dashed;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-animations</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-manches-etiquette</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -142,7 +155,8 @@
 
     <div class="panel" id="etape1">
       <div class="etape"><span class="num">1</span><h2>Produit</h2></div>
-      <select id="produit" aria-label="Produit"></select>
+      <input type="search" id="recherche" placeholder="Rechercher : t-shirt, hoodie, tote…" aria-label="Rechercher un produit" autocomplete="off">
+      <div class="produits" id="produits" aria-label="Produits"></div>
       <div id="teinteBox" style="margin-top:10px;">
         <label>Couleur du textile</label>
         <div class="choix" id="teinte"></div>
@@ -152,6 +166,11 @@
     <div class="panel" id="etape2">
       <div class="etape"><span class="num">2</span><h2>Nombre de faces imprimées</h2></div>
       <div class="choix" id="faces"></div>
+      <div id="extrasBox" style="margin-top:12px;">
+        <label>En plus</label>
+        <div class="choix" id="manches"></div>
+        <div class="choix" id="etiquetteBox" style="margin-top:8px;"></div>
+      </div>
     </div>
 
     <div class="panel" id="etape3">
@@ -162,6 +181,7 @@
         <button type="button" class="btn" id="btnAjouter">+ Ajouter ce produit et en choisir un autre</button>
       </div>
       <div id="autresLignes"></div>
+      <label class="no-print" id="cumulBox" style="display:none;align-items:center;gap:8px;margin-top:10px;font-weight:500;"><input type="checkbox" id="cumul" style="width:20px;height:20px;"> Additionner les produits pour atteindre un meilleur tarif</label>
     </div>
 
     <div class="panel" id="etape4">
@@ -268,20 +288,46 @@ if(typeof firebase === 'undefined'){
   }
 
   /* ---------- Étapes ---------- */
-  function preparer(){
-    $("produit").innerHTML = `<option value="">Choisir un produit…</option>` + Object.entries(S.base.produits)
-      .sort((a,b)=> a[1].libelle.localeCompare(b[1].libelle, "fr")).map(([k,p]) => `<option value="${esc(k)}">${esc(p.libelle)}</option>`).join("");
-    nouveau();
+  function preparer(){ nouveau(); chargerPhotos(); }
+  // Photos des produits : catalogue public de printtex.fr (les clés de la grille sont les noms des produits du site).
+  const PHOTOS = {};
+  async function chargerPhotos(){
+    try{
+      const j = await (await fetch("https://printtex.fr/products.json?limit=250")).json();
+      (j.products || []).forEach(p => { const src = ((p.images || [])[0] || {}).src; if(src) PHOTOS[p.handle] = src + (src.includes("?") ? "&" : "?") + "width=300"; });
+      rendreProduits();
+    }catch(e){ console.warn("Photos printtex.fr indisponibles", e); }
   }
-  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; afficherEtapes(); calculer(); }
+  const sansAccent = t => String(t).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  function rendreProduits(){
+    const q = sansAccent($("recherche").value.trim());
+    const liste = Object.entries(S.base.produits).filter(([k,p]) => !q || sansAccent(p.libelle + " " + k).includes(q))
+      .sort((a,b)=> a[1].libelle.localeCompare(b[1].libelle, "fr"));
+    $("produits").innerHTML = liste.length ? liste.map(([k,p]) => `<button type="button" class="carte-produit" data-k="${esc(k)}" aria-pressed="${k===S.courant.produit}">
+      ${PHOTOS[k] ? `<img src="${esc(PHOTOS[k])}" alt="" loading="lazy">` : `<span class="sans-photo">${esc(p.libelle.slice(0,1))}</span>`}${esc(p.libelle)}</button>`).join("")
+      : `<div class="aucun">Aucun produit ne correspond à « ${esc($("recherche").value)} ».</div>`;
+  }
+  $("recherche").addEventListener("input", rendreProduits);
+  $("recherche").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); const b = $("produits").querySelector(".carte-produit"); if(b) b.click(); } });
+  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; $("recherche").value = ""; afficherEtapes(); calculer(); }
   function afficherEtapes(){
     const c = S.courant, p = S.base.produits[c.produit];
-    $("produit").value = c.produit;
+    rendreProduits();
+    $("cumulBox").style.display = toutesLignes().length > 1 ? "flex" : "none";
     const teintes = p ? (p.teinte_fixe ? [] : Object.keys(p.grilles)) : [];
     $("teinteBox").style.display = teintes.length > 1 ? "" : "none";
     $("teinte").innerHTML = teintes.map(t => `<button type="button" data-v="${t}" aria-pressed="${t===c.teinte}">${t==="blanc"?"Blanc":"Couleur (noir, marine…)"}</button>`).join("");
     const maxF = p ? (p.max_marquages || 2) : 2;
     $("faces").innerHTML = Array.from({length:maxF}, (_,i)=>i+1).map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.faces}">${n} face${n>1?"s":""}${n===2?" (devant + dos)":""}</button>`).join("");
+    // Manches et étiquette : seulement pour les vêtements qui en ont (pas les sacs, casquettes, tabliers…).
+    const sansManche = /tote|casquet|bob|jogging|debardeur|crop|doudoune|short|tablier/.test(c.produit);
+    const sansEtiquette = /tote|casquet|bob|tablier/.test(c.produit);
+    if(sansManche) c.manches = 0; if(sansEtiquette) c.etiquette = false;
+    $("extrasBox").style.display = p && !(sansManche && sansEtiquette) ? "" : "none";
+    $("manches").style.display = sansManche ? "none" : "";
+    $("manches").innerHTML = [0,1,2].map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.manches}">${n ? n + " manche" + (n>1?"s":"") : "Sans manche"}</button>`).join("");
+    $("etiquetteBox").style.display = sansEtiquette ? "none" : "";
+    $("etiquetteBox").innerHTML = `<button type="button" aria-pressed="${!!c.etiquette}">${c.etiquette ? "Étiquette dans le cou : oui" : "+ Étiquette dans le cou"}</button>`;
     $("quantite").value = c.quantite;
     $("etape1").classList.toggle("fait", !!p);
     $("etape2").classList.toggle("fait", !!p);
@@ -289,10 +335,11 @@ if(typeof firebase === 'undefined'){
     $("etape4").classList.toggle("fait", !!$("date").value);
     $("autresLignes").innerHTML = S.lignes.map((l,i) => `<div class="ligne-recap"><span>${esc(libelleLigne(l))}</span><button type="button" class="x" data-retirer="${i}" aria-label="Retirer">×</button></div>`).join("");
   }
-  const libelleLigne = l => `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
-  $("produit").addEventListener("change", () => {
-    const p = S.base.produits[$("produit").value];
-    S.courant.produit = $("produit").value;
+  const libelleLigne = l => `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""}${l.manches ? ` + ${l.manches} manche${l.manches>1?"s":""}` : ""}${l.etiquette ? " + étiquette" : ""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
+  $("produits").addEventListener("click", e => {
+    const b = e.target.closest(".carte-produit"); if(!b) return;
+    const p = S.base.produits[b.dataset.k];
+    S.courant.produit = b.dataset.k;
     if(p){ S.courant.teinte = p.teinte_fixe || (p.grilles.couleur ? "couleur" : Object.keys(p.grilles)[0]); S.courant.faces = Math.min(S.courant.faces, p.max_marquages || 2); }
     afficherEtapes(); calculer();
     if(p) suivant(S.base.produits[S.courant.produit].max_marquages > 1 ? "etape2" : "etape3");
@@ -307,6 +354,8 @@ if(typeof firebase === 'undefined'){
   $("quantite").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); suivant("zoneEstimation"); } });
   $("barreVoir").addEventListener("click", () => suivant("zoneEstimation"));
   $("teinte").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.teinte = v; afficherEtapes(); calculer(); });
+  $("manches").addEventListener("click", e => { const v = e.target.dataset.v; if(v == null) return; S.courant.manches = Number(v); afficherEtapes(); calculer(); });
+  $("etiquetteBox").addEventListener("click", e => { if(!e.target.closest("button")) return; S.courant.etiquette = !S.courant.etiquette; afficherEtapes(); calculer(); });
   $("faces").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.faces = Number(v); afficherEtapes(); calculer(); suivant("etape3"); });
   $("quantite").addEventListener("input", () => { S.courant.quantite = $("quantite").value; afficherEtapes(); $("quantite").focus(); calculer(); });
   ["date","livraison"].forEach(id => $(id).addEventListener("input", () => { $("etape4").classList.toggle("fait", !!$("date").value); calculer(); }));
@@ -314,9 +363,17 @@ if(typeof firebase === 'undefined'){
     const c = S.courant;
     if(!c.produit || !(Number(c.quantite) > 0)){ toast("Choisissez d'abord un produit et une quantité."); return; }
     S.lignes.push({ ...c, quantite:Number(c.quantite) });
-    S.courant = { produit:"", teinte:"couleur", faces:1, quantite:"" };
-    afficherEtapes(); calculer(); $("produit").focus();
+    S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
+    $("recherche").value = ""; afficherEtapes(); calculer(); $("recherche").focus();
   });
+  $("resultat").addEventListener("click", e => {
+    const b = e.target.closest(".paliers button"); if(!b) return;
+    const i = +b.dataset.ligne, k = +b.dataset.k, l = i < S.lignes.length ? S.lignes[i] : S.courant;
+    const d = S.res.lignes[i];
+    if(k === d.kNormal) delete l.palier; else l.palier = k;
+    calculer();
+  });
+  $("cumul").addEventListener("change", calculer);
   $("autresLignes").addEventListener("click", e => { const i = e.target.dataset.retirer; if(i == null) return; S.lignes.splice(+i,1); afficherEtapes(); calculer(); });
 
   /* ---------- Estimation ---------- */
@@ -326,8 +383,8 @@ if(typeof firebase === 'undefined'){
     return l;
   }
   function versDevis(lignes){
-    return { lignes: lignes.map(l => ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], ajustement:{ mode:"aucun" } })),
-      livraison: $("livraison").checked ? "colissimo" : "retrait" };
+    return { lignes: lignes.map(l => ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
+      cumulerPaliers: $("cumul").checked, livraison: $("livraison").checked ? "colissimo" : "retrait" };
   }
   function calculer(){
     if(!S.base) return;
@@ -336,7 +393,8 @@ if(typeof firebase === 'undefined'){
     const r = S.res = C.calculer(S.base, versDevis(lignes));
     const blocs = r.lignes.map((d,i) => {
       const l = lignes[i], parPiece = Math.round(d.total / d.q);
-      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · tarif ${esc(d.palier)} pièces</span></td>
+      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces</span>
+        <div class="paliers" aria-label="Tarif appliqué">${S.base.paliers_libelles.map((t,k) => `<button type="button" data-ligne="${i}" data-k="${k}" aria-pressed="${k===d.k}" class="${k===d.kNormal?"normal":""}" title="${k===d.kNormal?"Tarif normal pour cette quantité":"Appliquer ce tarif"}">${t}</button>`).join("")}</div></td>
         <td class="n">${eur(Math.round(parPiece*1.2))} TTC<br><span class="muted">par pièce en moyenne</span></td></tr>`;
     }).join("");
     const liv = r.client.at(-1);
@@ -381,7 +439,8 @@ if(typeof firebase === 'undefined'){
     const id = e.target.dataset.ouvrir; if(!id) return;
     if(!S.sauves[id].estimation){ toast("Ancien format : à refaire."); return; }
     const d = JSON.parse(S.sauves[id].estimation);
-    S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, quantite:"" };
+    $("cumul").checked = !!d.cumul;
+    S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
     $("nom").value = S.sauves[id].titre; $("date").value = d.date || ""; $("livraison").checked = !!d.livraison;
     afficherEtapes(); calculer(); window.scrollTo({top:0, behavior:"smooth"}); toast("Estimation reprise.");
   });
@@ -392,7 +451,7 @@ if(typeof firebase === 'undefined'){
     if(!S.db){ toast("Essai local : rien n'est gardé."); return; }
     const id = S.id || ("e" + Date.now().toString(36));
     const item = { titre, majLe:new Date().toISOString(), par:(S.auth.currentUser && S.auth.currentUser.email) || "", totalTTC:S.res.totalTTC,
-      estimation:JSON.stringify({ lignes:toutesLignes(), date:$("date").value, livraison:$("livraison").checked }) };
+      estimation:JSON.stringify({ lignes:toutesLignes(), date:$("date").value, livraison:$("livraison").checked, cumul:$("cumul").checked }) };
     try{ await ref().set({ items:{ [id]: item } }, { merge:true }); S.id = id; S.sauves[id] = item; afficherSauves(); toast("Estimation gardée : elle servira pour le vrai devis."); }
     catch(e){ toast("Impossible de garder l'estimation : " + (e.message || "")); }
   });
