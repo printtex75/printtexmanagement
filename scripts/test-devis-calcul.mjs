@@ -105,12 +105,11 @@ assert.equal(r.lignes[0].bat, 2833); assert.equal(r.lignes[0].pu, 2000); assert.
 assert.equal(r.lignes[0].coutPiece, 850);
 assert.ok(r.client[0].detail.includes('2 manches + étiquette'));
 
-// 13. Mode marque gentil, règle provisoire : 6 t-shirts couleur face + dos → prix 101-200 en 1 face (15,00 TTC = 12,50 HT)
-//     dès la 1re pièce, dos offert : 6 × 12,50 = 75,00 HT.
+// 13. Prix d'amis demandé sur un produit sans prix partenaire : on reste au prix normal.
 base.frais.supplements = { manche: [300, 250, 200, 180, 150], etiquette: [250, 200, 160, 140, 120] };
+//     Produit sans prix partenaire : prix normal (BAT 35,00 TTC = 29,17 HT, puis 22,50 TTC = 18,75 HT) : 29,17 + 5 × 18,75 = 122,92 HT.
 r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 6 })] });
-assert.equal(r.totalHT, 7500); assert.equal(r.client[0].qte, 6); assert.ok(r.client[0].detail.includes('dos offert'));
-assert.ok(niveaux(r, 'info').some((t) => t.includes('provisoire')));
+assert.equal(r.totalHT, 12292);
 
 // 14. Prix marque donné par Karim : 18 € TTC (15,00 HT) + 1 étiquette au plus petit prix (1,20 TTC) → 19,20 TTC = 16,00 HT ; 6 × 16,00 = 96,00 HT.
 base.tarifs_marque = { 't-shirt-basic-noir': 1800 };

@@ -74,7 +74,8 @@
         const choisi = l.palier != null && l.palier !== '' && paliers[Number(l.palier)] != null ? Number(l.palier) : null;
         // Mode « marque gentil » (Karim 21/10) : prix du plus gros palier dès la 1re pièce, 1 face (le dos est offert),
         // sans supplément de BAT ; ex. t-shirt 220 g couleur à 18 € TTC, comme les ventes habituelles aux marques.
-        const gentil = !!devis.modeMarque;
+        // Sans prix partenaire fixé pour ce produit : prix normal (Karim 21/10), jamais de réduction automatique.
+        const gentil = !!devis.modeMarque && (base.tarifs_marque || {})[l.produit] != null;
         // Sans BAT (devis.sansBat) : pas de 1re pièce plus chère, toutes les pièces au palier, au moins celui de 2 à 5 (Karim 21/10).
         const sansBat = !!devis.sansBat && !gentil;
         const k = gentil ? paliers.length - 1 : Math.max(choisi ?? kNormal, sansBat ? 1 : 0);
