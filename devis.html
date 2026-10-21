@@ -92,12 +92,37 @@
   .num{background:#141210;}
   .choix button[aria-pressed="true"]{background:#141210;border-color:#141210;}
   .prix{color:#141210;}
+  /* ---------- Animations douces : réponse au toucher, apparition des fenêtres (coupées si l'appareil demande moins de mouvement) ---------- */
+  @keyframes ptx-apparait{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .btn{transition:transform .15s ease, background-color .15s ease, box-shadow .15s ease, border-color .15s ease;}
+  .btn:active{transform:scale(.97);}
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
+  #appRoot .panel{animation:ptx-apparait .35s ease-out;}
+  .choix button{transition:transform .15s ease, background-color .15s ease, border-color .15s ease, color .15s ease;}
+  .choix button:active{transform:scale(.97);}
+  .panel.fait{border-left:4px solid var(--thread);}
+  .panel.fait .num{background:var(--thread);}
+  .rapides{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .rapides button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:8px 14px;min-height:44px;font-weight:600;}
+  .rapides button:active{transform:scale(.96);}
+  @keyframes ptx-prix{0%{transform:scale(1);}40%{transform:scale(1.06);}100%{transform:scale(1);}}
+  .prix.change{animation:ptx-prix .35s ease-out;}
+  /* Téléphone : le total reste visible en bas pendant la saisie */
+  .barre-prix{display:none;}
+  @media (max-width:700px){
+    .barre-prix{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:#141210;background-image:var(--cuir-grain);color:#F7F3EE;z-index:20;transform:translateY(100%);transition:transform .25s ease;}
+    .barre-prix.visible{transform:none;}
+    .barre-prix strong{font-family:var(--display);font-size:22px;}
+    .barre-prix button{background:#F7F3EE;color:#141210;border:none;border-radius:8px;padding:10px 14px;min-height:44px;font-weight:600;}
+    .wrap{padding-bottom:110px;}
+  }
+  @media print{ .barre-prix{display:none !important;} }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-charte-d2</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-animations</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -115,7 +140,7 @@
   <div id="appRoot" style="display:none;">
     <div class="err" id="baseError" role="alert"></div>
 
-    <div class="panel">
+    <div class="panel" id="etape1">
       <div class="etape"><span class="num">1</span><h2>Produit</h2></div>
       <select id="produit" aria-label="Produit"></select>
       <div id="teinteBox" style="margin-top:10px;">
@@ -124,21 +149,22 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="etape2">
       <div class="etape"><span class="num">2</span><h2>Nombre de faces imprimées</h2></div>
       <div class="choix" id="faces"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="etape3">
       <div class="etape"><span class="num">3</span><h2>Quantité</h2></div>
       <input type="number" id="quantite" min="1" step="1" inputmode="numeric" placeholder="ex. 50" aria-label="Quantité">
+      <div class="rapides" id="rapides"><button type="button" data-q="10">10</button><button type="button" data-q="25">25</button><button type="button" data-q="50">50</button><button type="button" data-q="100">100</button></div>
       <div class="row" style="margin-top:10px;">
         <button type="button" class="btn" id="btnAjouter">+ Ajouter ce produit et en choisir un autre</button>
       </div>
       <div id="autresLignes"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="etape4">
       <div class="etape"><span class="num">4</span><h2>Date souhaitée</h2></div>
       <input type="date" id="date" aria-label="Date souhaitée">
       <div class="row" style="margin-top:10px;">
@@ -171,6 +197,7 @@
     </div>
   </div>
 </div>
+<div class="barre-prix" id="barrePrix" aria-live="polite"><div><strong id="barreTotal"></strong><div class="muted" style="color:#C9C1B6;" id="barreDetail"></div></div><button type="button" id="barreVoir">Voir le détail</button></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-app-compat.min.js"></script>
@@ -256,6 +283,10 @@ if(typeof firebase === 'undefined'){
     const maxF = p ? (p.max_marquages || 2) : 2;
     $("faces").innerHTML = Array.from({length:maxF}, (_,i)=>i+1).map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.faces}">${n} face${n>1?"s":""}${n===2?" (devant + dos)":""}</button>`).join("");
     $("quantite").value = c.quantite;
+    $("etape1").classList.toggle("fait", !!p);
+    $("etape2").classList.toggle("fait", !!p);
+    $("etape3").classList.toggle("fait", Number(c.quantite) > 0 || S.lignes.length > 0);
+    $("etape4").classList.toggle("fait", !!$("date").value);
     $("autresLignes").innerHTML = S.lignes.map((l,i) => `<div class="ligne-recap"><span>${esc(libelleLigne(l))}</span><button type="button" class="x" data-retirer="${i}" aria-label="Retirer">×</button></div>`).join("");
   }
   const libelleLigne = l => `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
@@ -264,11 +295,21 @@ if(typeof firebase === 'undefined'){
     S.courant.produit = $("produit").value;
     if(p){ S.courant.teinte = p.teinte_fixe || (p.grilles.couleur ? "couleur" : Object.keys(p.grilles)[0]); S.courant.faces = Math.min(S.courant.faces, p.max_marquages || 2); }
     afficherEtapes(); calculer();
+    if(p) suivant(S.base.produits[S.courant.produit].max_marquages > 1 ? "etape2" : "etape3");
   });
+  // Étape suivante : on la fait venir à l'écran, et le curseur va dans la quantité.
+  function suivant(id){
+    const el = $(id); if(!el) return;
+    el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"center"});
+    if(id === "etape3") setTimeout(() => $("quantite").focus({preventScroll:true}), 250);
+  }
+  $("rapides").addEventListener("click", e => { const v = e.target.dataset.q; if(!v) return; $("quantite").value = v; S.courant.quantite = v; afficherEtapes(); calculer(); suivant("etape4"); });
+  $("quantite").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); suivant("zoneEstimation"); } });
+  $("barreVoir").addEventListener("click", () => suivant("zoneEstimation"));
   $("teinte").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.teinte = v; afficherEtapes(); calculer(); });
-  $("faces").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.faces = Number(v); afficherEtapes(); calculer(); });
-  $("quantite").addEventListener("input", () => { S.courant.quantite = $("quantite").value; calculer(); });
-  ["date","livraison"].forEach(id => $(id).addEventListener("input", calculer));
+  $("faces").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.faces = Number(v); afficherEtapes(); calculer(); suivant("etape3"); });
+  $("quantite").addEventListener("input", () => { S.courant.quantite = $("quantite").value; afficherEtapes(); $("quantite").focus(); calculer(); });
+  ["date","livraison"].forEach(id => $(id).addEventListener("input", () => { $("etape4").classList.toggle("fait", !!$("date").value); calculer(); }));
   $("btnAjouter").addEventListener("click", () => {
     const c = S.courant;
     if(!c.produit || !(Number(c.quantite) > 0)){ toast("Choisissez d'abord un produit et une quantité."); return; }
@@ -291,7 +332,7 @@ if(typeof firebase === 'undefined'){
   function calculer(){
     if(!S.base) return;
     const lignes = toutesLignes();
-    if(!lignes.length){ S.res = null; $("resultat").innerHTML = `<p class="muted">Choisissez un produit, le nombre de faces et la quantité : le prix s'affiche ici.</p>`; return; }
+    if(!lignes.length){ $("barrePrix").classList.remove("visible"); S.res = null; $("resultat").innerHTML = `<p class="muted">Choisissez un produit, le nombre de faces et la quantité : le prix s'affiche ici.</p>`; return; }
     const r = S.res = C.calculer(S.base, versDevis(lignes));
     const blocs = r.lignes.map((d,i) => {
       const l = lignes[i], parPiece = Math.round(d.total / d.q);
@@ -311,6 +352,12 @@ if(typeof firebase === 'undefined'){
       <details class="interne"><summary>Interne : marge (jamais imprimé)</summary>
         Coût ${r.coutTotal ? eur(r.coutTotal) + " HT" : "inconnu"}${r.coutConnu ? "" : " (partiel)"} · marge ${margeTxt}</details>`;
     $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : "";
+    const prix = $("resultat").querySelector(".prix");
+    if(prix && S.dernierTotal !== r.totalTTC){ prix.classList.remove("change"); void prix.offsetWidth; prix.classList.add("change"); }
+    S.dernierTotal = r.totalTTC;
+    $("barreTotal").textContent = eur(r.totalTTC) + " TTC";
+    $("barreDetail").textContent = r.piecesTotal + " pièce" + (r.piecesTotal > 1 ? "s" : "");
+    $("barrePrix").classList.add("visible");
   }
   $("nom").addEventListener("input", () => { $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : ""; });
   $("btnImprimer").addEventListener("click", () => {

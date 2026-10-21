@@ -84,6 +84,12 @@
   .btn-primary{background-color:#141210 !important;background-image:var(--cuir-grain);color:#F7F3EE !important;border-color:#141210 !important;outline:1px dashed var(--couture-claire);outline-offset:-5px;text-shadow:var(--cuir-grave);}
   .btn-primary:hover{background-color:#2B2622 !important;filter:none;}
   .panel{border-radius:14px;}
+  /* ---------- Animations douces : réponse au toucher, apparition des fenêtres (coupées si l'appareil demande moins de mouvement) ---------- */
+  @keyframes ptx-apparait{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .btn{transition:transform .15s ease, background-color .15s ease, box-shadow .15s ease, border-color .15s ease;}
+  .btn:active{transform:scale(.97);}
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;} }
+  .panel, .card{animation:ptx-apparait .3s ease-out;}
 </style>
 </head>
 <body>
