@@ -105,4 +105,21 @@ assert.equal(r.lignes[0].bat, 2833); assert.equal(r.lignes[0].pu, 2000); assert.
 assert.equal(r.lignes[0].coutPiece, 850);
 assert.ok(r.client[0].detail.includes('2 manches + étiquette'));
 
-console.log('12 exemples OK');
+// 13. Mode marque gentil, règle provisoire : 6 t-shirts couleur face + dos → prix 101-200 en 1 face (15,00 TTC = 12,50 HT)
+//     dès la 1re pièce, dos offert : 6 × 12,50 = 75,00 HT.
+base.frais.supplements = { manche: [300, 250, 200, 180, 150], etiquette: [250, 200, 160, 140, 120] };
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 6 })] });
+assert.equal(r.totalHT, 7500); assert.equal(r.client[0].qte, 6); assert.ok(r.client[0].detail.includes('dos offert'));
+assert.ok(niveaux(r, 'info').some((t) => t.includes('provisoire')));
+
+// 14. Prix marque donné par Karim : 18 € TTC (15,00 HT) + 1 étiquette au plus petit prix (1,20 TTC) → 19,20 TTC = 16,00 HT ; 6 × 16,00 = 96,00 HT.
+base.tarifs_marque = { 't-shirt-basic-noir': 1800 };
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [{ ...tshirt('couleur', 1, { M: 6 }), etiquette: true }] });
+assert.equal(r.totalHT, 9600); assert.ok(!niveaux(r, 'info').some((t) => t.includes('provisoire')));
+
+// 15. Prix marque par nombre de faces : 1 face 18 €, 2 faces 22 € TTC → 4 pièces face + dos = 4 × 18,33 HT = 73,32 HT (pas de « dos offert »).
+base.tarifs_marque = { 't-shirt-basic-noir': { 1: 1800, 2: 2200 } };
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 4 })] });
+assert.equal(r.lignes[0].pu, 1833); assert.equal(r.totalHT, 7332); assert.ok(!r.client[0].detail.includes('dos offert'));
+
+console.log('15 exemples OK');
