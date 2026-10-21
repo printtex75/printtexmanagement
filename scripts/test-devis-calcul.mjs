@@ -163,4 +163,9 @@ assert.equal(r.totalHT, 1583);
 r = C.calculer(base, { sansBat: true, livraison: 'retrait', lignes: [{ type: 'textile_fourni', technique: 'dtg-fonce', faces: 1, charge: false, quantite: 1, ajustement: { mode: 'aucun' } }] });
 assert.equal(r.totalHT, 650);
 
-console.log('19 exemples OK');
+// 20. Deux formats étiquette : 10 t-shirts couleur 1 face, palier 6-50 : 18,00 + 2 × 1,60 = 21,20 TTC (17,67 HT) ; BAT 25 + 2 × 2,50 = 30 TTC (25 HT).
+//     25,00 + 9 × 17,67 = 184,03 HT.
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ ...tshirt('couleur', 1, { M: 10 }), etiquette: 2 }] });
+assert.equal(r.totalHT, 18403); assert.ok(r.client[0].detail.includes('2 étiquettes'));
+
+console.log('20 exemples OK');
