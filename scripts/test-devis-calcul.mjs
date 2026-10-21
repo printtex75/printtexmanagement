@@ -117,4 +117,9 @@ base.tarifs_marque = { 't-shirt-basic-noir': 1800 };
 r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [{ ...tshirt('couleur', 1, { M: 6 }), etiquette: true }] });
 assert.equal(r.totalHT, 9600); assert.ok(!niveaux(r, 'info').some((t) => t.includes('provisoire')));
 
-console.log('14 exemples OK');
+// 15. Prix marque par nombre de faces : 1 face 18 €, 2 faces 22 € TTC → 4 pièces face + dos = 4 × 18,33 HT = 73,32 HT (pas de « dos offert »).
+base.tarifs_marque = { 't-shirt-basic-noir': { 1: 1800, 2: 2200 } };
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 4 })] });
+assert.equal(r.lignes[0].pu, 1833); assert.equal(r.totalHT, 7332); assert.ok(!r.client[0].detail.includes('dos offert'));
+
+console.log('15 exemples OK');

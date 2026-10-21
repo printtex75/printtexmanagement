@@ -47,8 +47,11 @@ const textile_reel = existsSync(cheminReels) ? JSON.parse(readFileSync(cheminRee
 const base = {
   version: 1, genere_le: new Date().toISOString(),
   paliers: PALIERS, paliers_libelles: PALIERS_LIBELLES, palier_max: 200,
-  // Prix « marque, mode gentil » donnés par Karim (TTC par pièce, 1 ou 2 faces) ; les autres produits suivent la règle du plus gros palier.
-  tarifs_marque: { 't-shirt-epais-noir': 1800 },
+  // Prix « marque, mode gentil » donnés par Karim, TTC par pièce, par produit et par nombre de faces (à compléter avec lui un par un) ;
+  // un produit absent, ou un nombre de faces absent, suit la règle provisoire du plus gros palier.
+  tarifs_marque: {
+    't-shirt-epais-noir': { 1: 1800, 2: 1800 }, // t-shirt 220 g couleur : 18 € en 1 face comme en face + dos (21/10)
+  },
   produits, couts: { ...couts, textile_reel, _statut: 'textile_reel = factures ; textile = estimations de devis/couts.json, à corriger par Karim' }, frais,
   regles: regles.map((r) => ({ date: r.date, texte: r.texte })),
   historique,

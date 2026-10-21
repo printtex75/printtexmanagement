@@ -79,7 +79,11 @@
         const supplement = (kk) => (sup.manche ? sup.manche[kk] * nbManches : 0) + (sup.etiquette ? sup.etiquette[kk] * etiq : 0); // TTC, ajouté avant le passage en HT
         if ((nbManches && !sup.manche) || (etiq && !sup.etiquette)) add('attention', `${nom} : prix des manches ou de l'étiquette absent de la base, non compté.`);
         // Prix marque donné par Karim pour ce produit (base.tarifs_marque, TTC par pièce) ; sinon règle provisoire du plus gros palier.
-        const prixMarque = gentil ? (base.tarifs_marque || {})[l.produit] : null;
+        // Par produit : un prix par nombre de faces ({ "1": …, "2": … }), ou un seul prix pour toutes les faces.
+        const tm = gentil ? (base.tarifs_marque || {})[l.produit] : null;
+        const prixMarque = tm == null ? null : typeof tm === 'object' ? (tm[String(nbMarq)] ?? null) : tm;
+        // Dos « offert » seulement quand face + dos coûte le prix d'une face.
+        const dosOffert = gentil && nbMarq > 1 && (prixMarque == null || typeof tm !== 'object' || tm['1'] === tm[String(nbMarq)]);
         if (gentil && prixMarque == null) add('info', `${nom} : tarif marque provisoire (prix 101-200 pièces, 1 face) en attendant le prix de Karim pour ce produit.`);
         const grillePalier = ht((prixMarque ?? grilleVente[k]) + supplement(k));
         const bat = gentil ? grillePalier : ht(grille[0] + supplement(0));
@@ -103,12 +107,12 @@
         const petits = [nbManches ? `${nbManches} manche${nbManches > 1 ? 's' : ''}` : '', etiq ? 'étiquette' : ''].filter(Boolean).join(' + ');
         const detail = [`${nbMarq} emplacement${nbMarq > 1 ? 's' : ''}${petits ? ' + ' + petits : ''}, impression ${l.technique || 'DTF'}`, emplTxt, couleursTxt].filter(Boolean).join(' · ');
         if (gentil) {
-          if (nbMarq > 1) add('info', `${nom} : tarif marque, le dos est offert.`);
-          client.push({ desc: `${p.libelle} – tarif marque`, detail: detail + (nbMarq > 1 ? ' · dos offert' : '') + ' · 1re pièce = BAT à valider avant production', qte: q, pu });
+          if (dosOffert) add('info', `${nom} : tarif marque, le dos est offert.`);
+          client.push({ desc: `${p.libelle} – tarif marque`, detail: detail + (dosOffert ? ' · dos offert' : '') + ' · 1re pièce = BAT à valider avant production', qte: q, pu });
         } else client.push({ desc: `${p.libelle} – 1re pièce (BAT à valider avant production)`, detail, qte: 1, pu: bat });
         if (q > 1 && !gentil) client.push({ desc: `${p.libelle} – pièces suivantes`, detail: `${choisi != null && choisi > kNormal ? 'Tarif préférentiel' : 'Tarif dégressif'} ${libPaliers[k]} pièces${devis.cumulerPaliers && choisi == null ? ' (quantités additionnées)' : ''}${aj.mode === 'remise' && Number(aj.valeur) > 0 ? ` · remise ${aj.valeur} %` : ''}`, qte: q - 1, pu });
         totalHT += total;
-        lignes.push({ nom, libelle: p.libelle, q, palier: libPaliers[k], k, kNormal, palierChoisi: choisi != null, bat, grillePalier, pu, ajTexte, motif: aj.motif || '', total, coutPiece: cp, textileReel: !!(cpo && cpo.textileReel), comparables: comp });
+        lignes.push({ nom, libelle: p.libelle, q, palier: libPaliers[k], k, kNormal, palierChoisi: choisi != null, dosOffert, bat, grillePalier, pu, ajTexte, motif: aj.motif || '', total, coutPiece: cp, textileReel: !!(cpo && cpo.textileReel), comparables: comp });
       } else if (l.type === 'textile_fourni') {
         const pt = frais.print_textile_fourni_ttc;
         const n = Math.max(1, Number(l.emplacements) || 1);

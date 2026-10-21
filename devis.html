@@ -156,7 +156,7 @@
 
     <div class="panel" id="modePanel">
       <div class="choix" id="mode"><button type="button" data-v="normal" aria-pressed="true">Prix normal</button><button type="button" data-v="gentil" aria-pressed="false">Marque – mode gentil</button></div>
-      <p class="muted no-print" id="modeAide" style="margin:8px 0 0;display:none;">Prix marque avantageux : tarif du plus gros palier dès la 1re pièce, dos offert (ou le prix marque de Karim quand il existe).</p>
+      <p class="muted no-print" id="modeAide" style="margin:8px 0 0;display:none;">Prix marque avantageux : tarif du plus gros palier dès la 1re pièce, dos offert, ou le prix marque fixé par Karim pour ce produit et ce nombre de faces.</p>
     </div>
 
     <div class="panel" id="etape1">
@@ -404,7 +404,7 @@ if(typeof firebase === 'undefined'){
     const r = S.res = C.calculer(S.base, versDevis(lignes));
     const blocs = r.lignes.map((d,i) => {
       const l = lignes[i], parPiece = Math.round(d.total / d.q);
-      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${S.gentil ? `tarif marque ${eur(Math.round(d.pu*1.2))} la pièce${l.faces > 1 ? ", dos offert" : ""}` : `${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces`}</span>
+      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${S.gentil ? `tarif marque ${eur(Math.round(d.pu*1.2))} la pièce${d.dosOffert ? ", dos offert" : ""}` : `${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces`}</span>
         <div class="paliers" aria-label="Tarif appliqué"${S.gentil ? " hidden" : ""}>${S.base.paliers_libelles.map((t,k) => `<button type="button" data-ligne="${i}" data-k="${k}" aria-pressed="${k===d.k}" class="${k===d.kNormal?"normal":""}" title="${k===d.kNormal?"Tarif normal pour cette quantité":"Appliquer ce tarif"}">${t}</button>`).join("")}</div></td>
         <td class="n">${eur(Math.round(parPiece*1.2))} TTC<br><span class="muted">par pièce en moyenne</span></td></tr>`;
     }).join("");
