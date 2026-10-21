@@ -58,23 +58,18 @@ Les valeurs dans `FIREBASE_CONFIG` (apiKey, projectId, etc.) ne sont **pas des s
 
 Le projet est développé par deux associés. Pour éviter que deux personnes codent la même chose en même temps (et que les deux versions se marchent dessus dans `index.html`), on suit ces règles.
 
-### Le calculateur de devis : `devis.html`
+### L'estimation de prix : `devis.html`
 
-Lien « Calculer un devis » dans la navigation. Réservé au compte admin (même connexion que l'outil). Il aide à proposer un prix cohérent : il ne publie rien, ne change aucun prix en ligne et n'envoie rien au client.
+Lien « Estimation de prix » dans la navigation. Réservé aux admins (même connexion que l'outil). C'est un aperçu pour guider le client, pas un devis officiel : rien n'est publié ni envoyé.
 
-**Utilisation**
-1. Remplir le client (profil : particulier, entreprise, association, marque, agence) et le délai.
-2. Ajouter les articles : un article du catalogue (prix du site), un textile apporté par le client, ou une ligne libre (sérigraphie, broderie, création, article hors catalogue : prix saisi à la main).
-3. Pour chaque article : teinte, nombre d'emplacements, emplacements et dimensions, puis les quantités par couleur et par taille.
-4. À droite : prix par pièce, total HT, TVA et TTC. Le cadre jaune « Interne » (coût, marge, ventes comparables, alertes) n'apparaît jamais sur le devis client.
-5. Ajuster si besoin : remise commerciale en % ou prix imposé par ligne, ou remise globale en euros TTC. Une justification interne est demandée, et le prix avant/après reste affiché.
-6. « Enregistrer le brouillon » le garde pour tous ; « Reprendre » ou « Dupliquer » repart d'un ancien calcul.
-7. « Devis client » imprime ou enregistre en PDF une proposition sans aucune information interne. « Exporter pour le devis numéroté » donne le fichier à passer dans `scripts/devis/creer-devis.mjs` (dépôt printtex-shopify) pour le devis officiel numéroté.
+1. Choisir le produit (et blanc ou couleur si le prix change).
+2. Choisir le nombre de faces imprimées.
+3. Saisir la quantité. « Ajouter ce produit » permet d'en ajouter un autre.
+4. Indiquer la date souhaitée, et cocher Colissimo si le client ne vient pas chercher.
 
-**Règles de calcul** (les mêmes que `creer-devis.mjs` et le site) : la 1re pièce de chaque ligne est au prix BAT (palier 1 pièce), les suivantes au palier de la quantité de la ligne (toutes couleurs et tailles de la ligne). Deux articles différents ne sont jamais regroupés pour atteindre un palier. Au-delà de 200 pièces : palier 101-200 et alerte « prix sur mesure ». Livraison : Colissimo 4,99 € TTC (offerte dès 100 € TTC), express 18 € TTC, retrait gratuit. Logo refait : 5 € HT, offert dès 5 pièces. Textile apporté : 5 € TTC par emplacement. Un coût manquant n'empêche jamais le devis : une alerte demande de vérifier le prix.
+Le prix s'affiche aussitôt : total TTC, prix moyen par pièce, 1re pièce (BAT) puis prix des suivantes. « Imprimer » sort l'estimation sans information interne (la marge reste dans le cadre « Interne », jamais imprimé). Pour retrouver l'estimation et en faire un vrai devis : lui donner un nom, puis « Garder pour faire le devis » ; elle apparaît dans « Estimations gardées ».
 
-**Données** : la grille, les coûts et les ventes comparables sont dans le document Firestore `adminNotes/tarifsCalculateur` (admin seulement), jamais dans ce dépôt public. Pour les mettre à jour après un changement de grille ou de coûts :
-`node scripts/publier-tarifs-calculateur.mjs <dossier printtex-shopify> <historique-calculateur.json> --cle <compte de service> --appliquer` (sans `--appliquer` : simple aperçu). Brouillons : `adminNotes/devisBrouillons`. Test du calcul : `node scripts/test-devis-calcul.mjs`.
+Règles : prix du site, 1re pièce au prix BAT puis palier de la quantité du produit (deux produits ne sont pas regroupés), Colissimo 4,99 € TTC offert dès 100 € TTC, retrait gratuit. Données : `adminNotes/tarifsCalculateur` (admin seulement, jamais dans ce dépôt public), mises à jour avec `node scripts/publier-tarifs-calculateur.mjs <dossier printtex-shopify> <historique-calculateur.json> --cle <compte de service> --appliquer`. Estimations gardées : `adminNotes/devisBrouillons`. Test du calcul : `node scripts/test-devis-calcul.mjs`.
 
 ### La boîte à idées dans l'outil : `idees.html`
 
