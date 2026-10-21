@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier — Calculateur de devis</title>
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#23324A">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Même palette et mêmes polices que Printtex Management (index.html) et la boîte à idées. */
+  :root{
+    --canvas:#EFE7D8; --canvas-2:#F7F2E8; --ink:#23324A; --ink-2:#33455F; --thread:#B23B34; --thread-2:#9A2F29; --charcoal:#2A2620;
+    --bg:var(--canvas); --surface:var(--canvas-2); --fg:var(--charcoal); --muted:var(--ink-2); --line:#D8CBAE; --line-strong:#B9A87F;
+    --accent:var(--ink); --accent-soft:#E3E7EE;
+    --ok:#4B7A5C; --ok-soft:#E4EEE6; --warn:#B5791E; --warn-soft:#F5E9D3; --crit:var(--thread-2); --crit-soft:#F3DEDB; --info:#2F5BA8; --info-soft:#E1E8F5;
+    --display:'Oswald',sans-serif; --body:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
+    --radius:12px; --shadow:0 2px 0 rgba(42,38,32,0.06),0 10px 24px -18px rgba(42,38,32,0.35);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;min-height:100vh;}
+  .wrap{max-width:1240px;margin:0 auto;padding:20px 24px 80px;}
+  @media (max-width:640px){ .wrap{padding:14px 16px 60px;} }
+  h1,h2,h3{font-family:var(--display);margin:0;}
+  h1{font-size:26px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink);}
+  h2{font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--ink);}
+  button,input,select,textarea{font:inherit;color:inherit;}
+  button{cursor:pointer;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  header{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-bottom:14px;margin-bottom:18px;border-bottom:2px solid var(--charcoal);flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .brand-tag{font-family:var(--mono);font-size:11px;color:var(--thread);border:1px solid var(--thread);padding:2px 8px;border-radius:3px;text-transform:uppercase;}
+  .nav{display:flex;gap:8px;flex-wrap:wrap;}
+  .nav a,.nav button{font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:9px 12px;border-radius:8px;background:var(--surface);min-height:40px;}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:16px;}
+  .panel > h2{margin-bottom:12px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;}
+  input[type=text],input[type=email],input[type=number],input[type=date],input[type=password],select,textarea{width:100%;background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:9px 10px;min-width:0;min-height:40px;}
+  textarea{min-height:56px;resize:vertical;}
+  .grid{display:grid;gap:10px;}
+  .g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:repeat(3,1fr);} .g4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:700px){ .g2,.g3,.g4{grid-template-columns:1fr 1fr;} }
+  .check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--fg);font-weight:500;min-height:40px;}
+  .check input{width:20px;height:20px;}
+  .btn{border:1px solid var(--line-strong);background:#fff;border-radius:8px;padding:9px 14px;min-height:44px;font-weight:600;}
+  .btn:hover{border-color:var(--fg);}
+  .btn-primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn-sm{min-height:36px;padding:6px 10px;font-size:13px;}
+  .btn-ghost{background:transparent;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:18px;align-items:start;}
+  @media (max-width:1000px){ .layout{grid-template-columns:1fr;} }
+  .side{position:sticky;top:12px;}
+  @media (max-width:1000px){ .side{position:static;} }
+  .ligne{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px;margin-bottom:12px;}
+  .ligne-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
+  .ligne-head strong{font-family:var(--display);text-transform:uppercase;letter-spacing:.4px;color:var(--ink);}
+  .sizes{display:grid;grid-template-columns:minmax(110px,1.4fr) repeat(8,minmax(44px,1fr)) 56px 36px;gap:4px;align-items:end;margin-top:6px;}
+  .sizes input{padding:7px 4px;text-align:center;}
+  .sizes .tot{font-family:var(--mono);font-size:13px;text-align:center;padding-bottom:10px;}
+  .sizes .hd{font-size:11px;color:var(--muted);text-align:center;font-weight:600;}
+  @media (max-width:700px){ .sizes{grid-template-columns:repeat(5,1fr);} .sizes .nomc{grid-column:1/-1;} .sizes .hd{display:none;} }
+  .empl{display:grid;grid-template-columns:1fr 1fr 36px;gap:6px;margin-top:6px;}
+  .x{border:none;background:none;color:var(--muted);font-size:20px;min-width:36px;min-height:36px;}
+  .interne{background:var(--warn-soft);border:1px dashed var(--warn);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px;}
+  .interne b{color:var(--warn);font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  td.n,th.n{text-align:right;white-space:nowrap;font-family:var(--mono);font-size:12.5px;}
+  .tot-ttc td{font-weight:700;font-size:15px;border-top:2px solid var(--charcoal);}
+  .alerte{border-radius:8px;padding:8px 10px;margin-top:6px;font-size:13px;}
+  .alerte.bloquant{background:var(--crit-soft);color:var(--crit);font-weight:600;}
+  .alerte.attention{background:var(--warn-soft);color:#7a4f10;}
+  .alerte.info{background:var(--info-soft);color:var(--info);}
+  .muted{color:var(--muted);font-size:13px;}
+  .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;border-radius:4px;padding:1px 6px;margin-left:4px;}
+  .tag.est{background:var(--warn-soft);color:#7a4f10;} .tag.reel{background:var(--ok-soft);color:var(--ok);} .tag.non{background:#eee;color:#666;}
+  .brouillon{display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:8px 0;flex-wrap:wrap;}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--charcoal);color:#fff;padding:10px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50;}
+  .toast.show{opacity:1;}
+  .err{color:var(--crit);font-weight:600;margin-top:8px;}
+  /* Devis client : seul bloc imprimé */
+  #devisClient{display:none;}
+  @media print{
+    body{background:#fff;}
+    .wrap > *:not(#devisClient){display:none !important;}
+    #devisClient{display:block !important;}
+    .wrap{padding:0;max-width:none;}
+  }
+  #devisClient{font-family:"Segoe UI",Arial,sans-serif;color:#1c1c1e;font-size:10.5pt;}
+  #devisClient .entete{display:flex;justify-content:space-between;align-items:flex-start;}
+  #devisClient .logo{font-family:var(--display);font-size:26pt;font-weight:700;letter-spacing:1px;}
+  #devisClient .societe{text-align:right;font-size:9pt;line-height:1.45;color:#444;}
+  #devisClient h1{font-size:19pt;margin:20px 0 4px;color:#1c1c1e;text-transform:none;}
+  #devisClient .meta{color:#555;font-size:9.5pt;}
+  #devisClient .blocs{display:flex;gap:18px;margin:16px 0;}
+  #devisClient .bloc{flex:1;background:#f6f5f2;border-radius:8px;padding:12px 14px;font-size:9.5pt;line-height:1.5;}
+  #devisClient .bloc b{display:block;font-size:8pt;text-transform:uppercase;letter-spacing:.6px;color:#ff7a00;margin-bottom:4px;}
+  #devisClient th{background:#1c1c1e;color:#fff;font-size:8.5pt;text-transform:uppercase;padding:8px;}
+  #devisClient td{padding:8px;border-bottom:1px solid #e6e3dc;}
+  #devisClient td small{color:#666;}
+  #devisClient .totaux{width:46%;margin-left:auto;margin-top:10px;}
+  #devisClient .totaux td{border:none;padding:4px 8px;}
+  #devisClient .totaux tr.ttc td{font-size:13pt;font-weight:700;border-top:2px solid #1c1c1e;}
+  #devisClient .cond{margin-top:18px;font-size:8.8pt;color:#444;line-height:1.55;}
+  #devisClient .accord{margin-top:14px;border:1px dashed #bbb;border-radius:8px;padding:10px 14px;height:48px;font-size:9pt;color:#555;}
+  #devisClient .pied{margin-top:14px;text-align:center;font-size:7.5pt;color:#888;}
+  #devisClient tr{page-break-inside:avoid;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><h1>Calculateur de devis</h1><span class="brand-tag" id="buildTag">build 2026-10-21-calculateur-devis</span></div>
+    <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
+  </header>
+
+  <div id="authGate" class="panel" style="max-width:420px;display:none;">
+    <h2>Connexion</h2>
+    <p class="muted" style="margin:0 0 10px;">Réservé à l'équipe Printtex : les coûts et les marges ne sont visibles qu'ici.</p>
+    <form id="authForm" class="grid">
+      <div><label for="authEmail">Email</label><input type="email" id="authEmail" autocomplete="username"></div>
+      <div><label for="authPassword">Mot de passe</label><input type="password" id="authPassword" autocomplete="current-password"></div>
+      <button class="btn btn-primary" id="btnLogin" type="submit">Se connecter</button>
+    </form>
+    <div class="err" id="authError" role="alert"></div>
+  </div>
+
+  <div id="appRoot" style="display:none;">
+    <div class="err" id="baseError" role="alert"></div>
+    <div class="layout">
+      <div>
+        <div class="panel">
+          <h2>Client</h2>
+          <div class="grid g3">
+            <div><label for="cNom">Nom</label><input type="text" id="cNom"></div>
+            <div><label for="cSociete">Société / marque</label><input type="text" id="cSociete"></div>
+            <div><label for="cType">Profil</label><select id="cType">
+              <option value="particulier">Particulier</option><option value="entreprise">Entreprise</option><option value="association">Association</option>
+              <option value="marque">Marque</option><option value="agence">Agence</option><option value="autre">Autre</option></select></div>
+            <div><label for="cEmail">Email</label><input type="email" id="cEmail"></div>
+            <div><label for="cTel">Téléphone</label><input type="text" id="cTel"></div>
+            <div><label for="cAdresse">Adresse (facultatif)</label><input type="text" id="cAdresse"></div>
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <label class="check"><input type="checkbox" id="cRecurrent"> Client qui recommande régulièrement</label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Délai et livraison</h2>
+          <div class="grid g3">
+            <div><label for="dDate">Date souhaitée</label><input type="date" id="dDate"></div>
+            <div><label for="dLivraison">Livraison</label><select id="dLivraison"><option value="retrait">Retrait à l'atelier</option><option value="colissimo">Colissimo</option><option value="express">Express (moins de 24 h)</option></select></div>
+            <div><label class="check" style="margin-top:20px;"><input type="checkbox" id="dUrgent"> Commande urgente</label></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Articles</h2>
+          <div id="lignes"></div>
+          <div class="row">
+            <button type="button" class="btn" id="addGrille">+ Article du catalogue</button>
+            <button type="button" class="btn" id="addTextile">+ Textile apporté par le client</button>
+            <button type="button" class="btn" id="addLibre">+ Ligne libre</button>
+          </div>
+          <p class="muted" style="margin:8px 0 0;">Le prix dégressif se calcule sur le total de chaque ligne (toutes couleurs et tailles de la ligne). Deux articles différents restent deux lignes avec chacune son palier.</p>
+        </div>
+
+        <div class="panel">
+          <h2>Options</h2>
+          <div class="grid g3">
+            <div><label for="oLogo">Logos à refaire proprement</label><input type="number" id="oLogo" min="0" step="1" value="0"></div>
+            <div><label class="check" style="margin-top:20px;"><input type="checkbox" id="oEchantillon"> Pièce échantillon (marques)</label></div>
+          </div>
+          <div class="grid g3" style="margin-top:8px;">
+            <div><label for="rMontant">Remise globale (€ TTC)</label><input type="number" id="rMontant" min="0" step="0.01"></div>
+            <div><label for="rCode">Code ou nom de la remise</label><input type="text" id="rCode"></div>
+            <div><label for="rMotif">Justification interne</label><input type="text" id="rMotif"></div>
+          </div>
+          <div style="margin-top:8px;"><label for="oNotes">Remarques visibles sur le devis client</label><textarea id="oNotes"></textarea></div>
+          <div style="margin-top:8px;"><label for="oInterne">Notes internes (jamais sur le devis client)</label><textarea id="oInterne"></textarea></div>
+        </div>
+
+        <div class="panel">
+          <h2>Brouillons</h2>
+          <div id="brouillons" class="muted">Chargement…</div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="panel">
+          <h2>Résultat</h2>
+          <div id="resume"></div>
+          <div class="row" style="margin-top:12px;">
+            <button type="button" class="btn btn-primary" id="btnSave">Enregistrer le brouillon</button>
+            <button type="button" class="btn" id="btnNew">Nouveau</button>
+          </div>
+          <div class="row" style="margin-top:8px;">
+            <button type="button" class="btn" id="btnPrint">Devis client (imprimer / PDF)</button>
+            <button type="button" class="btn btn-ghost" id="btnExport">Exporter pour le devis numéroté</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="devisClient"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-firestore-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.16.0/firebase-auth-compat.min.js"></script>
+<script>
+if(typeof firebase === 'undefined'){
+  ['app','firestore','auth'].forEach(function(n){ document.write('<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-'+n+'-compat.js"><\/script>'); });
+}
+</script>
+<script src="devis-calcul.js"></script>
+<script>
+(function(){
+  "use strict";
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBElBwDqwtR1jTIs_n2iyjM4juuwAJfTck",
+    authDomain: "printtex-commande.firebaseapp.com",
+    projectId: "printtex-commande",
+    storageBucket: "printtex-commande.firebasestorage.app",
+    messagingSenderId: "240429387217",
+    appId: "1:240429387217:web:d49c2842305faeb821e4f0"
+  };
+  const ADMINS = ["printtex75@gmail.com"]; // même compte que ADMIN_EMAIL de index.html ; les règles Firestore protègent adminNotes
+  const TAILLES = ["XS","S","M","L","XL","XXL","3XL","Unique"];
+  const LIEUX = ["Devant cœur","Devant centre","Dos","Manche gauche","Manche droite","Nuque / étiquette","Autre"];
+  const C = window.DevisCalcul;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const eur = C.eur;
+  let toastT; function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 2600); }
+
+  const S = { db:null, auth:null, base:null, devis:null, id:null, brouillons:{}, res:null };
+
+  /* ---------- Firebase et accès ---------- */
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    S.db = firebase.firestore(); S.db.settings({experimentalForceLongPolling:true});
+    S.auth = firebase.auth();
+  }catch(e){ console.error(e); }
+  $("authForm").addEventListener("submit", async ev => {
+    ev.preventDefault(); $("authError").textContent = "";
+    $("btnLogin").disabled = true;
+    try{ await S.auth.signInWithEmailAndPassword($("authEmail").value.trim().toLowerCase(), $("authPassword").value); }
+    catch(e){ $("authError").textContent = "Connexion impossible : " + (e && e.message || "erreur inconnue"); }
+    finally{ $("btnLogin").disabled = false; }
+  });
+  $("btnLogout").addEventListener("click", () => S.auth && S.auth.signOut());
+  if(S.auth){
+    S.auth.onAuthStateChanged(user => {
+      if(user && ADMINS.includes((user.email || "").toLowerCase())){
+        $("authGate").style.display = "none"; $("appRoot").style.display = "block";
+        demarrer();
+      }else{
+        if(user){ S.auth.signOut(); $("authError").textContent = "Ce compte n'a pas accès au calculateur."; }
+        $("appRoot").style.display = "none"; $("authGate").style.display = "block";
+      }
+    });
+  }else{ $("authGate").style.display = "block"; $("authError").textContent = "Chargement impossible (réseau ou bloqueur de contenu)."; }
+
+  // Essai local seulement (fichier ou localhost) : charger une base de test sans connexion ni Firestore.
+  if(location.protocol === "file:" || location.hostname === "localhost"){
+    window.__devisEssai = base => { S.base = base; $("authGate").style.display = "none"; $("appRoot").style.display = "block"; S.db = null; nouveau(); $("brouillons").textContent = "Essai local : brouillons désactivés."; };
+  }
+  async function demarrer(){
+    try{
+      const snap = await S.db.collection("adminNotes").doc("tarifsCalculateur").get();
+      if(!snap.exists) throw new Error("la base des tarifs n'est pas encore installée (adminNotes/tarifsCalculateur).");
+      S.base = JSON.parse(snap.data().json);
+      $("baseError").textContent = "";
+    }catch(e){
+      $("baseError").textContent = "Calcul impossible : " + (e && e.message || "erreur inconnue");
+      return;
+    }
+    nouveau();
+    chargerBrouillons();
+  }
+
+  /* ---------- Saisie ---------- */
+  function videDevis(){
+    return { client:{nom:"",societe:"",type:"particulier",email:"",tel:"",adresse:"",recurrent:false},
+      dateSouhaitee:"", livraison:"retrait", urgent:false, lignes:[], logoARefaire:0, echantillon:false,
+      codePromo:{montant_ttc:"",code:"",motif:""}, notes:"", interne:"" };
+  }
+  function ligneGrille(){
+    const k = Object.keys(S.base.produits)[0];
+    return { type:"grille", produit:k, teinte:"couleur", marquages:1, technique:"DTF", emplacements:[{lieu:"Devant centre",dim:""}], couleurs:[{nom:"",tailles:{}}], ajustement:{mode:"aucun",valeur:"",motif:""} };
+  }
+  const champs = [["cNom","client.nom"],["cSociete","client.societe"],["cType","client.type"],["cEmail","client.email"],["cTel","client.tel"],["cAdresse","client.adresse"],
+    ["dDate","dateSouhaitee"],["dLivraison","livraison"],["oLogo","logoARefaire"],["rMontant","codePromo.montant_ttc"],["rCode","codePromo.code"],["rMotif","codePromo.motif"],["oNotes","notes"],["oInterne","interne"]];
+  const coches = [["cRecurrent","client.recurrent"],["dUrgent","urgent"],["oEchantillon","echantillon"]];
+  const lire = (o, p) => p.split(".").reduce((a,k)=> a && a[k], o);
+  const ecrire = (o, p, v) => { const ks = p.split("."), last = ks.pop(); ks.reduce((a,k)=> a[k] = a[k] || {}, o)[last] = v; };
+  champs.forEach(([id,p]) => $(id).addEventListener("input", () => { ecrire(S.devis, p, $(id).value); calculer(); }));
+  coches.forEach(([id,p]) => $(id).addEventListener("change", () => { ecrire(S.devis, p, $(id).checked); calculer(); }));
+  function remplirFormulaire(){
+    champs.forEach(([id,p]) => { const v = lire(S.devis, p); $(id).value = v == null ? "" : v; });
+    coches.forEach(([id,p]) => { $(id).checked = !!lire(S.devis, p); });
+  }
+
+  function optionsProduits(sel){
+    return Object.entries(S.base.produits).sort((a,b)=> a[1].libelle.localeCompare(b[1].libelle, "fr"))
+      .map(([k,p]) => `<option value="${esc(k)}"${k===sel?" selected":""}>${esc(p.libelle)}</option>`).join("");
+  }
+  function rendreLignes(){
+    const box = $("lignes");
+    box.innerHTML = S.devis.lignes.map((l,i) => {
+      const titre = l.type === "grille" ? "Article du catalogue" : l.type === "textile_fourni" ? "Textile apporté par le client" : "Ligne libre";
+      let corps = "";
+      if(l.type === "grille"){
+        const p = S.base.produits[l.produit] || {};
+        const teintes = p.teinte_fixe ? [p.teinte_fixe] : Object.keys(p.grilles || {});
+        const maxM = p.max_marquages || 2;
+        corps = `<div class="grid g4">
+          <div style="grid-column:span 2"><label>Article</label><select data-k="produit">${optionsProduits(l.produit)}</select></div>
+          <div><label>Teinte du textile</label><select data-k="teinte">${teintes.map(t=>`<option value="${t}"${t===l.teinte?" selected":""}>${t==="blanc"?"Blanc":"Couleur"}</option>`).join("")}</select></div>
+          <div><label>Emplacements imprimés</label><select data-k="marquages">${[1,2,3,4,5].map(n=>`<option value="${n}"${n==l.marquages?" selected":""}>${n}${n>maxM?" (hors grille)":""}</option>`).join("")}</select></div>
+          <div><label>Technique</label><select data-k="technique">${["DTF","Sérigraphie","Flocage","Broderie"].map(t=>`<option${t===l.technique?" selected":""}>${t}</option>`).join("")}</select></div>
+        </div>
+        <label style="margin-top:8px;">Emplacements et dimensions du visuel</label>
+        ${(l.emplacements||[]).map((e,j)=>`<div class="empl"><select data-e="${j}" data-f="lieu">${LIEUX.map(x=>`<option${x===e.lieu?" selected":""}>${x}</option>`).join("")}</select>
+          <input type="text" data-e="${j}" data-f="dim" placeholder="ex. 28 cm de large" value="${esc(e.dim)}"><button type="button" class="x" data-del-e="${j}" aria-label="Retirer l'emplacement">×</button></div>`).join("")}
+        <button type="button" class="btn btn-sm btn-ghost" data-add-e style="margin-top:6px;">+ Emplacement</button>
+        <label style="margin-top:8px;">Quantités par couleur et taille</label>
+        <div class="sizes"><div class="hd nomc">Couleur</div>${TAILLES.map(t=>`<div class="hd">${t}</div>`).join("")}<div class="hd">Total</div><div></div>
+        ${(l.couleurs||[]).map((c,j)=>`<input type="text" class="nomc" data-c="${j}" data-f="nom" placeholder="ex. Noir" value="${esc(c.nom)}" aria-label="Couleur">
+          ${TAILLES.map(t=>`<input type="number" min="0" step="1" inputmode="numeric" data-c="${j}" data-t="${t}" value="${c.tailles[t]||""}" aria-label="${t}">`).join("")}
+          <div class="tot">${C.quantiteLigne({type:"grille",couleurs:[c]})}</div><button type="button" class="x" data-del-c="${j}" aria-label="Retirer la couleur">×</button>`).join("")}
+        </div>
+        <button type="button" class="btn btn-sm btn-ghost" data-add-c style="margin-top:6px;">+ Couleur</button>`;
+      }else if(l.type === "textile_fourni"){
+        corps = `<div class="grid g3"><div><label>Désignation</label><input type="text" data-k="designation" value="${esc(l.designation)}" placeholder="ex. Gilets de l'équipe"></div>
+          <div><label>Emplacements par pièce</label><input type="number" min="1" step="1" data-k="emplacements" value="${esc(l.emplacements)}"></div>
+          <div><label>Nombre de pièces</label><input type="number" min="0" step="1" data-k="quantite" value="${esc(l.quantite)}"></div></div>`;
+      }else{
+        corps = `<div class="grid g4"><div style="grid-column:span 2"><label>Désignation</label><input type="text" data-k="designation" value="${esc(l.designation)}" placeholder="ex. Création graphique, sérigraphie 2 couleurs"></div>
+          <div><label>Quantité</label><input type="number" min="0" step="1" data-k="quantite" value="${esc(l.quantite)}"></div>
+          <div><label>Prix unitaire HT (€)</label><input type="number" min="0" step="0.01" data-k="pu_ht" value="${esc(l.pu_ht)}"></div>
+          <div style="grid-column:span 3"><label>Détail (visible par le client)</label><input type="text" data-k="detail" value="${esc(l.detail)}"></div>
+          <div><label>Coût HT (€, interne)</label><input type="number" min="0" step="0.01" data-k="cout_ht" value="${esc(l.cout_ht)}"></div></div>`;
+      }
+      const aj = l.ajustement || {mode:"aucun"};
+      const ajust = l.type === "libre" ? "" : `<div class="grid g3" style="margin-top:8px;">
+        <div><label>Ajustement du prix</label><select data-a="mode"><option value="aucun"${aj.mode==="aucun"?" selected":""}>Aucun</option>${l.type==="grille"?`<option value="remise"${aj.mode==="remise"?" selected":""}>Remise commerciale (%)</option>`:""}<option value="prix"${aj.mode==="prix"?" selected":""}>Prix imposé (€ TTC / pièce)</option></select></div>
+        <div><label>Valeur</label><input type="number" min="0" step="0.01" data-a="valeur" value="${esc(aj.valeur)}"${aj.mode==="aucun"?" disabled":""}></div>
+        <div><label>Justification interne</label><input type="text" data-a="motif" value="${esc(aj.motif)}"${aj.mode==="aucun"?" disabled":""} placeholder="ex. prix maintenu, client fidèle"></div></div>`;
+      return `<div class="ligne" data-i="${i}"><div class="ligne-head"><strong>${i+1}. ${titre}</strong>
+        <div class="row"><button type="button" class="btn btn-sm btn-ghost" data-dup>Dupliquer</button><button type="button" class="x" data-del aria-label="Supprimer la ligne">×</button></div></div>
+        ${corps}${ajust}<div class="interne" data-interne></div></div>`;
+    }).join("") || `<p class="muted">Aucun article. Ajoutez une ligne ci-dessous.</p>`;
+  }
+  // Un seul écouteur pour toutes les lignes ; on ne redessine la liste que quand sa structure change (sinon le curseur saute).
+  $("lignes").addEventListener("input", ev => {
+    const t = ev.target, box = t.closest(".ligne"); if(!box) return;
+    const l = S.devis.lignes[+box.dataset.i];
+    if(t.dataset.k){ l[t.dataset.k] = t.value; if(["produit","marquages"].includes(t.dataset.k)){ if(t.dataset.k==="produit"){ const p = S.base.produits[l.produit]; l.teinte = p.teinte_fixe || (p.grilles.couleur ? "couleur" : Object.keys(p.grilles)[0]); } majEmplacements(l); rendreLignes(); } }
+    else if(t.dataset.e != null) l.emplacements[+t.dataset.e][t.dataset.f] = t.value;
+    else if(t.dataset.c != null){ const c = l.couleurs[+t.dataset.c]; if(t.dataset.t){ c.tailles[t.dataset.t] = t.value; t.parentNode.querySelectorAll(".tot")[+t.dataset.c].textContent = C.quantiteLigne({type:"grille",couleurs:[c]}); } else c.nom = t.value; }
+    else if(t.dataset.a){ l.ajustement[t.dataset.a] = t.value; if(t.dataset.a === "mode"){ if(t.value === "aucun"){ l.ajustement.valeur = ""; } rendreLignes(); } }
+    calculer();
+  });
+  function majEmplacements(l){
+    const n = Math.max(1, Number(l.marquages) || 1);
+    while(l.emplacements.length < n) l.emplacements.push({lieu: l.emplacements.length ? "Dos" : "Devant centre", dim:""});
+    l.emplacements.length = Math.max(n, 1);
+  }
+  $("lignes").addEventListener("click", ev => {
+    const t = ev.target, box = t.closest(".ligne"); if(!box) return;
+    const i = +box.dataset.i, l = S.devis.lignes[i];
+    if(t.hasAttribute("data-del")){ S.devis.lignes.splice(i,1); }
+    else if(t.hasAttribute("data-dup")){ S.devis.lignes.splice(i+1, 0, JSON.parse(JSON.stringify(l))); }
+    else if(t.hasAttribute("data-add-c")){ l.couleurs.push({nom:"",tailles:{}}); }
+    else if(t.dataset.delC != null){ l.couleurs.splice(+t.dataset.delC,1); if(!l.couleurs.length) l.couleurs.push({nom:"",tailles:{}}); }
+    else if(t.hasAttribute("data-add-e")){ l.emplacements.push({lieu:"Dos",dim:""}); l.marquages = l.emplacements.length; }
+    else if(t.dataset.delE != null){ l.emplacements.splice(+t.dataset.delE,1); if(!l.emplacements.length) l.emplacements.push({lieu:"Devant centre",dim:""}); l.marquages = l.emplacements.length; }
+    else return;
+    rendreLignes(); calculer();
+  });
+  $("addGrille").addEventListener("click", () => { S.devis.lignes.push(ligneGrille()); rendreLignes(); calculer(); });
+  $("addTextile").addEventListener("click", () => { S.devis.lignes.push({type:"textile_fourni",designation:"",emplacements:1,quantite:"",ajustement:{mode:"aucun",valeur:"",motif:""}}); rendreLignes(); calculer(); });
+  $("addLibre").addEventListener("click", () => { S.devis.lignes.push({type:"libre",designation:"",detail:"",quantite:1,pu_ht:"",cout_ht:""}); rendreLignes(); calculer(); });
+
+  /* ---------- Calcul et affichage interne ---------- */
+  function calculer(){
+    if(!S.base || !S.devis) return;
+    const r = S.res = C.calculer(S.base, S.devis);
+    const lignesHtml = r.client.map(l => `<tr><td>${esc(l.desc)}${l.detail?`<br><span class="muted">${esc(l.detail)}</span>`:""}</td><td class="n">${l.qte}</td><td class="n">${eur(l.pu)}</td><td class="n">${eur(l.pu*l.qte)}</td></tr>`).join("");
+    const margeHtml = r.marge != null
+      ? `${eur(r.marge)} HT, soit ${(r.tauxMarge*100).toFixed(0)} % <span class="tag est">coûts estimés</span>`
+      : `non calculable <span class="tag est">coût manquant</span>`;
+    $("resume").innerHTML = `
+      <table><thead><tr><th>Désignation</th><th class="n">Qté</th><th class="n">PU HT</th><th class="n">Total HT</th></tr></thead><tbody>${lignesHtml || `<tr><td colspan="4" class="muted">Rien à calculer pour l'instant.</td></tr>`}</tbody></table>
+      <table style="margin-top:8px;"><tr><td>Total HT</td><td class="n">${eur(r.totalHT)}</td></tr><tr><td>TVA 20 %</td><td class="n">${eur(r.tva)}</td></tr><tr class="tot-ttc"><td>Total TTC</td><td class="n">${eur(r.totalTTC)}</td></tr></table>
+      <div class="interne"><b>Interne, jamais sur le devis client</b><br>
+        ${r.piecesTotal} pièce(s) · coût estimé ${r.coutTotal ? eur(r.coutTotal) + " HT" : "—"}${r.coutConnu ? "" : " (partiel)"}<br>
+        Marge : ${margeHtml}<br><span class="muted">Coût = textile + consommables par emplacement + main-d'œuvre par pièce (devis/couts.json, estimations). Livraison et création non comptées.</span></div>
+      ${r.alertes.map(a => `<div class="alerte ${a.niveau}">${esc(a.texte)}</div>`).join("")}`;
+    // Détail interne par ligne : palier, prix avant/après ajustement, coût, ventes comparables.
+    document.querySelectorAll("[data-interne]").forEach(box => {
+      const i = +box.closest(".ligne").dataset.i, d = r.lignes.find(x => x.nom === `Ligne ${i+1}`);
+      if(!d){ box.style.display = "none"; return; }
+      box.style.display = "";
+      let h = `<b>Interne</b><br>${d.q} pièce(s)`;
+      if(d.palier) h += ` · palier ${esc(d.palier)} · 1re pièce (BAT) ${eur(d.bat)} HT · grille ${eur(d.grillePalier)} HT/pièce`;
+      if(d.ajTexte) h += `<br>Avant ajustement ${eur(d.grillePalier)} HT → après ${eur(d.pu)} HT (${esc(d.ajTexte)})`;
+      h += `<br>Coût par pièce : ${d.coutPiece != null ? eur(d.coutPiece) + " HT" + (d.textileReel ? ` <span class="tag reel">textile sur facture</span>` : ` <span class="tag est">textile estimé</span>`) : "inconnu"}${d.coutPiece != null && d.pu ? ` · marge ${Math.round((1 - d.coutPiece/d.pu)*100)} % sur les pièces suivantes` : ""}`;
+      if(d.comparables){
+        const reels = d.comparables.reels.slice().sort((a,b)=> (b.date||"").localeCompare(a.date||"")).slice(0,6);
+        h += `<br><span class="muted">Ventes comparables (même article) :</span>` + (reels.length ? `<table style="margin-top:4px;">${reels.map(x=>`<tr><td>${esc(x.date||"?")}</td><td>${esc(x.client||"")}</td><td class="n">×${x.quantite}</td><td class="n">${x.pu_ht!=null?eur(Math.round(x.pu_ht*100))+" HT":x.pu_brut!=null?eur(Math.round(x.pu_brut*100))+" (HT ou TTC ?)":"prix ?"}</td><td><span class="tag reel">${esc(x.statut.replace("_"," "))}</span> ${esc(x.contexte||"")}</td></tr>`).join("")}</table>` : ` aucune vente confirmée.`);
+        if(d.comparables.nonAcceptes.length) h += `<br><span class="muted">${d.comparables.nonAcceptes.length} devis non accepté(s) sur cet article (ce ne sont pas des ventes).</span>`;
+      }
+      box.innerHTML = h;
+    });
+  }
+
+  /* ---------- Devis client (uniquement les informations commerciales) ---------- */
+  function rendreDevisClient(){
+    const r = S.res, c = S.devis.client, d = new Date(), v = new Date(d.getTime() + 30*864e5);
+    const fr = x => x.toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
+    $("devisClient").innerHTML = `
+      <div class="entete"><div class="logo">PRINTTEX</div><div class="societe"><strong>Printtex</strong><br>5 rue Planchat, 75020 Paris<br>01 86 04 31 65 · info@printtex.fr<br>printtex.fr</div></div>
+      <h1>Proposition de prix</h1>
+      <div class="meta">Date : ${fr(d)} · Valable jusqu'au ${fr(v)}</div>
+      <div class="blocs"><div class="bloc"><b>Client</b>${c.societe?esc(c.societe)+"<br>":""}${esc(c.nom)}${c.adresse?"<br>"+esc(c.adresse):""}<br>${esc(c.email)}${c.tel?" · "+esc(c.tel):""}</div>
+        <div class="bloc"><b>Délais</b>${S.devis.dateSouhaitee?"Date souhaitée : "+esc(new Date(S.devis.dateSouhaitee).toLocaleDateString("fr-FR"))+"<br>":""}Production et expédition en 2 à 4 jours ouvrés après validation du BAT.</div></div>
+      <table><thead><tr><th>Désignation</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix unit. HT</th><th style="text-align:right">Total HT</th></tr></thead><tbody>
+      ${r.client.map(l=>`<tr><td>${esc(l.desc)}${l.detail?`<br><small>${esc(l.detail)}</small>`:""}</td><td style="text-align:right">${l.qte}</td><td style="text-align:right">${eur(l.pu)}</td><td style="text-align:right">${eur(l.pu*l.qte)}</td></tr>`).join("")}
+      </tbody></table>
+      <table class="totaux"><tr><td>Total HT</td><td style="text-align:right">${eur(r.totalHT)}</td></tr><tr><td>TVA 20 %</td><td style="text-align:right">${eur(r.tva)}</td></tr><tr class="ttc"><td>Total TTC</td><td style="text-align:right">${eur(r.totalTTC)}</td></tr></table>
+      ${S.devis.notes?`<div class="cond"><strong>Remarques</strong><br>${esc(S.devis.notes)}</div>`:""}
+      <div class="cond"><strong>Conditions</strong><br>Devis gratuit, valable 30 jours. Prix incluant le textile et l'impression. La première pièce de chaque modèle sert de BAT (bon à tirer) : la production démarre après votre validation écrite du BAT.<br>
+      Règlement à la commande, par carte bancaire ou virement. Livraison en France métropolitaine ; retrait gratuit à l'atelier.<br>
+      Produits personnalisés : pas de droit de rétractation (article L221-28 du Code de la consommation). En cas de défaut, réimpression ou remboursement.</div>
+      <div class="accord">Bon pour accord – date, nom et signature :</div>
+      <div class="pied">Printtex SARL au capital de 100 € · RCS Paris 929 245 918 · TVA FR58929245918 · 5 rue Planchat, 75020 Paris</div>`;
+  }
+  $("btnPrint").addEventListener("click", () => {
+    if(!S.res || !S.res.client.length){ toast("Ajoutez au moins un article."); return; }
+    if(S.res.alertes.some(a => a.niveau === "bloquant")){ toast("Corrigez d'abord les erreurs en rouge."); return; }
+    rendreDevisClient(); window.print();
+  });
+  // Format de scripts/devis/creer-devis.mjs (dépôt printtex-shopify) pour obtenir le devis numéroté officiel.
+  $("btnExport").addEventListener("click", () => {
+    const d = S.devis, c = d.client;
+    const demande = { client:{nom:c.nom, societe:c.societe, email:c.email, telephone:c.tel, adresse:c.adresse}, type_client: c.type === "marque" ? "marque" : undefined,
+      lignes: d.lignes.filter(l=>l.type==="grille").map(l => {
+        const o = { produit:l.produit, teinte:l.teinte, marquages:Number(l.marquages)||1, quantite:C.quantiteLigne(l),
+          couleurs:l.couleurs.map(x=>x.nom).filter(Boolean).join(", "), detail:(l.emplacements||[]).map(e=>e.lieu+(e.dim?` (${e.dim})`:"")).join(", "),
+          tailles:l.couleurs.map(x=>Object.entries(x.tailles).filter(([,n])=>Number(n)>0).map(([t,n])=>`${t}×${n}`).join(" ")).filter(Boolean).join(" / ") };
+        if(l.ajustement.mode === "remise" && Number(l.ajustement.valeur) > 0) o.remise_pct = Number(l.ajustement.valeur);
+        if(l.ajustement.mode === "prix" && Number(l.ajustement.valeur) > 0){ o.pu_ttc = Number(l.ajustement.valeur); o.force = true; }
+        return o; }),
+      lignes_libres: d.lignes.map((l,i) => l.type === "grille" ? null : l.type === "libre"
+        ? { designation:l.designation, detail:l.detail, quantite:Number(l.quantite)||0, pu_ht:Number(l.pu_ht)||0 }
+        : { designation:l.designation || "Impression sur textile fourni par le client", detail:`${l.emplacements} emplacement(s)`, quantite:Number(l.quantite)||0, pu_ht:(S.res.lignes.find(x=>x.nom===`Ligne ${i+1}`) || {pu:0}).pu / 100 }).filter(Boolean),
+      livraison:d.livraison, notes:d.notes, logo_a_refaire: Number(d.logoARefaire) || undefined, echantillon: d.echantillon || undefined,
+      code_promo: Number(d.codePromo.montant_ttc) > 0 ? { code:d.codePromo.code, montant_ttc:Number(d.codePromo.montant_ttc) } : undefined };
+    const blob = new Blob([JSON.stringify(demande, null, 2)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = `demande-${(c.societe||c.nom||"client").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9]+/g,"-")}.json`; a.click();
+    toast("Fichier prêt : à passer dans creer-devis.mjs pour le devis numéroté.");
+  });
+
+  /* ---------- Brouillons (adminNotes/devisBrouillons, un champ par brouillon) ---------- */
+  const refBrouillons = () => S.db.collection("adminNotes").doc("devisBrouillons");
+  async function chargerBrouillons(){
+    try{ const s = await refBrouillons().get(); S.brouillons = s.exists ? (s.data().items || {}) : {}; rendreBrouillons(); }
+    catch(e){ $("brouillons").innerHTML = `<span class="err">Brouillons illisibles : ${esc(e.message || "")}</span>`; }
+  }
+  function rendreBrouillons(){
+    const l = Object.entries(S.brouillons).sort((a,b)=> (b[1].majLe||"").localeCompare(a[1].majLe||""));
+    $("brouillons").innerHTML = l.length ? l.map(([id,b]) => `<div class="brouillon"><div><strong>${esc(b.titre)}</strong><div class="muted">${esc(new Date(b.majLe).toLocaleString("fr-FR"))} · ${eur(b.totalTTC||0)} TTC</div></div>
+      <div class="row"><button type="button" class="btn btn-sm" data-ouvrir="${esc(id)}">Reprendre</button><button type="button" class="btn btn-sm btn-ghost" data-copier="${esc(id)}">Dupliquer</button></div></div>`).join("") : "Aucun brouillon enregistré.";
+  }
+  $("brouillons").addEventListener("click", ev => {
+    const id = ev.target.dataset.ouvrir || ev.target.dataset.copier; if(!id) return;
+    S.devis = JSON.parse(S.brouillons[id].devis);
+    S.id = ev.target.dataset.ouvrir ? id : null;
+    remplirFormulaire(); rendreLignes(); calculer();
+    toast(S.id ? "Brouillon repris." : "Copie créée : elle sera enregistrée comme nouveau brouillon.");
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+  $("btnSave").addEventListener("click", async () => {
+    const c = S.devis.client, titre = (c.societe || c.nom || "Sans nom") + " – " + (S.res ? S.res.piecesTotal : 0) + " pièce(s)";
+    const id = S.id || ("d" + Date.now().toString(36));
+    const item = { titre, majLe:new Date().toISOString(), par:(S.auth.currentUser && S.auth.currentUser.email) || "", totalTTC:S.res ? S.res.totalTTC : 0, devis:JSON.stringify(S.devis) };
+    try{
+      await refBrouillons().set({ items:{ [id]: item } }, { merge:true });
+      S.id = id; S.brouillons[id] = item; rendreBrouillons(); toast("Brouillon enregistré.");
+    }catch(e){ toast("Enregistrement impossible : " + (e.message || "")); }
+  });
+  function nouveau(){ S.devis = videDevis(); S.id = null; S.devis.lignes.push(ligneGrille()); remplirFormulaire(); rendreLignes(); calculer(); }
+  $("btnNew").addEventListener("click", () => { if(confirm("Commencer un nouveau calcul ? Ce qui n'est pas enregistré sera perdu.")) nouveau(); });
+})();
+</script>
+</body>
+</html>
