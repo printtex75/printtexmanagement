@@ -30,6 +30,16 @@ const frais = {
   logo_refait_ht: 500, logo_offert_des_pieces: 5,
   print_textile_fourni_ttc: 500, cout_print_textile_fourni: null,
   urgence_pct: null,
+  // Impression seule sur textile du client (Karim 21/10/2026), TTC par pièce ; 1re pièce = BAT. Visuel chargé = plus de 8 cc d'encre.
+  impression_seule: {
+    paliers: [1, 2, 26, 51, 101], libelles: ['1', '2 à 25', '26 à 50', '51 à 100', '101 à 200'],
+    grilles: {
+      'dtg-blanc': { normal: { 1: [1000, 600, 540, 480, 420], 2: [1500, 780, 720, 660, 600] }, charge: { 1: [1000, 700, 640, 580, 520], 2: [1500, 980, 920, 860, 800] } },
+      'dtg-fonce': { normal: { 1: [1500, 780, 720, 660, 600], 2: [2000, 1020, 990, 960, 920] }, charge: { 1: [1500, 960, 900, 840, 780], 2: [2000, 1500, 1460, 1420, 1380] } },
+      'dtf': { normal: { 1: [1500, 780, 720, 660, 600], 2: [2000, 1020, 990, 960, 920] }, charge: { 1: [1500, 960, 900, 840, 780], 2: [2000, 1500, 1460, 1420, 1380] } },
+    },
+    supplement_emplacement: 200, etiquette: 120,
+  },
   // Manche ou étiquette en plus, TTC par pièce et par marquage, paliers 1 / 2-5 / 6-50 / 51-100 / 101-200 (Karim, 21/10/2026 : « environ 2 € »).
   supplements: { manche: [300, 250, 200, 180, 150], etiquette: [250, 200, 160, 140, 120] }, // étiquette : à partir de 1,20 € (Karim 21/10)
   livraison: {
@@ -85,6 +95,10 @@ const base = {
     // couleurs 0,27 €/ml, feuille 35 x 40 cm 0,55 €, colle 5,50 €/kg ; visuel rempli à moitié, + 30 % de purges.
     // petit 10 x 10 cm (9 par feuille) 0,13 € → 0,15 ; moyen (logo de tote) 0,76 € → 0,75 ; face ou dos de vêtement (A4 0,96, grand 1,48) → 1,20.
     impression: { petit: 0.15, moyen: 0.75, grand: 1.2 },
+    // Impression seule, HT par face : matière (encre, prétraitement ou feuille et colle, entretien) et main-d'œuvre (18 €/h) ;
+    // visuel chargé : encre en plus ; petit emplacement ou étiquette : environ 0,50 €.
+    impression_seule: { matiere: { 'dtg-blanc': 0.28, 'dtg-fonce': 1.97, 'dtf': 2.14 }, supplement_charge: { 'dtg-blanc': 0.18, 'dtg-fonce': 1.47, 'dtf': 1.47 },
+      main_oeuvre: { 'dtg-blanc': 0.9, 'dtg-fonce': 1.2, 'dtf': 0.9 }, petit: 0.5 },
     format_face: { 'tote-bag-promo': 'moyen', 'tote-bag-promo-noir': 'moyen', 'bob': 'petit', 'casquette-trucker': 'petit', 'casquete-bc015': 'petit' }, _statut: 'textile_reel = factures ; textile = estimations de devis/couts.json, à corriger par Karim' }, frais,
   regles: regles.map((r) => ({ date: r.date, texte: r.texte })),
   historique,

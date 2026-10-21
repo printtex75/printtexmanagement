@@ -139,4 +139,20 @@ r = C.calculer(base, { livraison: 'retrait', lignes: [{ ...tshirt('couleur', 1, 
 assert.equal(r.lignes[0].coutPiece, 600);
 delete base.couts.impression; delete base.couts.format_face;
 
-console.log('17 exemples OK');
+// 18. Impression seule (textile du client), grille TTC, 1re pièce = BAT.
+base.frais.impression_seule = { paliers: [1, 2, 26, 51, 101], libelles: ['1', '2 à 25', '26 à 50', '51 à 100', '101 à 200'],
+  grilles: { 'dtg-fonce': { normal: { 1: [1500, 780, 720, 660, 600], 2: [2000, 1020, 980, 940, 900] }, charge: { 1: [1500, 960, 900, 840, 780], 2: [2000, 1500, 1460, 1420, 1380] } },
+    'dtf': { normal: { 1: [1500, 780, 720, 660, 600], 2: [2000, 1020, 980, 940, 900] }, charge: { 1: [1500, 960, 900, 840, 780], 2: [2000, 1500, 1460, 1420, 1380] } } },
+  supplement_emplacement: 200, etiquette: 120 };
+base.couts.impression_seule = { matiere: { 'dtg-fonce': 1.97, 'dtf': 2.14 }, supplement_charge: { 'dtg-fonce': 1.47, 'dtf': 1.47 }, main_oeuvre: { 'dtg-fonce': 1.2, 'dtf': 0.9 }, petit: 0.5 };
+//     DTG foncé, 1 face + 2 manches + étiquette, 30 pièces : pièce 7,20 + 4,00 + 1,20 = 12,40 TTC (10,33 HT) ; BAT 15 + 5,20 = 20,20 TTC (16,83 HT).
+//     16,83 + 29 × 10,33 = 316,40 HT. Coût : 1,97 + 1,20 + 3 × 0,50 = 4,67 HT par pièce.
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ type: 'textile_fourni', technique: 'dtg-fonce', faces: 1, manches: 2, etiquette: true, quantite: 30, ajustement: { mode: 'aucun' } }] });
+assert.equal(r.lignes[0].bat, 1683); assert.equal(r.lignes[0].pu, 1033); assert.equal(r.totalHT, 31640); assert.equal(r.lignes[0].coutPiece, 467);
+//     DTF face + dos, visuels chargés, 120 pièces : 13,80 TTC (11,50 HT) ; BAT 20 TTC (16,67 HT). 16,67 + 119 × 11,50 = 1 385,17 HT.
+//     Coût : (2,14 + 1,47) × 2 + 0,90 × 1,5 = 8,57 HT → marge 25 %.
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ type: 'textile_fourni', technique: 'dtf', faces: 2, charge: true, quantite: 120, ajustement: { mode: 'aucun' } }] });
+assert.equal(r.lignes[0].pu, 1150); assert.equal(r.totalHT, 138517); assert.equal(r.lignes[0].coutPiece, 857);
+assert.ok(1 - 857 / 1150 >= 0.25);
+
+console.log('18 exemples OK');
