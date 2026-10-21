@@ -105,12 +105,11 @@ assert.equal(r.lignes[0].bat, 2833); assert.equal(r.lignes[0].pu, 2000); assert.
 assert.equal(r.lignes[0].coutPiece, 850);
 assert.ok(r.client[0].detail.includes('2 manches + étiquette'));
 
-// 13. Mode marque gentil, règle provisoire : 6 t-shirts couleur face + dos → prix 101-200 en 1 face (15,00 TTC = 12,50 HT)
-//     dès la 1re pièce, dos offert : 6 × 12,50 = 75,00 HT.
+// 13. Prix d'amis demandé sur un produit sans prix partenaire : on reste au prix normal.
 base.frais.supplements = { manche: [300, 250, 200, 180, 150], etiquette: [250, 200, 160, 140, 120] };
+//     Produit sans prix partenaire : prix normal (BAT 35,00 TTC = 29,17 HT, puis 22,50 TTC = 18,75 HT) : 29,17 + 5 × 18,75 = 122,92 HT.
 r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 6 })] });
-assert.equal(r.totalHT, 7500); assert.equal(r.client[0].qte, 6); assert.ok(r.client[0].detail.includes('dos offert'));
-assert.ok(niveaux(r, 'info').some((t) => t.includes('provisoire')));
+assert.equal(r.totalHT, 12292);
 
 // 14. Prix marque donné par Karim : 18 € TTC (15,00 HT) + 1 étiquette au plus petit prix (1,20 TTC) → 19,20 TTC = 16,00 HT ; 6 × 16,00 = 96,00 HT.
 base.tarifs_marque = { 't-shirt-basic-noir': 1800 };
@@ -122,4 +121,46 @@ base.tarifs_marque = { 't-shirt-basic-noir': { 1: 1800, 2: 2200 } };
 r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 4 })] });
 assert.equal(r.lignes[0].pu, 1833); assert.equal(r.totalHT, 7332); assert.ok(!r.client[0].detail.includes('dos offert'));
 
-console.log('15 exemples OK');
+// 16. Prix partenaire par teinte, faces et palier : Basic couleur face + dos, 60 pièces → palier 51-100 : 14,50 TTC (12,08 HT) dès la 1re pièce.
+//     60 × 12,08 = 724,80 HT ; pas de « dos offert » (16 € contre 14 € en 1 face).
+base.tarifs_marque = { 't-shirt-basic-noir': { blanc: { 1: [1200, 1200, 1200, 1050, 950], 2: [1400, 1400, 1400, 1250, 1150] },
+  couleur: { 1: [1400, 1400, 1400, 1250, 1150], 2: [1600, 1600, 1600, 1450, 1350] } } };
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 30, L: 30 })] });
+assert.equal(r.lignes[0].pu, 1208); assert.equal(r.totalHT, 72480); assert.ok(!r.client[0].detail.includes('dos offert'));
+// Blanc 1 face, 10 pièces → 12 € (10,00 HT) : 100,00 HT.
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('blanc', 1, { M: 10 })] });
+assert.equal(r.totalHT, 10000);
+
+// 17. Coût d'impression par taille : t-shirt couleur face + 2 manches → 3,50 + 1,20 + 2 × 0,15 + 1,00 = 6,00 HT.
+base.couts.impression = { petit: 0.15, moyen: 0.75, grand: 1.2 }; base.couts.format_face = {};
+base.tarifs_marque = {};
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ ...tshirt('couleur', 1, { M: 10 }), manches: 2 }] });
+assert.equal(r.lignes[0].coutPiece, 600);
+delete base.couts.impression; delete base.couts.format_face;
+
+// 18. Impression seule (textile du client), grille TTC, 1re pièce = BAT.
+base.frais.impression_seule = { paliers: [1, 2, 26, 51, 101], libelles: ['1', '2 à 25', '26 à 50', '51 à 100', '101 à 200'],
+  grilles: { 'dtg-fonce': { normal: { 1: [1500, 780, 720, 660, 600], 2: [2000, 1020, 980, 940, 900] }, charge: { 1: [1500, 960, 900, 840, 780], 2: [2000, 1500, 1460, 1420, 1380] } },
+    'dtf': { normal: { 1: [1500, 780, 720, 660, 600], 2: [2000, 1020, 980, 940, 900] }, charge: { 1: [1500, 960, 900, 840, 780], 2: [2000, 1500, 1460, 1420, 1380] } } },
+  supplement_emplacement: 200, etiquette: 120 };
+base.couts.impression_seule = { matiere: { 'dtg-fonce': 1.97, 'dtf': 2.14 }, supplement_charge: { 'dtg-fonce': 1.47, 'dtf': 1.47 }, main_oeuvre: { 'dtg-fonce': 1.2, 'dtf': 0.9 }, petit: 0.5 };
+//     DTG foncé, 1 face + 2 manches + étiquette, 30 pièces : pièce 7,20 + 4,00 + 1,20 = 12,40 TTC (10,33 HT) ; BAT 15 + 5,20 = 20,20 TTC (16,83 HT).
+//     16,83 + 29 × 10,33 = 316,40 HT. Coût : 1,97 + 1,20 + 3 × 0,50 = 4,67 HT par pièce.
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ type: 'textile_fourni', technique: 'dtg-fonce', faces: 1, manches: 2, etiquette: true, quantite: 30, ajustement: { mode: 'aucun' } }] });
+assert.equal(r.lignes[0].bat, 1683); assert.equal(r.lignes[0].pu, 1033); assert.equal(r.totalHT, 31640); assert.equal(r.lignes[0].coutPiece, 467);
+//     DTF face + dos, visuels chargés, 120 pièces : 13,80 TTC (11,50 HT) ; BAT 20 TTC (16,67 HT). 16,67 + 119 × 11,50 = 1 385,17 HT.
+//     Coût : (2,14 + 1,47) × 2 + 0,90 × 1,5 = 8,57 HT → marge 25 %.
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ type: 'textile_fourni', technique: 'dtf', faces: 2, charge: true, quantite: 120, ajustement: { mode: 'aucun' } }] });
+assert.equal(r.lignes[0].pu, 1150); assert.equal(r.totalHT, 138517); assert.equal(r.lignes[0].coutPiece, 857);
+assert.ok(1 - 857 / 1150 >= 0.25);
+
+// 19. Sans BAT : 10 t-shirts couleur 1 face → 10 × 15,00 HT = 150,00 HT (au lieu de 155,83) ; 1 pièce seule → prix 2-5 (19 TTC, 15,83 HT).
+r = C.calculer(base, { sansBat: true, livraison: 'retrait', lignes: [tshirt('couleur', 1, { M: 10 })] });
+assert.equal(r.totalHT, 15000); assert.equal(r.client[0].qte, 10);
+r = C.calculer(base, { sansBat: true, livraison: 'retrait', lignes: [tshirt('couleur', 1, { M: 1 })] });
+assert.equal(r.totalHT, 1583);
+//     Impression seule sans BAT, DTG foncé 1 face, 1 pièce → palier 2-25 : 7,80 TTC = 6,50 HT.
+r = C.calculer(base, { sansBat: true, livraison: 'retrait', lignes: [{ type: 'textile_fourni', technique: 'dtg-fonce', faces: 1, charge: false, quantite: 1, ajustement: { mode: 'aucun' } }] });
+assert.equal(r.totalHT, 650);
+
+console.log('19 exemples OK');

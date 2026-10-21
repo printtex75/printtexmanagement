@@ -19,12 +19,18 @@
 
   // Coût d'une pièce d'une ligne de grille (centimes) : textile payé sur facture s'il est connu (couts.textile_reel),
   // sinon estimation de devis/couts.json ; + consommables par emplacement + main-d'œuvre (estimations). null si le textile manque.
-  function coutPiece(base, l, nbMarq) {
+  // Impression : coût selon la taille du visuel (couts.impression, calculé sur les vrais prix d'encre, de feuille et de colle) ;
+  // faces au format du produit (couts.format_face, « grand » par défaut), manches et étiquette en « petit ».
+  // Sans couts.impression : ancien forfait consommables_par_marquage par impression.
+  function coutPiece(base, l, nbFaces, nbPetits = 0) {
     const c = base.couts || {}, choix = (t) => (t == null ? null : typeof t === 'object' ? (t[l.teinte] ?? t.couleur ?? null) : t);
     const reel = choix(((c.textile_reel || {})[l.produit] || {}).ht);
     const textile = reel ?? choix((c.textile || {})[l.produit]);
     if (textile == null) return null;
-    return { c: Math.round((textile + (c.consommables_par_marquage || 0) * nbMarq + (c.main_oeuvre_par_piece || 0)) * 100), textileReel: reel != null };
+    const imp = c.impression;
+    const impression = imp ? (imp[(c.format_face || {})[l.produit] || 'grand'] || 0) * nbFaces + (imp.petit || 0) * nbPetits
+      : (c.consommables_par_marquage || 0) * (nbFaces + nbPetits);
+    return { c: Math.round((textile + impression + (c.main_oeuvre_par_piece || 0)) * 100), textileReel: reel != null };
   }
 
   // Ventes comparables : même produit ; les ventes réelles d'abord, les devis non acceptés à part.
@@ -68,8 +74,11 @@
         const choisi = l.palier != null && l.palier !== '' && paliers[Number(l.palier)] != null ? Number(l.palier) : null;
         // Mode « marque gentil » (Karim 21/10) : prix du plus gros palier dès la 1re pièce, 1 face (le dos est offert),
         // sans supplément de BAT ; ex. t-shirt 220 g couleur à 18 € TTC, comme les ventes habituelles aux marques.
-        const gentil = !!devis.modeMarque;
-        const k = gentil ? paliers.length - 1 : choisi ?? kNormal;
+        // Sans prix partenaire fixé pour ce produit : prix normal (Karim 21/10), jamais de réduction automatique.
+        const gentil = !!devis.modeMarque && (base.tarifs_marque || {})[l.produit] != null;
+        // Sans BAT (devis.sansBat) : pas de 1re pièce plus chère, toutes les pièces au palier, au moins celui de 2 à 5 (Karim 21/10).
+        const sansBat = !!devis.sansBat && !gentil;
+        const k = gentil ? paliers.length - 1 : Math.max(choisi ?? kNormal, sansBat ? 1 : 0);
         const grilleVente = gentil ? (p.grilles?.[teinte]?.['1'] || grille) : grille;
         if (choisi != null && choisi > kNormal) add('info', `${nom} : tarif ${libPaliers[k]} pièces accordé pour ${q} pièce${q > 1 ? 's' : ''} (normalement ${libPaliers[kNormal]}).`);
         if (q > (base.palier_max || 200)) add('attention', `${nom} : ${q} pièces, au-delà de 200 : palier ${libPaliers[k]} appliqué, prix sur mesure possible.`);
@@ -80,19 +89,24 @@
         if ((nbManches && !sup.manche) || (etiq && !sup.etiquette)) add('attention', `${nom} : prix des manches ou de l'étiquette absent de la base, non compté.`);
         // Prix marque donné par Karim pour ce produit (base.tarifs_marque, TTC par pièce) ; sinon règle provisoire du plus gros palier.
         // Par produit : un prix par nombre de faces ({ "1": …, "2": … }), ou un seul prix pour toutes les faces.
-        const tm = gentil ? (base.tarifs_marque || {})[l.produit] : null;
-        const prixMarque = tm == null ? null : typeof tm === 'object' ? (tm[String(nbMarq)] ?? null) : tm;
+        // Formes acceptées : un prix ; { "1": prix, "2": prix } par nombre de faces ; { blanc: {…}, couleur: {…} } par teinte ;
+        // et chaque prix peut être une liste de 5 prix (un par palier, selon la quantité).
+        let tm = gentil ? (base.tarifs_marque || {})[l.produit] : null;
+        if (tm && typeof tm === 'object' && !Array.isArray(tm) && (tm.blanc || tm.couleur)) tm = tm[teinte];
+        const parFace = (n) => (tm == null ? null : typeof tm === 'object' && !Array.isArray(tm) ? tm[String(n)] ?? null : tm);
+        const auPalier = (v) => (Array.isArray(v) ? v[kNormal] ?? null : v);
+        const prixMarque = auPalier(parFace(nbMarq));
         // Dos « offert » seulement quand face + dos coûte le prix d'une face.
-        const dosOffert = gentil && nbMarq > 1 && (prixMarque == null || typeof tm !== 'object' || tm['1'] === tm[String(nbMarq)]);
+        const dosOffert = gentil && nbMarq > 1 && (prixMarque == null || prixMarque === auPalier(parFace(1)));
         if (gentil && prixMarque == null) add('info', `${nom} : tarif marque provisoire (prix 101-200 pièces, 1 face) en attendant le prix de Karim pour ce produit.`);
         const grillePalier = ht((prixMarque ?? grilleVente[k]) + supplement(k));
-        const bat = gentil ? grillePalier : ht(grille[0] + supplement(0));
+        const bat = gentil || sansBat ? grillePalier : ht(grille[0] + supplement(0));
         let pu = grillePalier, ajTexte = '';
         if (aj.mode === 'remise' && Number(aj.valeur) > 0) { pu = Math.round(grillePalier * (1 - Number(aj.valeur) / 100)); ajTexte = `remise commerciale ${aj.valeur} %`; }
         else if (aj.mode === 'prix' && Number(aj.valeur) > 0) { pu = ht(Math.round(Number(aj.valeur) * 100)); ajTexte = `prix imposé ${eur(Math.round(Number(aj.valeur) * 100))} TTC`; }
         if (prixUnePiece == null) prixUnePiece = { pu: bat, libelle: p.libelle };
-        const total = gentil ? pu * q : bat + pu * (q - 1);
-        const cpo = coutPiece(base, l, nbMarq + nbManches + etiq), cp = cpo ? cpo.c : null;
+        const total = gentil || sansBat ? pu * q : bat + pu * (q - 1);
+        const cpo = coutPiece(base, l, nbMarq, nbManches + etiq), cp = cpo ? cpo.c : null;
         if (cp == null) { coutConnu = false; add('attention', `${nom} : coût d'achat inconnu pour ${p.libelle}, marge non calculable : prix à vérifier.`); }
         else {
           coutTotal += cp * q;
@@ -109,10 +123,37 @@
         if (gentil) {
           if (dosOffert) add('info', `${nom} : tarif marque, le dos est offert.`);
           client.push({ desc: `${p.libelle} – tarif marque`, detail: detail + (dosOffert ? ' · dos offert' : '') + ' · 1re pièce = BAT à valider avant production', qte: q, pu });
-        } else client.push({ desc: `${p.libelle} – 1re pièce (BAT à valider avant production)`, detail, qte: 1, pu: bat });
-        if (q > 1 && !gentil) client.push({ desc: `${p.libelle} – pièces suivantes`, detail: `${choisi != null && choisi > kNormal ? 'Tarif préférentiel' : 'Tarif dégressif'} ${libPaliers[k]} pièces${devis.cumulerPaliers && choisi == null ? ' (quantités additionnées)' : ''}${aj.mode === 'remise' && Number(aj.valeur) > 0 ? ` · remise ${aj.valeur} %` : ''}`, qte: q - 1, pu });
+        } else if (sansBat) client.push({ desc: p.libelle, detail: detail + ` · tarif ${libPaliers[k]} pièces, sans BAT`, qte: q, pu });
+        else client.push({ desc: `${p.libelle} – 1re pièce (BAT à valider avant production)`, detail, qte: 1, pu: bat });
+        if (q > 1 && !gentil && !sansBat) client.push({ desc: `${p.libelle} – pièces suivantes`, detail: `${choisi != null && choisi > kNormal ? 'Tarif préférentiel' : 'Tarif dégressif'} ${libPaliers[k]} pièces${devis.cumulerPaliers && choisi == null ? ' (quantités additionnées)' : ''}${aj.mode === 'remise' && Number(aj.valeur) > 0 ? ` · remise ${aj.valeur} %` : ''}`, qte: q - 1, pu });
         totalHT += total;
         lignes.push({ nom, libelle: p.libelle, q, palier: libPaliers[k], k, kNormal, palierChoisi: choisi != null, dosOffert, bat, grillePalier, pu, ajTexte, motif: aj.motif || '', total, coutPiece: cp, textileReel: !!(cpo && cpo.textileReel), comparables: comp });
+      } else if (l.type === 'textile_fourni' && frais.impression_seule && l.technique) {
+        // Impression seule sur textile du client (grille Karim 21/10, TTC) : 1re pièce = BAT, les suivantes au palier de la
+        // quantité de la ligne (paliers propres : 1 / 2-25 / 26-50 / 51-100 / 101-200) ; visuel « chargé » au-delà de 8 cc d'encre.
+        // Suppléments par pièce : +2 € par emplacement en plus (manche, cœur), +1,20 € par étiquette.
+        const g = frais.impression_seule, tech = g.grilles[l.technique];
+        if (!tech) { add('bloquant', `${nom} : technique inconnue (${l.technique}).`); return; }
+        const faces = Math.min(2, Math.max(1, Number(l.faces) || 1)), petits = Math.max(0, Number(l.manches) || 0), etiq = l.etiquette ? 1 : 0;
+        const grille = tech[l.charge ? 'charge' : 'normal'][String(faces)];
+        const sansBatT = !!devis.sansBat;
+        const k = Math.max(indicePalier(g.paliers, q), sansBatT ? 1 : 0), sup = petits * g.supplement_emplacement + etiq * g.etiquette;
+        const bat = sansBatT ? ht(grille[k] + sup) : ht(grille[0] + sup);
+        let pu = ht(grille[k] + sup);
+        if (aj.mode === 'prix' && Number(aj.valeur) > 0) pu = ht(Math.round(Number(aj.valeur) * 100));
+        const total = bat + pu * (q - 1);
+        const ci = (base.couts || {}).impression_seule;
+        const cp = ci ? Math.round(((ci.matiere[l.technique] + (l.charge ? ci.supplement_charge[l.technique] : 0)) * faces
+          + ci.main_oeuvre[l.technique] * (1 + 0.5 * (faces - 1)) + ci.petit * (petits + etiq)) * 100) : null; // 2e face : demi temps
+        if (cp == null) { coutConnu = false; add('info', `${nom} : coût de l'impression seule non renseigné, marge non calculée.`); }
+        else { coutTotal += cp * q; if (pu < cp) add('attention', `${nom} : prix par pièce inférieur au coût estimé.`); }
+        const libT = { 'dtg-blanc': 'DTG sur textile blanc', 'dtg-fonce': 'DTG sur textile foncé', 'dtf': 'DTF' }[l.technique] || l.technique;
+        const detail = [`${faces === 2 ? 'Face + dos' : '1 face'}${petits ? ` + ${petits} emplacement${petits > 1 ? 's' : ''}` : ''}${etiq ? ' + étiquette' : ''}`, libT, l.charge ? 'visuel chargé' : ''].filter(Boolean).join(' · ');
+        if (sansBatT) client.push({ desc: l.designation || 'Impression sur textile fourni par le client', detail: detail + ` · tarif ${g.libelles[k]} pièces, sans BAT`, qte: q, pu });
+        else client.push({ desc: `${l.designation || 'Impression sur textile fourni par le client'} – 1re pièce (BAT)`, detail, qte: 1, pu: bat });
+        if (q > 1 && !sansBatT) client.push({ desc: `${l.designation || 'Impression sur textile fourni par le client'} – pièces suivantes`, detail: `Tarif ${g.libelles[k]} pièces`, qte: q - 1, pu });
+        totalHT += total;
+        lignes.push({ nom, libelle: 'Textile du client', type: 'textile_fourni', q, palier: g.libelles[k], k, kNormal: k, bat, grillePalier: pu, pu, total, coutPiece: cp, motif: aj.motif || '' });
       } else if (l.type === 'textile_fourni') {
         const pt = frais.print_textile_fourni_ttc;
         const n = Math.max(1, Number(l.emplacements) || 1);

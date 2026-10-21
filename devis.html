@@ -128,8 +128,14 @@
   /* Paliers cliquables (tarif préférentiel accordé à la main) */
   .paliers[hidden]{display:none;}
   /* Interrupteur discret du tarif partenaire (l'écran peut être vu par le client) : un simple point. */
-  .discret{margin-left:auto;width:28px;height:28px;min-height:28px;border-radius:50%;border:1px solid var(--line);background:transparent;opacity:.45;padding:0;}
-  .discret[aria-pressed="true"]{background:var(--line-strong);opacity:.8;}
+  .prix-amis{margin-left:auto;font-family:var(--body);font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;border:1px solid var(--line);background:transparent;color:var(--ink-2);border-radius:999px;padding:4px 10px;min-height:30px;opacity:.7;}
+  .prix-amis[aria-pressed="true"]{background:var(--line);opacity:1;}
+  /* Impression : récapitulatif complet à la place du tableau d'écran */
+  #recap table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10pt;}
+  #recap th{background:#141210;color:#F7F3EE;text-align:left;padding:6px 8px;font-size:8.5pt;text-transform:uppercase;}
+  #recap td{padding:6px 8px;border-bottom:1px solid #E5DED4;vertical-align:top;}
+  #recap .infos{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:10pt;margin-top:6px;}
+  @media print{ .ecran-seul{display:none !important;} }
   .paliers{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
   .paliers button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 10px;min-height:36px;font-size:12px;font-weight:600;}
   .paliers button[aria-pressed="true"]{background:#141210;color:#F7F3EE;border-color:#141210;}
@@ -139,7 +145,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-tarif-discret</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-recap-sans-bat</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -162,7 +168,7 @@
       <input type="search" id="recherche" placeholder="Rechercher : t-shirt, hoodie, tote…" aria-label="Rechercher un produit" autocomplete="off">
       <div class="produits" id="produits" aria-label="Produits"></div>
       <div id="teinteBox" style="margin-top:10px;">
-        <label>Couleur du textile</label>
+        <label id="teinteLabel">Couleur du textile</label>
         <div class="choix" id="teinte"></div>
       </div>
     </div>
@@ -201,9 +207,11 @@
         <div style="font-family:var(--display);font-size:22pt;font-weight:700;">PRINTTEX</div>
         <div style="font-size:9pt;color:#555;">5 rue Planchat, 75020 Paris · 01 86 04 31 65 · info@printtex.fr · printtex.fr</div>
       </div>
-      <h2 style="display:flex;align-items:center;gap:8px;">Estimation <span id="titreImpression"></span><button type="button" id="btnGentil" class="discret no-print" aria-pressed="false" aria-label="Tarif partenaire" title="P"></button></h2>
+      <h2 style="display:flex;align-items:center;gap:8px;">Estimation <span id="titreImpression"></span><button type="button" id="btnGentil" class="prix-amis no-print" aria-pressed="false">Prix d'amis</button></h2>
+      <div class="choix no-print" id="batChoix" style="margin-bottom:10px;"><button type="button" data-bat="avec" aria-pressed="true">Avec BAT (1re pièce de validation)</button><button type="button" data-bat="sans" aria-pressed="false">Sans BAT (prix direct dès 2 pièces)</button></div>
       <div id="resultat"></div>
-      <p class="impression-seule muted" style="margin-top:12px;font-size:9pt;">Estimation indicative du <span id="dateJour"></span>, sous réserve de validation du visuel. Prix textile et impression compris. La première pièce sert de BAT (bon à tirer) avant la série.</p>
+      <div id="recap" class="impression-seule"></div>
+      <p class="impression-seule muted" style="margin-top:12px;font-size:9pt;">Estimation indicative du <span id="dateJour"></span>, sous réserve de validation du visuel. Prix TTC, textile et impression compris (sauf impression seule sur vos vêtements).</p>
       <div class="no-print" style="margin-top:14px;">
         <label for="nom">Nom de l'estimation (pour la retrouver)</label>
         <input type="text" id="nom" placeholder="ex. Marcus – 20 manches longues">
@@ -307,20 +315,31 @@ if(typeof firebase === 'undefined'){
     const q = sansAccent($("recherche").value.trim());
     const liste = Object.entries(S.base.produits).filter(([k,p]) => !q || sansAccent(p.libelle + " " + k).includes(q))
       .sort((a,b)=> a[1].libelle.localeCompare(b[1].libelle, "fr"));
-    $("produits").innerHTML = liste.length ? liste.map(([k,p]) => `<button type="button" class="carte-produit" data-k="${esc(k)}" aria-pressed="${k===S.courant.produit}">
+    // Impression seule sur le vêtement du client : carte toujours en tête (si la recherche ne l'exclut pas).
+    const client = S.base.frais && S.base.frais.impression_seule && (!q || /client|textile|apport|impression|seule|dtg|dtf/.test(q))
+      ? `<button type="button" class="carte-produit" data-k="__client" aria-pressed="${S.courant.produit==="__client"}"><span class="sans-photo">+</span>Textile apporté par le client</button>` : "";
+    $("produits").innerHTML = client + (liste.length || client ? "" : "") + (liste.length ? liste.map(([k,p]) => `<button type="button" class="carte-produit" data-k="${esc(k)}" aria-pressed="${k===S.courant.produit}">
       ${PHOTOS[k] ? `<img src="${esc(PHOTOS[k])}" alt="" loading="lazy">` : `<span class="sans-photo">${esc(p.libelle.slice(0,1))}</span>`}${esc(p.libelle)}</button>`).join("")
-      : `<div class="aucun">Aucun produit ne correspond à « ${esc($("recherche").value)} ».</div>`;
+      : (client ? "" : `<div class="aucun">Aucun produit ne correspond à « ${esc($("recherche").value)} ».</div>`));
   }
+  const TECHNIQUES = { "dtg-blanc": "DTG sur textile blanc", "dtg-fonce": "DTG sur textile foncé", "dtf": "DTF" };
+  const estClient = c => c.produit === "__client";
   $("recherche").addEventListener("input", rendreProduits);
   $("recherche").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); const b = $("produits").querySelector(".carte-produit"); if(b) b.click(); } });
-  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; S.gentil = false; majMode(); $("recherche").value = ""; afficherEtapes(); calculer(); }
+  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; S.gentil = false; S.sansBat = false; majMode(); $("recherche").value = ""; afficherEtapes(); calculer(); }
   function afficherEtapes(){
-    const c = S.courant, p = S.base.produits[c.produit];
+    const c = S.courant, p = estClient(c) ? { max_marquages: 2 } : S.base.produits[c.produit];
     rendreProduits();
     $("cumulBox").style.display = toutesLignes().length > 1 ? "flex" : "none";
-    const teintes = p ? (p.teinte_fixe ? [] : Object.keys(p.grilles)) : [];
-    $("teinteBox").style.display = teintes.length > 1 ? "" : "none";
-    $("teinte").innerHTML = teintes.map(t => `<button type="button" data-v="${t}" aria-pressed="${t===c.teinte}">${t==="blanc"?"Blanc":"Couleur (noir, marine…)"}</button>`).join("");
+    $("teinteLabel").textContent = estClient(c) ? "Technique d'impression" : "Couleur du textile";
+    if(estClient(c)){
+      $("teinteBox").style.display = "";
+      $("teinte").innerHTML = Object.entries(TECHNIQUES).map(([t,lib]) => `<button type="button" data-v="${t}" aria-pressed="${t===c.technique}">${lib}</button>`).join("");
+    }else{
+      const teintes = p ? (p.teinte_fixe ? [] : Object.keys(p.grilles)) : [];
+      $("teinteBox").style.display = teintes.length > 1 ? "" : "none";
+      $("teinte").innerHTML = teintes.map(t => `<button type="button" data-v="${t}" aria-pressed="${t===c.teinte}">${t==="blanc"?"Blanc":"Couleur (noir, marine…)"}</button>`).join("");
+    }
     const maxF = p ? (p.max_marquages || 2) : 2;
     $("faces").innerHTML = Array.from({length:maxF}, (_,i)=>i+1).map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.faces}">${n} face${n>1?"s":""}${n===2?" (devant + dos)":""}</button>`).join("");
     // Manches et étiquette : seulement pour les vêtements qui en ont (pas les sacs, casquettes, tabliers…).
@@ -329,9 +348,12 @@ if(typeof firebase === 'undefined'){
     if(sansManche) c.manches = 0; if(sansEtiquette) c.etiquette = false;
     $("extrasBox").style.display = p && !(sansManche && sansEtiquette) ? "" : "none";
     $("manches").style.display = sansManche ? "none" : "";
-    $("manches").innerHTML = [0,1,2].map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.manches}">${n ? n + " manche" + (n>1?"s":"") : "Sans manche"}</button>`).join("");
+    $("manches").innerHTML = [0,1,2].map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.manches}">${estClient(c) ? (n ? "+ " + n + " emplacement" + (n>1?"s":"") + " (manche, cœur)" : "Pas d'emplacement en plus") : (n ? n + " manche" + (n>1?"s":"") : "Sans manche")}</button>`).join("");
     $("etiquetteBox").style.display = sansEtiquette ? "none" : "";
-    $("etiquetteBox").innerHTML = `<button type="button" aria-pressed="${!!c.etiquette}">${c.etiquette ? "Étiquette dans le cou : oui" : "+ Étiquette dans le cou"}</button>`;
+    $("etiquetteBox").innerHTML = `<button type="button" data-t="etiquette" aria-pressed="${!!c.etiquette}">${c.etiquette ? "Étiquette dans le cou : oui" : "+ Étiquette dans le cou"}</button>`
+      + (estClient(c) ? `<div style="width:100%;margin-top:4px;"><label style="margin-bottom:6px;${c.charge == null ? "color:#9A2F29;" : ""}">Visuel : à indiquer obligatoirement</label><div class="choix">
+          <button type="button" data-visuel="normal" aria-pressed="${c.charge === false}">Visuel normal (jusqu'à 8 cc d'encre)</button>
+          <button type="button" data-visuel="charge" aria-pressed="${c.charge === true}">Visuel chargé (plus de 8 cc, photo)</button></div></div>` : "");
     $("quantite").value = c.quantite;
     $("etape1").classList.toggle("fait", !!p);
     $("etape2").classList.toggle("fait", !!p);
@@ -339,11 +361,12 @@ if(typeof firebase === 'undefined'){
     $("etape4").classList.toggle("fait", !!$("date").value);
     $("autresLignes").innerHTML = S.lignes.map((l,i) => `<div class="ligne-recap"><span>${esc(libelleLigne(l))}</span><button type="button" class="x" data-retirer="${i}" aria-label="Retirer">×</button></div>`).join("");
   }
-  const libelleLigne = l => `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""}${l.manches ? ` + ${l.manches} manche${l.manches>1?"s":""}` : ""}${l.etiquette ? " + étiquette" : ""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
+  const libelleLigne = l => estClient(l) ? `Impression seule, ${TECHNIQUES[l.technique] || 'DTG'} · ${l.faces === 2 ? 'face + dos' : '1 face'}${l.manches ? ` + ${l.manches} emplacement${l.manches>1?'s':''}` : ''}${l.etiquette ? ' + étiquette' : ''}${l.charge ? ' · visuel chargé' : l.charge === false ? ' · visuel normal' : ' · visuel à préciser'} · ${l.quantite} pièce${l.quantite>1?'s':''}` : `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""}${l.manches ? ` + ${l.manches} manche${l.manches>1?"s":""}` : ""}${l.etiquette ? " + étiquette" : ""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
   $("produits").addEventListener("click", e => {
     const b = e.target.closest(".carte-produit"); if(!b) return;
     const p = S.base.produits[b.dataset.k];
     S.courant.produit = b.dataset.k;
+    if(b.dataset.k === "__client"){ S.courant.technique = S.courant.technique || "dtg-blanc"; if(S.courant.charge === undefined) S.courant.charge = null; S.courant.faces = Math.min(S.courant.faces, 2); afficherEtapes(); calculer(); suivant("etape1"); return; }
     if(p){ S.courant.teinte = p.teinte_fixe || (p.grilles.couleur ? "couleur" : Object.keys(p.grilles)[0]); S.courant.faces = Math.min(S.courant.faces, p.max_marquages || 2); }
     afficherEtapes(); calculer();
     if(p) suivant(S.base.produits[S.courant.produit].max_marquages > 1 ? "etape2" : "etape3");
@@ -357,15 +380,18 @@ if(typeof firebase === 'undefined'){
   $("rapides").addEventListener("click", e => { const v = e.target.dataset.q; if(!v) return; $("quantite").value = v; S.courant.quantite = v; afficherEtapes(); calculer(); suivant("etape4"); });
   $("quantite").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); suivant("zoneEstimation"); } });
   $("barreVoir").addEventListener("click", () => suivant("zoneEstimation"));
-  $("teinte").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.teinte = v; afficherEtapes(); calculer(); });
+  $("teinte").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; if(estClient(S.courant)) S.courant.technique = v; else S.courant.teinte = v; afficherEtapes(); calculer(); if(estClient(S.courant)) suivant("etape2"); });
   $("manches").addEventListener("click", e => { const v = e.target.dataset.v; if(v == null) return; S.courant.manches = Number(v); afficherEtapes(); calculer(); });
-  $("etiquetteBox").addEventListener("click", e => { if(!e.target.closest("button")) return; S.courant.etiquette = !S.courant.etiquette; afficherEtapes(); calculer(); });
+  $("etiquetteBox").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.visuel) S.courant.charge = b.dataset.visuel === "charge"; else S.courant.etiquette = !S.courant.etiquette;
+    afficherEtapes(); calculer(); });
   $("faces").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.faces = Number(v); afficherEtapes(); calculer(); suivant("etape3"); });
   $("quantite").addEventListener("input", () => { S.courant.quantite = $("quantite").value; afficherEtapes(); $("quantite").focus(); calculer(); });
   ["date","livraison"].forEach(id => $(id).addEventListener("input", () => { $("etape4").classList.toggle("fait", !!$("date").value); calculer(); }));
   $("btnAjouter").addEventListener("click", () => {
     const c = S.courant;
     if(!c.produit || !(Number(c.quantite) > 0)){ toast("Choisissez d'abord un produit et une quantité."); return; }
+    if(estClient(c) && c.charge == null){ toast("Indiquez si le visuel est normal ou chargé."); return; }
     S.lignes.push({ ...c, quantite:Number(c.quantite) });
     S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
     $("recherche").value = ""; afficherEtapes(); calculer(); $("recherche").focus();
@@ -378,7 +404,8 @@ if(typeof firebase === 'undefined'){
     calculer();
   });
   $("cumul").addEventListener("change", calculer);
-  function majMode(){ $("btnGentil").setAttribute("aria-pressed", String(!!S.gentil)); }
+  function majMode(){ $("btnGentil").setAttribute("aria-pressed", String(!!S.gentil)); [...$("batChoix").children].forEach(b => b.setAttribute("aria-pressed", String((b.dataset.bat === "sans") === !!S.sansBat))); }
+  $("batChoix").addEventListener("click", e => { const v = e.target.dataset.bat; if(!v) return; S.sansBat = v === "sans"; majMode(); calculer(); });
   $("btnGentil").addEventListener("click", () => { S.gentil = !S.gentil; majMode(); calculer(); });
   $("autresLignes").addEventListener("click", e => { const i = e.target.dataset.retirer; if(i == null) return; S.lignes.splice(+i,1); afficherEtapes(); calculer(); });
 
@@ -389,18 +416,20 @@ if(typeof firebase === 'undefined'){
     return l;
   }
   function versDevis(lignes){
-    return { lignes: lignes.map(l => ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
-      cumulerPaliers: $("cumul").checked, modeMarque: S.gentil, livraison: $("livraison").checked ? "colissimo" : "retrait" };
+    return { lignes: lignes.map(l => estClient(l) ? { type:"textile_fourni", technique:l.technique || "dtg-blanc", faces:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, charge:!!l.charge, quantite:l.quantite, ajustement:{ mode:"aucun" } } : ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
+      cumulerPaliers: $("cumul").checked, modeMarque: S.gentil, sansBat: !!S.sansBat, livraison: $("livraison").checked ? "colissimo" : "retrait" };
   }
   function calculer(){
     if(!S.base) return;
     const lignes = toutesLignes();
     if(!lignes.length){ $("barrePrix").classList.remove("visible"); S.res = null; $("resultat").innerHTML = `<p class="muted">Choisissez un produit, le nombre de faces et la quantité : le prix s'affiche ici.</p>`; return; }
+    const aPreciser = lignes.filter(l => estClient(l) && l.charge == null).length;
+    if(aPreciser){ $("barrePrix").classList.remove("visible"); S.res = null; $("resultat").innerHTML = `<div class="alerte bloquant">Indiquez si le visuel est normal ou chargé (plus de 8 cc d'encre) pour l'impression seule : le prix change.</div>`; return; }
     const r = S.res = C.calculer(S.base, versDevis(lignes));
     const blocs = r.lignes.map((d,i) => {
       const l = lignes[i], parPiece = Math.round(d.total / d.q);
-      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${S.gentil ? `${eur(Math.round(d.pu*1.2))} la pièce${d.dosOffert ? ", dos offert" : ""}` : `${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces`}</span>
-        <div class="paliers" aria-label="Tarif appliqué"${S.gentil ? " hidden" : ""}>${S.base.paliers_libelles.map((t,k) => `<button type="button" data-ligne="${i}" data-k="${k}" aria-pressed="${k===d.k}" class="${k===d.kNormal?"normal":""}" title="${k===d.kNormal?"Tarif normal pour cette quantité":"Appliquer ce tarif"}">${t}</button>`).join("")}</div></td>
+      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${d.bat === d.pu ? `${eur(Math.round(d.pu*1.2))} la pièce${d.dosOffert ? ", dos offert" : ""}${S.sansBat && !S.gentil ? ` · tarif ${esc(d.palier)} pièces, sans BAT` : ""}` : `${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces`}</span>
+        <div class="paliers" aria-label="Tarif appliqué"${S.gentil || d.type === "textile_fourni" ? " hidden" : ""}>${S.base.paliers_libelles.map((t,k) => `<button type="button" data-ligne="${i}" data-k="${k}" aria-pressed="${k===d.k}" class="${k===d.kNormal?"normal":""}" title="${k===d.kNormal?"Tarif normal pour cette quantité":"Appliquer ce tarif"}">${t}</button>`).join("")}</div></td>
         <td class="n">${eur(Math.round(parPiece*1.2))} TTC<br><span class="muted">par pièce en moyenne</span></td></tr>`;
     }).join("");
     const liv = r.client.at(-1);
@@ -409,13 +438,28 @@ if(typeof firebase === 'undefined'){
     $("resultat").innerHTML = `
       <div class="prix">${eur(r.totalTTC)} TTC</div>
       <div class="muted">${eur(r.totalHT)} HT · ${r.piecesTotal} pièce${r.piecesTotal>1?"s":""}${date ? ` · pour le ${esc(date)}` : ""}</div>
-      <table style="margin-top:10px;">${blocs}
+      <table class="ecran-seul" style="margin-top:10px;">${blocs}
         <tr><td>${esc(liv.desc)}</td><td class="n">${liv.pu ? eur(Math.round(liv.pu*1.2)) + " TTC" : $("livraison").checked ? "offert" : "gratuit"}</td></tr>
         <tr class="ttc"><td>Total</td><td class="n">${eur(r.totalTTC)} TTC</td></tr></table>
       ${r.alertes.filter(a => !/coût|Au moins un coût|tarif marque/.test(a.texte)).map(a => `<div class="alerte ${a.niveau}">${esc(a.texte)}</div>`).join("")}
       <details class="interne"><summary>Interne : marge (jamais imprimé)</summary>
-        Coût ${r.coutTotal ? eur(r.coutTotal) + " HT" : "inconnu"}${r.coutConnu ? "" : " (partiel)"} · marge ${margeTxt}${S.gentil ? "<br>Tarif partenaire actif (point à côté du titre)." : ""}
+        Coût ${r.coutTotal ? eur(r.coutTotal) + " HT" : "inconnu"}${r.coutConnu ? "" : " (partiel)"} · marge ${margeTxt}${S.gentil ? "<br>Prix d'amis actif." : ""}
         ${r.alertes.filter(a => /tarif marque/.test(a.texte)).map(a => `<br>${esc(a.texte)}`).join("")}</details>`;
+    // Récapitulatif imprimé : toutes les informations saisies, ligne par ligne.
+    const fr = x => x.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+    $("recap").innerHTML = `<div class="infos">
+        ${$("nom").value ? `<div><b>Projet :</b> ${esc($("nom").value)}</div>` : ""}<div><b>Date :</b> ${fr(new Date())}</div>
+        <div><b>Date souhaitée :</b> ${$("date").value ? fr(new Date($("date").value)) : "à convenir"}</div>
+        <div><b>Livraison :</b> ${$("livraison").checked ? "Colissimo" : "retrait à l'atelier (5 rue Planchat, Paris 20e)"}</div>
+        <div><b>Quantité totale :</b> ${r.piecesTotal} pièce${r.piecesTotal>1?"s":""}</div>
+        <div><b>BAT :</b> ${S.sansBat ? "sans BAT, production directe après validation du visuel" : "1re pièce de chaque produit = BAT à valider avant la série"}</div></div>
+      <table><thead><tr><th>Produit et impression</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix / pièce</th><th style="text-align:right">Total</th></tr></thead><tbody>
+      ${r.lignes.map((d,i) => { const l = lignes[i]; const det = estClient(l) ? libelleLigne(l).replace(/ · [0-9]+ pièces?$/, "")
+          : `${S.base.produits[l.produit].libelle}${S.base.produits[l.produit].teinte_fixe ? "" : l.teinte === "blanc" ? " · textile blanc" : " · textile de couleur"} · ${l.faces === 2 ? "face + dos" : "1 face"}${l.manches ? " + " + l.manches + " manche" + (l.manches>1?"s":"") : ""}${l.etiquette ? " + étiquette dans le cou" : ""}`;
+        const prixTxt = d.bat === d.pu || d.q === 1 ? eur(Math.round(d.pu*1.2)) : `1re (BAT) ${eur(Math.round(d.bat*1.2))}<br>puis ${eur(Math.round(d.pu*1.2))}`;
+        return `<tr><td>${esc(det)}</td><td style="text-align:right">${d.q}</td><td style="text-align:right">${prixTxt}</td><td style="text-align:right">${eur(Math.round(d.total*1.2))}</td></tr>`; }).join("")}
+      <tr><td>${esc(liv.desc)}</td><td></td><td></td><td style="text-align:right">${liv.pu ? eur(Math.round(liv.pu*1.2)) : "offert"}</td></tr>
+      <tr><td colspan="3" style="text-align:right"><b>Total TTC</b> (${eur(r.totalHT)} HT)</td><td style="text-align:right"><b>${eur(r.totalTTC)}</b></td></tr></tbody></table>`;
     $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : "";
     const prix = $("resultat").querySelector(".prix");
     if(prix && S.dernierTotal !== r.totalTTC){ prix.classList.remove("change"); void prix.offsetWidth; prix.classList.add("change"); }
@@ -424,7 +468,7 @@ if(typeof firebase === 'undefined'){
     $("barreDetail").textContent = r.piecesTotal + " pièce" + (r.piecesTotal > 1 ? "s" : "");
     $("barrePrix").classList.add("visible");
   }
-  $("nom").addEventListener("input", () => { $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : ""; });
+  $("nom").addEventListener("input", () => { $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : ""; calculer(); });
   $("btnImprimer").addEventListener("click", () => {
     if(!S.res){ toast("Choisissez d'abord un produit et une quantité."); return; }
     $("dateJour").textContent = new Date().toLocaleDateString("fr-FR");
@@ -446,7 +490,7 @@ if(typeof firebase === 'undefined'){
     const id = e.target.dataset.ouvrir; if(!id) return;
     if(!S.sauves[id].estimation){ toast("Ancien format : à refaire."); return; }
     const d = JSON.parse(S.sauves[id].estimation);
-    $("cumul").checked = !!d.cumul; S.gentil = !!d.gentil; majMode();
+    $("cumul").checked = !!d.cumul; S.gentil = !!d.gentil; S.sansBat = !!d.sansBat; majMode();
     S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
     $("nom").value = S.sauves[id].titre; $("date").value = d.date || ""; $("livraison").checked = !!d.livraison;
     afficherEtapes(); calculer(); window.scrollTo({top:0, behavior:"smooth"}); toast("Estimation reprise.");
@@ -458,7 +502,7 @@ if(typeof firebase === 'undefined'){
     if(!S.db){ toast("Essai local : rien n'est gardé."); return; }
     const id = S.id || ("e" + Date.now().toString(36));
     const item = { titre, majLe:new Date().toISOString(), par:(S.auth.currentUser && S.auth.currentUser.email) || "", totalTTC:S.res.totalTTC,
-      estimation:JSON.stringify({ lignes:toutesLignes(), date:$("date").value, livraison:$("livraison").checked, cumul:$("cumul").checked, gentil:!!S.gentil }) };
+      estimation:JSON.stringify({ lignes:toutesLignes(), date:$("date").value, livraison:$("livraison").checked, cumul:$("cumul").checked, gentil:!!S.gentil, sansBat:!!S.sansBat }) };
     try{ await ref().set({ items:{ [id]: item } }, { merge:true }); S.id = id; S.sauves[id] = item; afficherSauves(); toast("Estimation gardée : elle servira pour le vrai devis."); }
     catch(e){ toast("Impossible de garder l'estimation : " + (e.message || "")); }
   });
