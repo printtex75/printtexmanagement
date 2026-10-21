@@ -307,6 +307,30 @@
     padding:9px 16px;border-radius:8px 8px 0 0;cursor:pointer;z-index:70;box-shadow:-2px 0 8px rgba(0,0,0,0.15);
   }
   #notepadTab:hover{background:var(--thread);}
+  #ideaTab{
+    position:fixed;top:calc(50% + 150px);right:0;transform:translateY(-50%) rotate(-90deg);transform-origin:right bottom;
+    background:var(--thread);color:#fff;border:none;
+    font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:12px;letter-spacing:0.5px;font-weight:600;
+    padding:9px 16px;border-radius:12px 12px 0 0;cursor:pointer;z-index:70;box-shadow:-2px 0 8px rgba(0,0,0,0.15);
+  }
+  #ideaTab:hover{background:var(--ink);}
+  #ideaPanel{
+    position:fixed;right:16px;bottom:16px;width:380px;max-width:calc(100vw - 32px);
+    background:var(--canvas-2);border:1px solid var(--line-strong);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,0.22);
+    z-index:72;display:flex;flex-direction:column;gap:10px;padding:16px;
+  }
+  #ideaPanel h3{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:16px;color:var(--ink);margin:0;letter-spacing:0.3px;}
+  #ideaPanel h3 span{color:var(--thread);}
+  #ideaPanel .idea-sub{font-size:12px;color:var(--ink-2);margin:0;}
+  #ideaText{width:100%;min-height:110px;resize:vertical;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:15px;line-height:1.5;background:#fff;color:var(--charcoal);}
+  #ideaPanel .idea-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--ink-2);}
+  #ideaPanel select, #ideaPrenom{border:1px solid var(--line-strong);border-radius:8px;padding:6px 8px;font-size:13px;background:#fff;color:var(--charcoal);}
+  #ideaPanel .idea-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  #ideaPanel .idea-foot a{font-size:12px;color:var(--ink-2);}
+  #ideaStatus{font-size:12px;color:var(--ink-2);min-height:16px;}
+  #ideaPanel .idea-row label{display:inline;margin:0;font-size:12px;text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink-2);}
+  #ideaPanel .idea-row select, #ideaPanel .idea-row input{width:auto;flex:1 1 120px;min-width:0;}
+  .idees-link .idees-badge{display:inline-block;min-width:18px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--thread);color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:18px;text-align:center;vertical-align:1px;}
   #notepadPanel{
     position:fixed;top:0;right:0;bottom:0;width:30%;min-width:280px;max-width:520px;
     background:var(--canvas-2);border-left:1px solid var(--line-strong);box-shadow:-6px 0 18px rgba(0,0,0,0.15);
@@ -939,6 +963,29 @@
 </div>
 
 <button type="button" id="notepadTab" style="display:none;">À commander</button>
+<button type="button" id="ideaTab" style="display:none;" title="Noter une idée pour l'outil">Une idée ?</button>
+<div id="ideaPanel" role="dialog" aria-labelledby="ideaTitle" style="display:none;">
+  <div class="notepad-header" style="margin:0;">
+    <h3 id="ideaTitle">Une idée ? <span>Balance.</span></h3>
+    <button type="button" id="btnIdeaClose" aria-label="Fermer">×</button>
+  </div>
+  <p class="idea-sub">Écris-la comme elle vient, même en vrac. Elle part dans la boîte à idées, Claude donne son avis, le chef tranche.</p>
+  <textarea id="ideaText" placeholder="Ex : pouvoir dupliquer une commande d'un client qui recommande la même chose tous les mois."></textarea>
+  <div class="idea-row">
+    <label for="ideaZone">Ça touche</label>
+    <select id="ideaZone"><option>Commandes</option><option>Marques / portail marque</option><option>Vectorizer</option><option>Cockpit</option><option>Connexion / comptes</option><option>Autre</option></select>
+    <label for="ideaPrio">Urgence</label>
+    <select id="ideaPrio"><option value="urgent">Ça bloque</option><option value="bientot" selected>Bientôt</option><option value="unjour">Un jour</option></select>
+  </div>
+  <div class="idea-row" id="ideaPrenomRow" style="display:none;">
+    <label for="ideaPrenom">Ton prénom</label><input type="text" id="ideaPrenom" maxlength="30" placeholder="Pour signer l'idée">
+  </div>
+  <div id="ideaStatus" role="status"></div>
+  <div class="idea-foot">
+    <a href="idees.html">Voir la boîte</a>
+    <button type="button" class="btn btn-primary" id="btnIdeaSend">Dans la boîte →</button>
+  </div>
+</div>
 <div id="notepadPanel" style="display:none;">
   <div class="notepad-header">
     <h3>À commander</h3>
@@ -965,7 +1012,7 @@
     <button id="navMarques">Marques</button>
     <button id="navVectorizer">Vectoriseur</button>
     <button id="navParams">Paramètres</button>
-    <a href="idees.html" class="nav-link idees-link">Boîte à idées</a>
+    <a href="idees.html" class="nav-link idees-link">Boîte à idées<span class="idees-badge" id="ideesBadge" hidden></span></a>
   </div>
 
   <div class="quota-widget" id="quotaWidget">
@@ -5406,7 +5453,9 @@ function showApp(){
   $('#authGate').style.display = 'none';
   $('#appRoot').style.display = 'block';
   $('#notepadTab').style.display = 'block';
+  $('#ideaTab').style.display = 'block';
   loadAdminNote();
+  refreshIdeesBadge();
 }
 function showAuthGate(){
   document.body.classList.remove('role-brand');
@@ -5417,6 +5466,8 @@ function showAuthGate(){
   $('#authLoginBlock').style.display = 'block';
   $('#notepadTab').style.display = 'none';
   $('#notepadPanel').style.display = 'none';
+  $('#ideaTab').style.display = 'none';
+  $('#ideaPanel').style.display = 'none';
   orders = []; brands = []; brandsLoaded = false; brandsPromise = null;
 }
 async function findBrandByOwner(uid){
@@ -5432,6 +5483,8 @@ async function showBrandPortal(brand){
   $('#appRoot').style.display = 'none';
   $('#notepadTab').style.display = 'none';
   $('#notepadPanel').style.display = 'none';
+  $('#ideaTab').style.display = 'none';
+  $('#ideaPanel').style.display = 'none';
   $('#brandPortalHeader').style.display = 'flex';
   $('#brandPortalName').textContent = brand.name;
   brands = [brand];
@@ -5518,6 +5571,60 @@ $('#notepadText').addEventListener('input', ()=>{
   $('#notepadStatus').textContent = '';
   notepadSaveTimer = setTimeout(saveAdminNote, 800);
 });
+/* ---------- Boîte à idées : saisie rapide depuis l'outil ----------
+   Même fiche que la page idees.html (collection idees). Claude l'analyse à son passage, le chef décide. */
+const IDEA_PRENOM_KEY = 'ptx-idees-prenom'; // partagé avec idees.html (même site)
+function ideaPrenom(){ try{ return (localStorage.getItem(IDEA_PRENOM_KEY) || '').trim(); }catch(e){ return ''; } }
+async function refreshIdeesBadge(){
+  const badge = $('#ideesBadge');
+  if(!badge || !db) return;
+  try{
+    const snap = await withTimeout(db.collection('idees').where('statut','==','a_discuter').get(), 8000);
+    const n = snap.size;
+    badge.textContent = n; badge.hidden = !n;
+    badge.title = n + (n > 1 ? ' idées à trancher' : ' idée à trancher');
+  }catch(e){ badge.hidden = true; }
+}
+$('#ideaTab').addEventListener('click', ()=>{
+  $('#ideaPanel').style.display = 'flex';
+  $('#ideaPrenomRow').style.display = ideaPrenom() ? 'none' : 'flex';
+  $('#ideaStatus').textContent = '';
+  $('#ideaText').focus();
+});
+$('#btnIdeaClose').addEventListener('click', ()=>{ $('#ideaPanel').style.display = 'none'; });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && $('#ideaPanel').style.display !== 'none') $('#ideaPanel').style.display = 'none'; });
+$('#btnIdeaSend').addEventListener('click', async ()=>{
+  const text = $('#ideaText').value.trim();
+  if(!text){ $('#ideaStatus').textContent = "Écris ton idée d'abord."; $('#ideaText').focus(); return; }
+  let prenom = ideaPrenom();
+  if(!prenom){
+    prenom = $('#ideaPrenom').value.trim();
+    if(!prenom){ $('#ideaStatus').textContent = 'Ton prénom, pour signer l\'idée.'; $('#ideaPrenom').focus(); return; }
+    try{ localStorage.setItem(IDEA_PRENOM_KEY, prenom); }catch(e){}
+  }
+  if(!db){ $('#ideaStatus').textContent = 'Connexion à la base impossible : rechargez la page.'; return; }
+  const user = auth && auth.currentUser;
+  const now = new Date().toISOString();
+  const btn = $('#btnIdeaSend'); btn.disabled = true; $('#ideaStatus').textContent = 'Envoi…';
+  try{
+    await withTimeout(db.collection('idees').add({
+      titre: text.slice(0, 70), titreManuel: false, change: text, probleme: '', but: '',
+      zone: $('#ideaZone').value, priorite: $('#ideaPrio').value, statut: 'a_discuter',
+      auteurUid: user ? user.uid : '', auteurNom: prenom, auteurEmail: (user && user.email) || '',
+      createdAt: now, updatedAt: now, assigneUid: null, assigneNom: null, accords: [], commentaires: [],
+      analyse: null, analyseStatut: 'sans_cle', analyseErreur: null, source: 'outil'
+    }), 10000);
+    $('#ideaText').value = '';
+    $('#ideaPanel').style.display = 'none';
+    showToast('Dans la boîte. Claude donnera son avis, le chef tranche.');
+    refreshIdeesBadge();
+  }catch(e){
+    $('#ideaStatus').textContent = (e && e.code === 'permission-denied')
+      ? "La base refuse l'écriture : la règle Firestore « idees » manque (voir README)."
+      : "L'envoi a échoué : " + (e && e.message ? e.message : 'connexion') + '. Le texte est gardé, réessayez.';
+  }finally{ btn.disabled = false; }
+});
+
 async function ensureAuthPersistence(){
   try{ await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }
   catch(e){ try{ await auth.setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(_){} }
