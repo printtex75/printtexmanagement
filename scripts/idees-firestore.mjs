@@ -15,6 +15,7 @@
 //   node scripts/idees-firestore.mjs set <id> '<json>'    # fusionne les champs donnés dans le document
 //   node scripts/idees-firestore.mjs resume <id>          # marque l'idée comme résumée au chef
 //   node scripts/idees-firestore.mjs comment <id> '<texte>'   # ajoute un commentaire signé Claude
+//   node scripts/idees-firestore.mjs delete <id>          # supprime définitivement une idée
 
 import { createSign } from "node:crypto";
 
@@ -112,6 +113,12 @@ try {
     case "nouvelles": print((await listAll(token)).filter((i) => i.analyse && !i.resumeChef)); break;
     case "get": print(await getOne(token, id)); break;
     case "set": print(await merge(token, id, { ...JSON.parse(arg), updatedAt: now() })); break;
+    case "delete": {
+      if (!id) { console.error("Identifiant manquant."); process.exit(2); }
+      await api(token, `/idees/${encodeURIComponent(id)}`, { method: "DELETE" });
+      console.log(JSON.stringify({ supprime: id }));
+      break;
+    }
     case "resume": print(await merge(token, id, { resumeChef: now(), updatedAt: now() })); break;
     case "comment": {
       const i = await getOne(token, id);
