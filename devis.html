@@ -126,6 +126,7 @@
   .carte-produit .sans-photo{display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:22px;color:#B9A87F;}
   .aucun{padding:12px 0;color:var(--ink-2);font-size:14px;}
   /* Paliers cliquables (tarif préférentiel accordé à la main) */
+  .paliers[hidden]{display:none;}
   .paliers{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
   .paliers button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 10px;min-height:36px;font-size:12px;font-weight:600;}
   .paliers button[aria-pressed="true"]{background:#141210;color:#F7F3EE;border-color:#141210;}
@@ -135,7 +136,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-manches-etiquette</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-mode-gentil</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -152,6 +153,11 @@
 
   <div id="appRoot" style="display:none;">
     <div class="err" id="baseError" role="alert"></div>
+
+    <div class="panel" id="modePanel">
+      <div class="choix" id="mode"><button type="button" data-v="normal" aria-pressed="true">Prix normal</button><button type="button" data-v="gentil" aria-pressed="false">Marque – mode gentil</button></div>
+      <p class="muted no-print" id="modeAide" style="margin:8px 0 0;display:none;">Prix marque avantageux : tarif du plus gros palier dès la 1re pièce, dos offert (ou le prix marque de Karim quand il existe).</p>
+    </div>
 
     <div class="panel" id="etape1">
       <div class="etape"><span class="num">1</span><h2>Produit</h2></div>
@@ -309,7 +315,7 @@ if(typeof firebase === 'undefined'){
   }
   $("recherche").addEventListener("input", rendreProduits);
   $("recherche").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); const b = $("produits").querySelector(".carte-produit"); if(b) b.click(); } });
-  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; $("recherche").value = ""; afficherEtapes(); calculer(); }
+  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; S.gentil = false; majMode(); $("recherche").value = ""; afficherEtapes(); calculer(); }
   function afficherEtapes(){
     const c = S.courant, p = S.base.produits[c.produit];
     rendreProduits();
@@ -374,6 +380,11 @@ if(typeof firebase === 'undefined'){
     calculer();
   });
   $("cumul").addEventListener("change", calculer);
+  function majMode(){
+    [...$("mode").children].forEach(b => b.setAttribute("aria-pressed", String((b.dataset.v === "gentil") === !!S.gentil)));
+    $("modeAide").style.display = S.gentil ? "" : "none";
+  }
+  $("mode").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.gentil = v === "gentil"; majMode(); calculer(); });
   $("autresLignes").addEventListener("click", e => { const i = e.target.dataset.retirer; if(i == null) return; S.lignes.splice(+i,1); afficherEtapes(); calculer(); });
 
   /* ---------- Estimation ---------- */
@@ -384,7 +395,7 @@ if(typeof firebase === 'undefined'){
   }
   function versDevis(lignes){
     return { lignes: lignes.map(l => ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
-      cumulerPaliers: $("cumul").checked, livraison: $("livraison").checked ? "colissimo" : "retrait" };
+      cumulerPaliers: $("cumul").checked, modeMarque: S.gentil, livraison: $("livraison").checked ? "colissimo" : "retrait" };
   }
   function calculer(){
     if(!S.base) return;
@@ -393,8 +404,8 @@ if(typeof firebase === 'undefined'){
     const r = S.res = C.calculer(S.base, versDevis(lignes));
     const blocs = r.lignes.map((d,i) => {
       const l = lignes[i], parPiece = Math.round(d.total / d.q);
-      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces</span>
-        <div class="paliers" aria-label="Tarif appliqué">${S.base.paliers_libelles.map((t,k) => `<button type="button" data-ligne="${i}" data-k="${k}" aria-pressed="${k===d.k}" class="${k===d.kNormal?"normal":""}" title="${k===d.kNormal?"Tarif normal pour cette quantité":"Appliquer ce tarif"}">${t}</button>`).join("")}</div></td>
+      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${S.gentil ? `tarif marque ${eur(Math.round(d.pu*1.2))} la pièce${l.faces > 1 ? ", dos offert" : ""}` : `${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces`}</span>
+        <div class="paliers" aria-label="Tarif appliqué"${S.gentil ? " hidden" : ""}>${S.base.paliers_libelles.map((t,k) => `<button type="button" data-ligne="${i}" data-k="${k}" aria-pressed="${k===d.k}" class="${k===d.kNormal?"normal":""}" title="${k===d.kNormal?"Tarif normal pour cette quantité":"Appliquer ce tarif"}">${t}</button>`).join("")}</div></td>
         <td class="n">${eur(Math.round(parPiece*1.2))} TTC<br><span class="muted">par pièce en moyenne</span></td></tr>`;
     }).join("");
     const liv = r.client.at(-1);
@@ -439,7 +450,7 @@ if(typeof firebase === 'undefined'){
     const id = e.target.dataset.ouvrir; if(!id) return;
     if(!S.sauves[id].estimation){ toast("Ancien format : à refaire."); return; }
     const d = JSON.parse(S.sauves[id].estimation);
-    $("cumul").checked = !!d.cumul;
+    $("cumul").checked = !!d.cumul; S.gentil = !!d.gentil; majMode();
     S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
     $("nom").value = S.sauves[id].titre; $("date").value = d.date || ""; $("livraison").checked = !!d.livraison;
     afficherEtapes(); calculer(); window.scrollTo({top:0, behavior:"smooth"}); toast("Estimation reprise.");
@@ -451,7 +462,7 @@ if(typeof firebase === 'undefined'){
     if(!S.db){ toast("Essai local : rien n'est gardé."); return; }
     const id = S.id || ("e" + Date.now().toString(36));
     const item = { titre, majLe:new Date().toISOString(), par:(S.auth.currentUser && S.auth.currentUser.email) || "", totalTTC:S.res.totalTTC,
-      estimation:JSON.stringify({ lignes:toutesLignes(), date:$("date").value, livraison:$("livraison").checked, cumul:$("cumul").checked }) };
+      estimation:JSON.stringify({ lignes:toutesLignes(), date:$("date").value, livraison:$("livraison").checked, cumul:$("cumul").checked, gentil:!!S.gentil }) };
     try{ await ref().set({ items:{ [id]: item } }, { merge:true }); S.id = id; S.sauves[id] = item; afficherSauves(); toast("Estimation gardée : elle servira pour le vrai devis."); }
     catch(e){ toast("Impossible de garder l'estimation : " + (e.message || "")); }
   });
