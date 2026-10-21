@@ -69,14 +69,19 @@
         const k = choisi ?? kNormal;
         if (choisi != null && choisi > kNormal) add('info', `${nom} : tarif ${libPaliers[k]} pièces accordé pour ${q} pièce${q > 1 ? 's' : ''} (normalement ${libPaliers[kNormal]}).`);
         if (q > (base.palier_max || 200)) add('attention', `${nom} : ${q} pièces, au-delà de 200 : palier ${libPaliers[k]} appliqué, prix sur mesure possible.`);
-        const bat = ht(grille[0]);
-        const grillePalier = ht(grille[k]);
+        // Petits marquages en plus (manches, étiquette) : supplément par pièce selon le palier, table frais.supplements.
+        const nbManches = Math.min(2, Math.max(0, Number(l.manches) || 0)), etiq = l.etiquette ? 1 : 0;
+        const sup = frais.supplements || {};
+        const supplement = (kk) => (sup.manche ? sup.manche[kk] * nbManches : 0) + (sup.etiquette ? sup.etiquette[kk] * etiq : 0); // TTC, ajouté avant le passage en HT
+        if ((nbManches && !sup.manche) || (etiq && !sup.etiquette)) add('attention', `${nom} : prix des manches ou de l'étiquette absent de la base, non compté.`);
+        const bat = ht(grille[0] + supplement(0));
+        const grillePalier = ht(grille[k] + supplement(k));
         let pu = grillePalier, ajTexte = '';
         if (aj.mode === 'remise' && Number(aj.valeur) > 0) { pu = Math.round(grillePalier * (1 - Number(aj.valeur) / 100)); ajTexte = `remise commerciale ${aj.valeur} %`; }
         else if (aj.mode === 'prix' && Number(aj.valeur) > 0) { pu = ht(Math.round(Number(aj.valeur) * 100)); ajTexte = `prix imposé ${eur(Math.round(Number(aj.valeur) * 100))} TTC`; }
         if (prixUnePiece == null) prixUnePiece = { pu: bat, libelle: p.libelle };
         const total = bat + pu * (q - 1);
-        const cpo = coutPiece(base, l, nbMarq), cp = cpo ? cpo.c : null;
+        const cpo = coutPiece(base, l, nbMarq + nbManches + etiq), cp = cpo ? cpo.c : null;
         if (cp == null) { coutConnu = false; add('attention', `${nom} : coût d'achat inconnu pour ${p.libelle}, marge non calculable : prix à vérifier.`); }
         else {
           coutTotal += cp * q;
@@ -88,7 +93,8 @@
         const couleursTxt = (l.couleurs || []).filter((c) => quantiteLigne({ type: 'grille', couleurs: [c] }))
           .map((c) => `${c.nom || 'couleur'} : ${Object.entries(c.tailles || {}).filter(([, n]) => Number(n) > 0).map(([t, n]) => `${t} ×${n}`).join(', ')}`).join(' · ');
         const emplTxt = (l.emplacements || []).filter((e) => e.lieu).map((e) => e.lieu + (e.dim ? ` (${e.dim})` : '')).join(', ');
-        const detail = [`${nbMarq} emplacement${nbMarq > 1 ? 's' : ''}, impression ${l.technique || 'DTF'}`, emplTxt, couleursTxt].filter(Boolean).join(' · ');
+        const petits = [nbManches ? `${nbManches} manche${nbManches > 1 ? 's' : ''}` : '', etiq ? 'étiquette' : ''].filter(Boolean).join(' + ');
+        const detail = [`${nbMarq} emplacement${nbMarq > 1 ? 's' : ''}${petits ? ' + ' + petits : ''}, impression ${l.technique || 'DTF'}`, emplTxt, couleursTxt].filter(Boolean).join(' · ');
         client.push({ desc: `${p.libelle} – 1re pièce (BAT à valider avant production)`, detail, qte: 1, pu: bat });
         if (q > 1) client.push({ desc: `${p.libelle} – pièces suivantes`, detail: `${choisi != null && choisi > kNormal ? 'Tarif préférentiel' : 'Tarif dégressif'} ${libPaliers[k]} pièces${devis.cumulerPaliers && choisi == null ? ' (quantités additionnées)' : ''}${aj.mode === 'remise' && Number(aj.valeur) > 0 ? ` · remise ${aj.valeur} %` : ''}`, qte: q - 1, pu });
         totalHT += total;

@@ -96,4 +96,13 @@ assert.equal(r.totalHT, 27410); assert.equal(r.lignes[0].kNormal, 2); assert.equ
 assert.ok(r.client.some((l) => /Tarif préférentiel 51 à 100/.test(l.detail)));
 assert.ok(niveaux(r, 'info').some((t) => t.includes('normalement 6 à 50')));
 
-console.log('11 exemples OK');
+// 12. Manches et étiquette : 20 t-shirts couleur, 1 face + 2 manches + étiquette, palier 6-50.
+//     Supplément 2,00 TTC × 3 → pièce 18,00 + 6,00 = 24,00 TTC = 20,00 HT ; 1re pièce 25,00 + 3 × 3,00 = 34,00 TTC = 28,33 HT.
+//     28,33 + 19 × 20,00 = 408,33 HT. Coût : 4 marquages en tout → 3,50 + 4 × 1,00 + 1,00 = 8,50 HT par pièce.
+base.frais.supplements = { manche: [300, 250, 200, 180, 150], etiquette: [300, 250, 200, 180, 150] };
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ ...tshirt('couleur', 1, { M: 20 }), manches: 2, etiquette: true }] });
+assert.equal(r.lignes[0].bat, 2833); assert.equal(r.lignes[0].pu, 2000); assert.equal(r.totalHT, 40833);
+assert.equal(r.lignes[0].coutPiece, 850);
+assert.ok(r.client[0].detail.includes('2 manches + étiquette'));
+
+console.log('12 exemples OK');

@@ -135,7 +135,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-paliers-photos</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-manches-etiquette</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -166,6 +166,11 @@
     <div class="panel" id="etape2">
       <div class="etape"><span class="num">2</span><h2>Nombre de faces imprimées</h2></div>
       <div class="choix" id="faces"></div>
+      <div id="extrasBox" style="margin-top:12px;">
+        <label>En plus</label>
+        <div class="choix" id="manches"></div>
+        <div class="choix" id="etiquetteBox" style="margin-top:8px;"></div>
+      </div>
     </div>
 
     <div class="panel" id="etape3">
@@ -304,7 +309,7 @@ if(typeof firebase === 'undefined'){
   }
   $("recherche").addEventListener("input", rendreProduits);
   $("recherche").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); const b = $("produits").querySelector(".carte-produit"); if(b) b.click(); } });
-  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; $("recherche").value = ""; afficherEtapes(); calculer(); }
+  function nouveau(){ S.lignes = []; S.id = null; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" }; $("nom").value = ""; $("date").value = ""; $("livraison").checked = false; $("cumul").checked = false; $("recherche").value = ""; afficherEtapes(); calculer(); }
   function afficherEtapes(){
     const c = S.courant, p = S.base.produits[c.produit];
     rendreProduits();
@@ -314,6 +319,15 @@ if(typeof firebase === 'undefined'){
     $("teinte").innerHTML = teintes.map(t => `<button type="button" data-v="${t}" aria-pressed="${t===c.teinte}">${t==="blanc"?"Blanc":"Couleur (noir, marine…)"}</button>`).join("");
     const maxF = p ? (p.max_marquages || 2) : 2;
     $("faces").innerHTML = Array.from({length:maxF}, (_,i)=>i+1).map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.faces}">${n} face${n>1?"s":""}${n===2?" (devant + dos)":""}</button>`).join("");
+    // Manches et étiquette : seulement pour les vêtements qui en ont (pas les sacs, casquettes, tabliers…).
+    const sansManche = /tote|casquet|bob|jogging|debardeur|crop|doudoune|short|tablier/.test(c.produit);
+    const sansEtiquette = /tote|casquet|bob|tablier/.test(c.produit);
+    if(sansManche) c.manches = 0; if(sansEtiquette) c.etiquette = false;
+    $("extrasBox").style.display = p && !(sansManche && sansEtiquette) ? "" : "none";
+    $("manches").style.display = sansManche ? "none" : "";
+    $("manches").innerHTML = [0,1,2].map(n => `<button type="button" data-v="${n}" aria-pressed="${n===c.manches}">${n ? n + " manche" + (n>1?"s":"") : "Sans manche"}</button>`).join("");
+    $("etiquetteBox").style.display = sansEtiquette ? "none" : "";
+    $("etiquetteBox").innerHTML = `<button type="button" aria-pressed="${!!c.etiquette}">${c.etiquette ? "Étiquette dans le cou : oui" : "+ Étiquette dans le cou"}</button>`;
     $("quantite").value = c.quantite;
     $("etape1").classList.toggle("fait", !!p);
     $("etape2").classList.toggle("fait", !!p);
@@ -321,7 +335,7 @@ if(typeof firebase === 'undefined'){
     $("etape4").classList.toggle("fait", !!$("date").value);
     $("autresLignes").innerHTML = S.lignes.map((l,i) => `<div class="ligne-recap"><span>${esc(libelleLigne(l))}</span><button type="button" class="x" data-retirer="${i}" aria-label="Retirer">×</button></div>`).join("");
   }
-  const libelleLigne = l => `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
+  const libelleLigne = l => `${S.base.produits[l.produit].libelle}${l.teinte==="blanc"?" blanc":""} · ${l.faces} face${l.faces>1?"s":""}${l.manches ? ` + ${l.manches} manche${l.manches>1?"s":""}` : ""}${l.etiquette ? " + étiquette" : ""} · ${l.quantite} pièce${l.quantite>1?"s":""}`;
   $("produits").addEventListener("click", e => {
     const b = e.target.closest(".carte-produit"); if(!b) return;
     const p = S.base.produits[b.dataset.k];
@@ -340,6 +354,8 @@ if(typeof firebase === 'undefined'){
   $("quantite").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); suivant("zoneEstimation"); } });
   $("barreVoir").addEventListener("click", () => suivant("zoneEstimation"));
   $("teinte").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.teinte = v; afficherEtapes(); calculer(); });
+  $("manches").addEventListener("click", e => { const v = e.target.dataset.v; if(v == null) return; S.courant.manches = Number(v); afficherEtapes(); calculer(); });
+  $("etiquetteBox").addEventListener("click", e => { if(!e.target.closest("button")) return; S.courant.etiquette = !S.courant.etiquette; afficherEtapes(); calculer(); });
   $("faces").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.courant.faces = Number(v); afficherEtapes(); calculer(); suivant("etape3"); });
   $("quantite").addEventListener("input", () => { S.courant.quantite = $("quantite").value; afficherEtapes(); $("quantite").focus(); calculer(); });
   ["date","livraison"].forEach(id => $(id).addEventListener("input", () => { $("etape4").classList.toggle("fait", !!$("date").value); calculer(); }));
@@ -347,7 +363,7 @@ if(typeof firebase === 'undefined'){
     const c = S.courant;
     if(!c.produit || !(Number(c.quantite) > 0)){ toast("Choisissez d'abord un produit et une quantité."); return; }
     S.lignes.push({ ...c, quantite:Number(c.quantite) });
-    S.courant = { produit:"", teinte:"couleur", faces:1, quantite:"" };
+    S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
     $("recherche").value = ""; afficherEtapes(); calculer(); $("recherche").focus();
   });
   $("resultat").addEventListener("click", e => {
@@ -367,7 +383,7 @@ if(typeof firebase === 'undefined'){
     return l;
   }
   function versDevis(lignes){
-    return { lignes: lignes.map(l => ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
+    return { lignes: lignes.map(l => ({ type:"grille", produit:l.produit, teinte:l.teinte, marquages:l.faces, manches:l.manches || 0, etiquette:!!l.etiquette, technique:"DTF", couleurs:[{ nom:"", tailles:{ Unique:l.quantite } }], palier:l.palier, ajustement:{ mode:"aucun" } })),
       cumulerPaliers: $("cumul").checked, livraison: $("livraison").checked ? "colissimo" : "retrait" };
   }
   function calculer(){
@@ -424,7 +440,7 @@ if(typeof firebase === 'undefined'){
     if(!S.sauves[id].estimation){ toast("Ancien format : à refaire."); return; }
     const d = JSON.parse(S.sauves[id].estimation);
     $("cumul").checked = !!d.cumul;
-    S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, quantite:"" };
+    S.id = id; S.lignes = d.lignes || []; S.courant = { produit:"", teinte:"couleur", faces:1, manches:0, etiquette:false, quantite:"" };
     $("nom").value = S.sauves[id].titre; $("date").value = d.date || ""; $("livraison").checked = !!d.livraison;
     afficherEtapes(); calculer(); window.scrollTo({top:0, behavior:"smooth"}); toast("Estimation reprise.");
   });
