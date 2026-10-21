@@ -132,4 +132,11 @@ assert.equal(r.lignes[0].pu, 1208); assert.equal(r.totalHT, 72480); assert.ok(!r
 r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('blanc', 1, { M: 10 })] });
 assert.equal(r.totalHT, 10000);
 
-console.log('16 exemples OK');
+// 17. Coût d'impression par taille : t-shirt couleur face + 2 manches → 3,50 + 1,20 + 2 × 0,15 + 1,00 = 6,00 HT.
+base.couts.impression = { petit: 0.15, moyen: 0.75, grand: 1.2 }; base.couts.format_face = {};
+base.tarifs_marque = {};
+r = C.calculer(base, { livraison: 'retrait', lignes: [{ ...tshirt('couleur', 1, { M: 10 }), manches: 2 }] });
+assert.equal(r.lignes[0].coutPiece, 600);
+delete base.couts.impression; delete base.couts.format_face;
+
+console.log('17 exemples OK');

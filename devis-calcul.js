@@ -19,12 +19,18 @@
 
   // Coût d'une pièce d'une ligne de grille (centimes) : textile payé sur facture s'il est connu (couts.textile_reel),
   // sinon estimation de devis/couts.json ; + consommables par emplacement + main-d'œuvre (estimations). null si le textile manque.
-  function coutPiece(base, l, nbMarq) {
+  // Impression : coût selon la taille du visuel (couts.impression, calculé sur les vrais prix d'encre, de feuille et de colle) ;
+  // faces au format du produit (couts.format_face, « grand » par défaut), manches et étiquette en « petit ».
+  // Sans couts.impression : ancien forfait consommables_par_marquage par impression.
+  function coutPiece(base, l, nbFaces, nbPetits = 0) {
     const c = base.couts || {}, choix = (t) => (t == null ? null : typeof t === 'object' ? (t[l.teinte] ?? t.couleur ?? null) : t);
     const reel = choix(((c.textile_reel || {})[l.produit] || {}).ht);
     const textile = reel ?? choix((c.textile || {})[l.produit]);
     if (textile == null) return null;
-    return { c: Math.round((textile + (c.consommables_par_marquage || 0) * nbMarq + (c.main_oeuvre_par_piece || 0)) * 100), textileReel: reel != null };
+    const imp = c.impression;
+    const impression = imp ? (imp[(c.format_face || {})[l.produit] || 'grand'] || 0) * nbFaces + (imp.petit || 0) * nbPetits
+      : (c.consommables_par_marquage || 0) * (nbFaces + nbPetits);
+    return { c: Math.round((textile + impression + (c.main_oeuvre_par_piece || 0)) * 100), textileReel: reel != null };
   }
 
   // Ventes comparables : même produit ; les ventes réelles d'abord, les devis non acceptés à part.
@@ -97,7 +103,7 @@
         else if (aj.mode === 'prix' && Number(aj.valeur) > 0) { pu = ht(Math.round(Number(aj.valeur) * 100)); ajTexte = `prix imposé ${eur(Math.round(Number(aj.valeur) * 100))} TTC`; }
         if (prixUnePiece == null) prixUnePiece = { pu: bat, libelle: p.libelle };
         const total = gentil ? pu * q : bat + pu * (q - 1);
-        const cpo = coutPiece(base, l, nbMarq + nbManches + etiq), cp = cpo ? cpo.c : null;
+        const cpo = coutPiece(base, l, nbMarq, nbManches + etiq), cp = cpo ? cpo.c : null;
         if (cp == null) { coutConnu = false; add('attention', `${nom} : coût d'achat inconnu pour ${p.libelle}, marge non calculable : prix à vérifier.`); }
         else {
           coutTotal += cp * q;

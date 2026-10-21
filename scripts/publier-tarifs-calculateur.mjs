@@ -50,14 +50,42 @@ const base = {
   // Prix « marque, mode gentil » donnés par Karim, TTC par pièce, par produit et par nombre de faces (à compléter avec lui un par un) ;
   // un produit absent, ou un nombre de faces absent, suit la règle provisoire du plus gros palier.
   tarifs_marque: {
-    't-shirt-epais-noir': { 1: 1800, 2: 1800 }, // t-shirt 220 g couleur : 18 € en 1 face comme en face + dos (21/10)
+    // T-shirt épais 220 g (Karim 21/10) : blanc et couleur sont deux produits de la grille
+    't-shirt-epais': { 1: [1800, 1750, 1700, 1650, 1560], 2: [2000, 1950, 1900, 1850, 1800] },
+    't-shirt-epais-noir': { 1: [1800, 1770, 1730, 1700, 1600], 2: [2000, 1950, 1900, 1850, 1800] },
+    // T-shirt boxy 240 g (Karim 21/10) : baisse à chaque palier
+    't-shirt-240-epais': { 1: [1800, 1700, 1600, 1500, 1360], 2: [2000, 1900, 1800, 1700, 1560] },
+    // T-shirt 280 g (Karim 21/10)
+    't-shirt-280': { 1: [2400, 2300, 2200, 2100, 2000], 2: [2600, 2500, 2400, 2300, 2200] },
+    // Hoodie épais boxy 440 g (Karim 21/10)
+    'sweat-a-capuche-epais': { 1: [4000, 3500, 3500, 3400, 3200], 2: [4500, 4000, 3900, 3800, 3600] },
+    // Sweat col rond épais oversize 440 g (Karim 21/10)
+    'sweat-shirt-epais-oversize': { 1: [3500, 3000, 3000, 2900, 2700], 2: [4000, 3500, 3500, 3400, 3100] },
+    // Zip hoodie épais (Karim 21/10)
+    'zip-hoodie-epais': { 1: [5000, 4500, 4300, 4100, 3900], 2: [5000, 4700, 4500, 4300, 4200] },
+    // Hoodie 280 g (Karim 21/10) : nettement sous le hoodie épais 440 g
+    'hoodie-280': { 1: [3000, 2700, 2600, 2500, 2300], 2: [3400, 3100, 3000, 2900, 2700] },
+    // Sweat col rond 280 g et zip hoodie 280 g (Karim 21/10) : grosses quantités à 30 % puis 25 % de marge
+    'sweat-col-rond-280': { 1: [2600, 2400, 2200, 1850, 1550], 2: [3000, 2800, 2500, 2100, 1750] },
+    'zip-hoodie-280': { 1: [3500, 3200, 3000, 2600, 2400], 2: [3900, 3600, 3300, 2800, 2600] },
+    // Manches longues (Karim 21/10) : l'épais = le boxy + 2 € jusqu'à 50 pièces
+    'longsleeve-206': { 1: [2000, 1800, 1800, 1530, 1420], 2: [2200, 2000, 2000, 1730, 1620] },
+    'longsleeve-epais': { 1: [2200, 2000, 2000, 1780, 1700], 2: [2400, 2200, 2200, 1980, 1860] }, // 2 derniers paliers ajustés avec Karim
+    // Tote bags : pas de réduction, le tarif partenaire = le prix normal du site (Karim 21/10)
+    'tote-bag-promo': { 1: [1000, 450, 400, 350, 300], 2: [1500, 650, 550, 450, 400] },
+    'tote-bag-promo-noir': { 1: [1500, 650, 550, 450, 400], 2: [1750, 850, 750, 650, 550] },
     // T-shirt Basic 180 g (Karim 21/10), paliers 1 / 2-5 / 6-50 / 51-100 / 101-200
     't-shirt-basic-noir': {
-      blanc: { 1: [1200, 1200, 1200, 1050, 950], 2: [1400, 1400, 1400, 1250, 1150] },
-      couleur: { 1: [1400, 1400, 1400, 1250, 1150], 2: [1600, 1600, 1600, 1450, 1350] },
+      blanc: { 1: [1200, 1150, 1100, 1050, 950], 2: [1400, 1350, 1300, 1250, 1150] },
+      couleur: { 1: [1400, 1350, 1300, 1250, 1150], 2: [1600, 1550, 1500, 1450, 1350] },
     },
   },
-  produits, couts: { ...couts, textile_reel, _statut: 'textile_reel = factures ; textile = estimations de devis/couts.json, à corriger par Karim' }, frais,
+  produits, couts: { ...couts, textile_reel,
+    // Coût matière d'une impression DTF Brother, HT (Karim 21/10, facture Buisine 272946) : encre blanche 0,24 €/ml,
+    // couleurs 0,27 €/ml, feuille 35 x 40 cm 0,55 €, colle 5,50 €/kg ; visuel rempli à moitié, + 30 % de purges.
+    // petit 10 x 10 cm (9 par feuille) 0,13 € → 0,15 ; moyen (logo de tote) 0,76 € → 0,75 ; face ou dos de vêtement (A4 0,96, grand 1,48) → 1,20.
+    impression: { petit: 0.15, moyen: 0.75, grand: 1.2 },
+    format_face: { 'tote-bag-promo': 'moyen', 'tote-bag-promo-noir': 'moyen', 'bob': 'petit', 'casquette-trucker': 'petit', 'casquete-bc015': 'petit' }, _statut: 'textile_reel = factures ; textile = estimations de devis/couts.json, à corriger par Karim' }, frais,
   regles: regles.map((r) => ({ date: r.date, texte: r.texte })),
   historique,
 };
