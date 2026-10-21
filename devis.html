@@ -127,6 +127,9 @@
   .aucun{padding:12px 0;color:var(--ink-2);font-size:14px;}
   /* Paliers cliquables (tarif préférentiel accordé à la main) */
   .paliers[hidden]{display:none;}
+  /* Interrupteur discret du tarif partenaire (l'écran peut être vu par le client) : un simple point. */
+  .discret{margin-left:auto;width:28px;height:28px;min-height:28px;border-radius:50%;border:1px solid var(--line);background:transparent;opacity:.45;padding:0;}
+  .discret[aria-pressed="true"]{background:var(--line-strong);opacity:.8;}
   .paliers{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
   .paliers button{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 10px;min-height:36px;font-size:12px;font-weight:600;}
   .paliers button[aria-pressed="true"]{background:#141210;color:#F7F3EE;border-color:#141210;}
@@ -136,7 +139,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-mode-gentil</span></div>
+    <div class="row"><h1>Estimation de prix</h1><span class="tag" id="buildTag">build 2026-10-21-tarif-discret</span></div>
     <nav class="nav"><a href="index.html">Commandes</a><button type="button" id="btnLogout">Déconnexion</button></nav>
   </header>
 
@@ -153,11 +156,6 @@
 
   <div id="appRoot" style="display:none;">
     <div class="err" id="baseError" role="alert"></div>
-
-    <div class="panel" id="modePanel">
-      <div class="choix" id="mode"><button type="button" data-v="normal" aria-pressed="true">Prix normal</button><button type="button" data-v="gentil" aria-pressed="false">Marque – mode gentil</button></div>
-      <p class="muted no-print" id="modeAide" style="margin:8px 0 0;display:none;">Prix marque avantageux : tarif du plus gros palier dès la 1re pièce, dos offert, ou le prix marque fixé par Karim pour ce produit et ce nombre de faces.</p>
-    </div>
 
     <div class="panel" id="etape1">
       <div class="etape"><span class="num">1</span><h2>Produit</h2></div>
@@ -203,7 +201,7 @@
         <div style="font-family:var(--display);font-size:22pt;font-weight:700;">PRINTTEX</div>
         <div style="font-size:9pt;color:#555;">5 rue Planchat, 75020 Paris · 01 86 04 31 65 · info@printtex.fr · printtex.fr</div>
       </div>
-      <h2>Estimation <span id="titreImpression"></span></h2>
+      <h2 style="display:flex;align-items:center;gap:8px;">Estimation <span id="titreImpression"></span><button type="button" id="btnGentil" class="discret no-print" aria-pressed="false" aria-label="Tarif partenaire" title="P"></button></h2>
       <div id="resultat"></div>
       <p class="impression-seule muted" style="margin-top:12px;font-size:9pt;">Estimation indicative du <span id="dateJour"></span>, sous réserve de validation du visuel. Prix textile et impression compris. La première pièce sert de BAT (bon à tirer) avant la série.</p>
       <div class="no-print" style="margin-top:14px;">
@@ -380,11 +378,8 @@ if(typeof firebase === 'undefined'){
     calculer();
   });
   $("cumul").addEventListener("change", calculer);
-  function majMode(){
-    [...$("mode").children].forEach(b => b.setAttribute("aria-pressed", String((b.dataset.v === "gentil") === !!S.gentil)));
-    $("modeAide").style.display = S.gentil ? "" : "none";
-  }
-  $("mode").addEventListener("click", e => { const v = e.target.dataset.v; if(!v) return; S.gentil = v === "gentil"; majMode(); calculer(); });
+  function majMode(){ $("btnGentil").setAttribute("aria-pressed", String(!!S.gentil)); }
+  $("btnGentil").addEventListener("click", () => { S.gentil = !S.gentil; majMode(); calculer(); });
   $("autresLignes").addEventListener("click", e => { const i = e.target.dataset.retirer; if(i == null) return; S.lignes.splice(+i,1); afficherEtapes(); calculer(); });
 
   /* ---------- Estimation ---------- */
@@ -404,7 +399,7 @@ if(typeof firebase === 'undefined'){
     const r = S.res = C.calculer(S.base, versDevis(lignes));
     const blocs = r.lignes.map((d,i) => {
       const l = lignes[i], parPiece = Math.round(d.total / d.q);
-      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${S.gentil ? `tarif marque ${eur(Math.round(d.pu*1.2))} la pièce${d.dosOffert ? ", dos offert" : ""}` : `${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces`}</span>
+      return `<tr><td><strong>${esc(libelleLigne(l))}</strong><br><span class="muted">${S.gentil ? `${eur(Math.round(d.pu*1.2))} la pièce${d.dosOffert ? ", dos offert" : ""}` : `${d.q > 1 ? `1re pièce (BAT) ${eur(Math.round(d.bat*1.2))}, puis ${eur(Math.round(d.pu*1.2))} la pièce` : "pièce unique"} · ${d.palierChoisi && d.k > d.kNormal ? "tarif préférentiel" : "tarif"} ${esc(d.palier)} pièces`}</span>
         <div class="paliers" aria-label="Tarif appliqué"${S.gentil ? " hidden" : ""}>${S.base.paliers_libelles.map((t,k) => `<button type="button" data-ligne="${i}" data-k="${k}" aria-pressed="${k===d.k}" class="${k===d.kNormal?"normal":""}" title="${k===d.kNormal?"Tarif normal pour cette quantité":"Appliquer ce tarif"}">${t}</button>`).join("")}</div></td>
         <td class="n">${eur(Math.round(parPiece*1.2))} TTC<br><span class="muted">par pièce en moyenne</span></td></tr>`;
     }).join("");
@@ -417,9 +412,10 @@ if(typeof firebase === 'undefined'){
       <table style="margin-top:10px;">${blocs}
         <tr><td>${esc(liv.desc)}</td><td class="n">${liv.pu ? eur(Math.round(liv.pu*1.2)) + " TTC" : $("livraison").checked ? "offert" : "gratuit"}</td></tr>
         <tr class="ttc"><td>Total</td><td class="n">${eur(r.totalTTC)} TTC</td></tr></table>
-      ${r.alertes.filter(a => !/coût|Au moins un coût/.test(a.texte)).map(a => `<div class="alerte ${a.niveau}">${esc(a.texte)}</div>`).join("")}
+      ${r.alertes.filter(a => !/coût|Au moins un coût|tarif marque/.test(a.texte)).map(a => `<div class="alerte ${a.niveau}">${esc(a.texte)}</div>`).join("")}
       <details class="interne"><summary>Interne : marge (jamais imprimé)</summary>
-        Coût ${r.coutTotal ? eur(r.coutTotal) + " HT" : "inconnu"}${r.coutConnu ? "" : " (partiel)"} · marge ${margeTxt}</details>`;
+        Coût ${r.coutTotal ? eur(r.coutTotal) + " HT" : "inconnu"}${r.coutConnu ? "" : " (partiel)"} · marge ${margeTxt}${S.gentil ? "<br>Tarif partenaire actif (point à côté du titre)." : ""}
+        ${r.alertes.filter(a => /tarif marque/.test(a.texte)).map(a => `<br>${esc(a.texte)}`).join("")}</details>`;
     $("titreImpression").textContent = $("nom").value ? "– " + $("nom").value : "";
     const prix = $("resultat").querySelector(".prix");
     if(prix && S.dernierTotal !== r.totalTTC){ prix.classList.remove("change"); void prix.offsetWidth; prix.classList.add("change"); }
