@@ -155,4 +155,13 @@ r = C.calculer(base, { livraison: 'retrait', lignes: [{ type: 'textile_fourni', 
 assert.equal(r.lignes[0].pu, 1150); assert.equal(r.totalHT, 138517); assert.equal(r.lignes[0].coutPiece, 857);
 assert.ok(1 - 857 / 1150 >= 0.25);
 
-console.log('18 exemples OK');
+// 19. Sans BAT : 10 t-shirts couleur 1 face → 10 × 15,00 HT = 150,00 HT (au lieu de 155,83) ; 1 pièce seule → prix 2-5 (19 TTC, 15,83 HT).
+r = C.calculer(base, { sansBat: true, livraison: 'retrait', lignes: [tshirt('couleur', 1, { M: 10 })] });
+assert.equal(r.totalHT, 15000); assert.equal(r.client[0].qte, 10);
+r = C.calculer(base, { sansBat: true, livraison: 'retrait', lignes: [tshirt('couleur', 1, { M: 1 })] });
+assert.equal(r.totalHT, 1583);
+//     Impression seule sans BAT, DTG foncé 1 face, 1 pièce → palier 2-25 : 7,80 TTC = 6,50 HT.
+r = C.calculer(base, { sansBat: true, livraison: 'retrait', lignes: [{ type: 'textile_fourni', technique: 'dtg-fonce', faces: 1, charge: false, quantite: 1, ajustement: { mode: 'aucun' } }] });
+assert.equal(r.totalHT, 650);
+
+console.log('19 exemples OK');

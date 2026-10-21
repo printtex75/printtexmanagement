@@ -65,6 +65,18 @@ const base = {
     't-shirt-epais-noir': { 1: [1800, 1770, 1730, 1700, 1600], 2: [2000, 1950, 1900, 1850, 1800] },
     // T-shirt boxy 240 g (Karim 21/10) : baisse à chaque palier
     't-shirt-240-epais': { 1: [1800, 1700, 1600, 1500, 1360], 2: [2000, 1900, 1800, 1700, 1560] },
+    't-shirt-court-240': { 1: [1800, 1700, 1600, 1500, 1360], 2: [2000, 1900, 1800, 1700, 1560] }, // comme le boxy 240 g
+    // Sport : clients en volume (clubs, associations), gros paliers plus agressifs (Karim 21/10)
+    't-shirt-sport': { 1: [1400, 1300, 1200, 1000, 900], 2: [1600, 1500, 1400, 1200, 1100] },
+    't-shirt-sport-manches-longues': { 1: [1700, 1600, 1500, 1300, 1200], 2: [1900, 1800, 1700, 1500, 1400] },
+    'short-sport': { 1: [2200, 2000, 1900, 1600, 1400], 2: [2500, 2300, 2200, 1900, 1650] },
+    'jogging': { 1: [4000, 3600, 3400, 3200, 3000], 2: [4500, 4100, 3900, 3700, 3500] }, // 40 € à l'unité (Karim)
+    'debardeur-femme-cotele': { 1: [1800, 1700, 1600, 1450, 1350], 2: [2100, 2000, 1900, 1700, 1550] },
+    'debardeur-homme': { 1: [1600, 1500, 1400, 1300, 1200], 2: [1900, 1800, 1700, 1550, 1400] },
+    'crop-top': { 1: [1600, 1500, 1400, 1100, 950], 2: [1800, 1700, 1600, 1300, 1150] },
+    // Tabliers : nouveaux modèles moins chers (Karim 21/10) : bistro New Gen TB205, bavette Westford Mill WM364
+    'tablier-bistro': { 1: [2200, 2000, 1800, 1500, 1300] },
+    'tablier-bavette': { 1: [2300, 2100, 1900, 1550, 1350] },
     // T-shirt 280 g (Karim 21/10)
     't-shirt-280': { 1: [2400, 2300, 2200, 2100, 2000], 2: [2600, 2500, 2400, 2300, 2200] },
     // Hoodie épais boxy 440 g (Karim 21/10)
