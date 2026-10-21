@@ -51,6 +51,11 @@ const base = {
   // un produit absent, ou un nombre de faces absent, suit la règle provisoire du plus gros palier.
   tarifs_marque: {
     't-shirt-epais-noir': { 1: 1800, 2: 1800 }, // t-shirt 220 g couleur : 18 € en 1 face comme en face + dos (21/10)
+    // T-shirt Basic 180 g (Karim 21/10), paliers 1 / 2-5 / 6-50 / 51-100 / 101-200
+    't-shirt-basic-noir': {
+      blanc: { 1: [1200, 1200, 1200, 1050, 950], 2: [1400, 1400, 1400, 1250, 1150] },
+      couleur: { 1: [1400, 1400, 1400, 1250, 1150], 2: [1600, 1600, 1600, 1450, 1350] },
+    },
   },
   produits, couts: { ...couts, textile_reel, _statut: 'textile_reel = factures ; textile = estimations de devis/couts.json, à corriger par Karim' }, frais,
   regles: regles.map((r) => ({ date: r.date, texte: r.texte })),

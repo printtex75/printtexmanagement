@@ -80,10 +80,15 @@
         if ((nbManches && !sup.manche) || (etiq && !sup.etiquette)) add('attention', `${nom} : prix des manches ou de l'étiquette absent de la base, non compté.`);
         // Prix marque donné par Karim pour ce produit (base.tarifs_marque, TTC par pièce) ; sinon règle provisoire du plus gros palier.
         // Par produit : un prix par nombre de faces ({ "1": …, "2": … }), ou un seul prix pour toutes les faces.
-        const tm = gentil ? (base.tarifs_marque || {})[l.produit] : null;
-        const prixMarque = tm == null ? null : typeof tm === 'object' ? (tm[String(nbMarq)] ?? null) : tm;
+        // Formes acceptées : un prix ; { "1": prix, "2": prix } par nombre de faces ; { blanc: {…}, couleur: {…} } par teinte ;
+        // et chaque prix peut être une liste de 5 prix (un par palier, selon la quantité).
+        let tm = gentil ? (base.tarifs_marque || {})[l.produit] : null;
+        if (tm && typeof tm === 'object' && !Array.isArray(tm) && (tm.blanc || tm.couleur)) tm = tm[teinte];
+        const parFace = (n) => (tm == null ? null : typeof tm === 'object' && !Array.isArray(tm) ? tm[String(n)] ?? null : tm);
+        const auPalier = (v) => (Array.isArray(v) ? v[kNormal] ?? null : v);
+        const prixMarque = auPalier(parFace(nbMarq));
         // Dos « offert » seulement quand face + dos coûte le prix d'une face.
-        const dosOffert = gentil && nbMarq > 1 && (prixMarque == null || typeof tm !== 'object' || tm['1'] === tm[String(nbMarq)]);
+        const dosOffert = gentil && nbMarq > 1 && (prixMarque == null || prixMarque === auPalier(parFace(1)));
         if (gentil && prixMarque == null) add('info', `${nom} : tarif marque provisoire (prix 101-200 pièces, 1 face) en attendant le prix de Karim pour ce produit.`);
         const grillePalier = ht((prixMarque ?? grilleVente[k]) + supplement(k));
         const bat = gentil ? grillePalier : ht(grille[0] + supplement(0));

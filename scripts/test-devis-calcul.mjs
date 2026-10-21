@@ -122,4 +122,14 @@ base.tarifs_marque = { 't-shirt-basic-noir': { 1: 1800, 2: 2200 } };
 r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 4 })] });
 assert.equal(r.lignes[0].pu, 1833); assert.equal(r.totalHT, 7332); assert.ok(!r.client[0].detail.includes('dos offert'));
 
-console.log('15 exemples OK');
+// 16. Prix partenaire par teinte, faces et palier : Basic couleur face + dos, 60 pièces → palier 51-100 : 14,50 TTC (12,08 HT) dès la 1re pièce.
+//     60 × 12,08 = 724,80 HT ; pas de « dos offert » (16 € contre 14 € en 1 face).
+base.tarifs_marque = { 't-shirt-basic-noir': { blanc: { 1: [1200, 1200, 1200, 1050, 950], 2: [1400, 1400, 1400, 1250, 1150] },
+  couleur: { 1: [1400, 1400, 1400, 1250, 1150], 2: [1600, 1600, 1600, 1450, 1350] } } };
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('couleur', 2, { M: 30, L: 30 })] });
+assert.equal(r.lignes[0].pu, 1208); assert.equal(r.totalHT, 72480); assert.ok(!r.client[0].detail.includes('dos offert'));
+// Blanc 1 face, 10 pièces → 12 € (10,00 HT) : 100,00 HT.
+r = C.calculer(base, { modeMarque: true, livraison: 'retrait', lignes: [tshirt('blanc', 1, { M: 10 })] });
+assert.equal(r.totalHT, 10000);
+
+console.log('16 exemples OK');
