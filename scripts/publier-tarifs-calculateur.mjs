@@ -31,7 +31,7 @@ const frais = {
   print_textile_fourni_ttc: 500, cout_print_textile_fourni: null,
   urgence_pct: null,
   // Manche ou étiquette en plus, TTC par pièce et par marquage, paliers 1 / 2-5 / 6-50 / 51-100 / 101-200 (Karim, 21/10/2026 : « environ 2 € »).
-  supplements: { manche: [300, 250, 200, 180, 150], etiquette: [300, 250, 200, 180, 150] },
+  supplements: { manche: [300, 250, 200, 180, 150], etiquette: [250, 200, 160, 140, 120] }, // étiquette : à partir de 1,20 € (Karim 21/10)
   livraison: {
     retrait: { libelle: "Retrait gratuit à l'atelier – 5 rue Planchat, 75020 Paris", ttc: 0 },
     colissimo: { libelle: 'Livraison Colissimo (2 à 4 jours ouvrés)', ttc: 499, offert_des_ttc: 10000 },
