@@ -2,7 +2,8 @@
    Utilisé par devis.html (navigateur) et par scripts/test-devis-calcul.mjs (node).
    Toutes les sommes sont en centimes entiers. La grille est celle du site (TTC), comme scripts/devis/creer-devis.mjs :
    - la 1re pièce de chaque ligne est au prix BAT (palier « 1 pièce »), les suivantes au palier de la quantité de la ligne ;
-   - le palier se calcule sur le total de la LIGNE (toutes couleurs et tailles de la ligne), jamais en regroupant des lignes ;
+   - le palier se calcule sur le total de la LIGNE (toutes couleurs et tailles de la ligne) ; les lignes ne sont additionnées
+     que si l'employé le choisit (devis.cumulerPaliers), et un palier plus avantageux peut être accordé à la main (ligne.palier) ;
    - au-delà de 200 pièces : palier 101-200 et alerte « prix sur mesure possible ». */
 (function (root) {
   'use strict';
@@ -42,6 +43,7 @@
     const client = [];            // lignes du devis client : { desc, detail, qte, pu } (pu HT, centimes)
     let totalHT = 0, coutTotal = 0, coutConnu = true, piecesTotal = 0, prixUnePiece = null;
     const add = (niveau, texte) => alertes.push({ niveau, texte });
+    const piecesGrille = (devis.lignes || []).filter((l) => l.type === 'grille').reduce((s, l) => s + quantiteLigne(l), 0);
 
     (devis.lignes || []).forEach((l, i) => {
       const q = quantiteLigne(l);
@@ -60,7 +62,12 @@
         const grille = p.grilles?.[teinte]?.[String(nbMarq)];
         if (!grille) { add('bloquant', `${nom} : pas de grille ${teinte} / ${nbMarq} emplacement(s) pour ${p.libelle}.`); return; }
         if (l.technique && l.technique !== 'DTF') add('attention', `${nom} : la grille du site est en DTF ; aucun tarif ${l.technique} validé, prix à vérifier.`);
-        const k = indicePalier(paliers, q);
+        // Palier normal : quantité de la ligne, ou total des articles du catalogue si l'employé choisit de les additionner.
+        // Palier choisi (l.palier) : tarif préférentiel accordé à la main, affiché comme tel.
+        const kNormal = indicePalier(paliers, devis.cumulerPaliers ? piecesGrille : q);
+        const choisi = l.palier != null && l.palier !== '' && paliers[Number(l.palier)] != null ? Number(l.palier) : null;
+        const k = choisi ?? kNormal;
+        if (choisi != null && choisi > kNormal) add('info', `${nom} : tarif ${libPaliers[k]} pièces accordé pour ${q} pièce${q > 1 ? 's' : ''} (normalement ${libPaliers[kNormal]}).`);
         if (q > (base.palier_max || 200)) add('attention', `${nom} : ${q} pièces, au-delà de 200 : palier ${libPaliers[k]} appliqué, prix sur mesure possible.`);
         const bat = ht(grille[0]);
         const grillePalier = ht(grille[k]);
@@ -83,9 +90,9 @@
         const emplTxt = (l.emplacements || []).filter((e) => e.lieu).map((e) => e.lieu + (e.dim ? ` (${e.dim})` : '')).join(', ');
         const detail = [`${nbMarq} emplacement${nbMarq > 1 ? 's' : ''}, impression ${l.technique || 'DTF'}`, emplTxt, couleursTxt].filter(Boolean).join(' · ');
         client.push({ desc: `${p.libelle} – 1re pièce (BAT à valider avant production)`, detail, qte: 1, pu: bat });
-        if (q > 1) client.push({ desc: `${p.libelle} – pièces suivantes`, detail: `Tarif dégressif ${libPaliers[k]} pièces${aj.mode === 'remise' && Number(aj.valeur) > 0 ? ` · remise ${aj.valeur} %` : ''}`, qte: q - 1, pu });
+        if (q > 1) client.push({ desc: `${p.libelle} – pièces suivantes`, detail: `${choisi != null && choisi > kNormal ? 'Tarif préférentiel' : 'Tarif dégressif'} ${libPaliers[k]} pièces${devis.cumulerPaliers && choisi == null ? ' (quantités additionnées)' : ''}${aj.mode === 'remise' && Number(aj.valeur) > 0 ? ` · remise ${aj.valeur} %` : ''}`, qte: q - 1, pu });
         totalHT += total;
-        lignes.push({ nom, libelle: p.libelle, q, palier: libPaliers[k], bat, grillePalier, pu, ajTexte, motif: aj.motif || '', total, coutPiece: cp, textileReel: !!(cpo && cpo.textileReel), comparables: comp });
+        lignes.push({ nom, libelle: p.libelle, q, palier: libPaliers[k], k, kNormal, palierChoisi: choisi != null, bat, grillePalier, pu, ajTexte, motif: aj.motif || '', total, coutPiece: cp, textileReel: !!(cpo && cpo.textileReel), comparables: comp });
       } else if (l.type === 'textile_fourni') {
         const pt = frais.print_textile_fourni_ttc;
         const n = Math.max(1, Number(l.emplacements) || 1);
