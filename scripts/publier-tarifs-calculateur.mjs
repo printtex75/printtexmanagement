@@ -54,6 +54,17 @@ const frais = {
 const cheminReels = resolve(R, 'devis/couts-reels-calculateur.json');
 const textile_reel = existsSync(cheminReels) ? JSON.parse(readFileSync(cheminReels, 'utf8')).textile_reel || {} : {};
 
+// Noms affichés dans l'outil (la grille du site ne donne pas toujours un nom lisible).
+const NOMS = {
+  't-shirt-epais': 'T-shirt épais oversize 220 g blanc', 't-shirt-epais-noir': 'T-shirt épais oversize 220 g couleur', 't-shirt-court-240': 'T-shirt court 240 g',
+  't-shirt-280': 'T-shirt 280 g', 't-shirt-sport': 'T-shirt sport', 't-shirt-sport-manches-longues': 'T-shirt sport manches longues', 'short-sport': 'Short de sport',
+  'jogging': 'Jogging', 'debardeur-femme-cotele': 'Débardeur femme côtelé', 'debardeur-homme': 'Débardeur homme', 'hoodie-280': 'Hoodie 280 g',
+  'zip-hoodie-280': 'Zip hoodie 280 g', 'sweat-col-rond-280': 'Sweat col rond 280 g', 'tablier-bistro': 'Tablier bistro', 'tablier-bavette': 'Tablier bavette',
+  'crop-top': 'Crop top', 'polo-premium': 'Polo premium', 'polo-manches-longues': 'Polo manches longues', 'thermal-gaufre': 'Thermal gaufré',
+  'doudoune-sans-manches': 'Doudoune sans manches', 'casquette-trucker': 'Casquette trucker', 'tote-bag-promo': 'Tote bag naturel', 'tote-bag-promo-noir': 'Tote bag noir',
+};
+for (const [k, n] of Object.entries(NOMS)) if (produits[k]) produits[k].libelle = n;
+
 const base = {
   version: 1, genere_le: new Date().toISOString(),
   paliers: PALIERS, paliers_libelles: PALIERS_LIBELLES, palier_max: 200,
