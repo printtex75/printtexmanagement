@@ -4641,7 +4641,7 @@ function productOrderColors(p){
   const c = String(p.couleurs || '').split(',').map(x=>x.trim()).filter(Boolean);
   return c.length ? c : [''];
 }
-const AVEC_XS = new Set(['t-shirt-basic-noir', 't-shirt-epais', 'sweat-a-capuche-epais', 'zip-hoodie-epais', 'zip-delave-380g', 'longsleeve-206', 'longsleeve-epais', 'sweat-bomber', 'jogging', 'sweat-shirt-epais-oversize', 't-shirt-240-epais', 't-shirt-280', 'sweat-col-rond-280', 't-shirt-court-240', 't-shirt-sport', 'short-sport', 'debardeur-femme-cotele', 'debardeur-homme', 'hoodie-280', 'crop-top', 'polo-premium', 'polo-manches-longues']);
+const AVEC_XS = new Set(['t-shirt-300-heavy', 'hoodie-sans-capuche', 'hoodie-avec-capuche', 't-shirt-basic-noir', 't-shirt-epais', 'sweat-a-capuche-epais', 'zip-hoodie-epais', 'zip-delave-380g', 'longsleeve-206', 'longsleeve-epais', 'sweat-bomber', 'jogging', 'sweat-shirt-epais-oversize', 't-shirt-240-epais', 't-shirt-280', 'sweat-col-rond-280', 't-shirt-court-240', 't-shirt-sport', 'short-sport', 'debardeur-femme-cotele', 'debardeur-homme', 'hoodie-280', 'crop-top', 'polo-premium', 'polo-manches-longues']);
 function productOrderSizes(p){
   const site = p.siteProductId && siteCatalog ? siteCatalog.find(x=>x.id===p.siteProductId) : null;
   // XS ajouté seulement si le fournisseur le fait (vérifié le 23/10 : pas de XS en JH050, TR050, Sol's 04020 et 04453).
