@@ -2489,10 +2489,37 @@ async function openModal(id){
   }else{
     $('#modalTitle').textContent = 'Nouvelle commande';
     $('#modalSub').textContent = 'Renseignez les informations de la commande.';
+    restoreOrderDraft();
   }
   $('#overlay').classList.add('open');
 }
 function closeModal(){ $('#overlay').classList.remove('open'); }
+
+/* ---------- Brouillon de commande ----------
+   Une nouvelle commande en cours de saisie est gardée sur l'appareil à chaque frappe : si la page plante ou se recharge,
+   « + Nouvelle commande » la reprend. Effacé à l'enregistrement ou par Annuler. Les images ne peuvent pas être gardées. */
+const ORDER_DRAFT_KEY = 'ptx_order_draft';
+const ORDER_DRAFT_FIELDS = ['clientName','clientContact','deadline','prodTime','prodTimeUnit','status','priority','priceAmount','depositAmount','notes'];
+function saveOrderDraft(){
+  if(currentEditId || !$('#overlay').classList.contains('open')) return;
+  try{
+    const d = { items: currentOrderItems.map(({ slots, ...it })=> it), toCheck: $('#toCheckOnReceipt').checked };
+    ORDER_DRAFT_FIELDS.forEach(k=> d[k] = $('#' + k).value);
+    localStorage.setItem(ORDER_DRAFT_KEY, JSON.stringify(d));
+  }catch(e){}
+}
+function clearOrderDraft(){ try{ localStorage.removeItem(ORDER_DRAFT_KEY); }catch(e){} }
+function restoreOrderDraft(){
+  let d = null;
+  try{ d = JSON.parse(localStorage.getItem(ORDER_DRAFT_KEY) || 'null'); }catch(e){}
+  if(!d || (!String(d.clientName || '').trim() && !(d.items || []).some(it=> Number(it.quantity) > 0))) return;
+  ORDER_DRAFT_FIELDS.forEach(k=>{ if(d[k] != null) $('#' + k).value = d[k]; });
+  $('#toCheckOnReceipt').checked = !!d.toCheck;
+  if(d.items && d.items.length){ currentOrderItems = d.items.map(it=> ({ ...it, slots: emptySlots() })); renderOrderItemsTable(); }
+  updatePaymentHint(); updateStartHint();
+  showToast('Commande en cours reprise. Remettez les images si besoin.');
+}
+['input','change','click'].forEach(ev=> $('#overlay').addEventListener(ev, ()=> setTimeout(saveOrderDraft, 0)));
 
 $('#orderForm').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter' && e.target.tagName !== 'TEXTAREA'){
@@ -2618,6 +2645,7 @@ $('#btnSave').addEventListener('click', async (e)=>{
     }
     const capWarn = capacityWarning(order);
     showToast(capWarn || (willBeLivree ? 'Commande livrée et archivée (images supprimées)' : (wasEditing ? 'Commande mise à jour' : 'Commande créée')));
+    if(!wasEditing) clearOrderDraft();
     closeModal();
   }catch(err){
     console.error('Erreur enregistrement commande:', err);
@@ -2895,7 +2923,7 @@ $('#btnExportMonth').addEventListener('click', ()=>{
 });
 
 /* ---------- Wiring ---------- */
-$('#btnCancel').addEventListener('click', closeModal);
+$('#btnCancel').addEventListener('click', ()=>{ if(!currentEditId) clearOrderDraft(); closeModal(); });
 // Pas de fermeture au clic à côté : la fiche commande en cours de saisie se perdait (Karim, 31/10). On ferme par Annuler.
 $('#btnNew').addEventListener('click', ()=> openModal(null));
 $('#btnNewEmpty').addEventListener('click', ()=> openModal(null));
