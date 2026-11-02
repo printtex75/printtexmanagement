@@ -388,7 +388,14 @@
   .cal-bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px;}
   .cal-nav{display:flex;align-items:center;gap:8px;}
   .cal-title{font-family:'Oswald',sans-serif;font-size:18px;text-transform:capitalize;min-width:170px;text-align:center;}
-  .cal-alert{background:#111;color:#fff;font-weight:600;font-size:13px;padding:8px 12px;border-radius:6px;margin-bottom:12px;}
+  .cal-alert{border:2px solid #111;border-radius:6px;padding:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .cal-alert strong{width:100%;font-size:13px;}
+  .cal-alert .cal-chip{width:auto;max-width:100%;}
+  .cal-soon{background:#f0f0f0;}
+  .cal-today{box-shadow:inset 0 0 0 2px #111;}
+  .stat-cal .stat-late{display:inline-block;margin-top:4px;background:#111;color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:1px 7px;}
+  .stat-relance{grid-column:1/-1;justify-self:end;background:none;border:none;color:inherit;opacity:.75;font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:0 2px;}
+  .stat-relance.on{opacity:1;font-weight:700;}
   .cal-wrap{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:start;}
   .cal-head,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));}
   .cal-head div{font-size:11px;font-weight:600;color:#777;text-transform:uppercase;padding:0 6px 6px;}
@@ -419,7 +426,9 @@
     .cal-grid{display:block;border:none;}
     .cal-day{border:none;border-bottom:1px solid #e6e6e6;min-height:0;padding:10px 0;}
     .cal-semaine .cal-day{min-height:0;}
-    .cal-empty,.cal-out{display:none;}
+    .cal-empty,.cal-out,.cal-past{display:none;}
+    .cal-soon{background:none;}
+    .cal-today{box-shadow:none;}
     .cal-num{display:none;}
     .cal-long{display:block;font-size:13px;font-weight:600;text-transform:capitalize;margin-bottom:4px;}
     .cal-today .cal-long{text-decoration:underline;}
@@ -1969,6 +1978,9 @@ function renderStats(){
   const ceMois = new Date().toISOString().slice(0,7);
   const livree = orders.filter(o => o.status === 'livree' && String(o.deliveredAt || '').slice(0,7) === ceMois).length;
   const relanceCount = orders.filter(needsRelance).length;
+  const upcoming = active.filter(calIsUpcoming);
+  const prodLate = upcoming.filter(calIsLate).length;
+  const prodWeek = upcoming.filter(o=> o.deadline && daysUntil(o.deadline) >= 0 && daysUntil(o.deadline) <= 7).length;
   const dueTotal = orders.reduce((sum,o)=> sum + amountDue(o), 0);
   const dueCount = orders.filter(o=> amountDue(o) > 0).length;
   $('#stats').innerHTML = `
@@ -1976,9 +1988,19 @@ function renderStats(){
     <div class="stat urgent"><div class="n">${urgent}</div><div class="l">Urgentes</div></div>
     <div class="stat"><div class="n">${production}</div><div class="l">Production</div></div>
     <div class="stat"><div class="n">${livree}</div><div class="l">Livrées ce mois</div></div>
-    <div class="stat clickable ${activeFilter==='relance'?'on':''}" data-filter="relance" title="Prêtes depuis ${RELANCE_DAYS} jours ou plus"><div class="n">${relanceCount}</div><div class="l">À relancer</div></div>
+    <div class="stat clickable stat-cal" data-goto="calendar" title="Commandes à rendre dans les 7 prochains jours : ouvrir le calendrier"><div class="n">${prodWeek}</div><div class="l">Prod 7 jours</div>${prodLate ? `<div class="stat-late">${prodLate} en retard</div>` : ''}</div>
     <div class="stat clickable ${activeFilter==='encaisser'?'on':''}" data-filter="encaisser" title="${dueCount} commande(s) avec un reste à payer (livrées comprises)"><div class="n">${dueTotal.toFixed(0)} €</div><div class="l">À encaisser</div></div>
+    ${relanceCount || activeFilter==='relance' ? `<button type="button" class="stat-relance ${activeFilter==='relance'?'on':''}" data-filter="relance" title="Prêtes depuis ${RELANCE_DAYS} jours ou plus">À relancer : ${relanceCount}</button>` : ''}
   `;
+  $('#stats').querySelector('.stat-cal').addEventListener('click', ()=>{
+    $('#btnCalendar').click();
+    $('#calendarView').scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+  const relBtn = $('#stats').querySelector('.stat-relance');
+  if(relBtn) relBtn.addEventListener('click', ()=>{
+    activeFilter = activeFilter === 'relance' ? null : 'relance';
+    if(currentView === 'calendar') $('#btnList').click(); else render();
+  });
   $('#stats').querySelectorAll('.stat.clickable').forEach(el=>{
     el.addEventListener('click', ()=>{
       activeFilter = (activeFilter === el.dataset.filter) ? null : el.dataset.filter;
@@ -2251,10 +2273,12 @@ function render(){
 
 /* ---------- Calendrier ----------
    Chaque commande à sa date limite (deadline). Mois ou semaine, lundi en premier ; sur téléphone, liste des jours qui ont des commandes.
-   Les commandes sans date sont dans « Sans date ». En retard = date passée et ni livrée ni annulée (comme le badge de date). */
+   Seulement la prod à venir (en attente ou en production, non archivée) ; les retards sont listés en haut.
+   Les commandes sans date sont dans « Sans date ». En retard = date passée (comme le badge de date). */
 let calMode = 'mois';
 let calRef = new Date();
 function calKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function calIsUpcoming(o){ return !o.archived && ['attente_production','production'].includes(o.status); }
 function calIsLate(o){ return !!o.deadline && !['livree','annulee'].includes(o.status) && daysUntil(o.deadline) < 0; }
 function calChip(o){
   const late = calIsLate(o);
@@ -2262,6 +2286,7 @@ function calChip(o){
     + `${late ? '<b>Retard</b> ' : ''}#${String(o.orderNumber||0).padStart(4,'0')} ${esc(o.clientName || '')}</button>`;
 }
 function renderCalendar(list){
+  list = list.filter(calIsUpcoming);
   const byDay = {};
   const noDate = [];
   list.forEach(o=>{ const k = String(o.deadline || '').slice(0,10); if(k) (byDay[k] = byDay[k] || []).push(o); else noDate.push(o); });
@@ -2283,18 +2308,19 @@ function renderCalendar(list){
   for(const d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
     const k = calKey(d), items = byDay[k] || [];
     const outside = calMode === 'mois' && d.getMonth() !== ref.getMonth();
-    days.push(`<div class="cal-day${outside ? ' cal-out' : ''}${k === today ? ' cal-today' : ''}${items.length ? '' : ' cal-empty'}">
+    const soon = k >= today && daysUntil(k) <= 2;
+    days.push(`<div class="cal-day${outside ? ' cal-out' : ''}${k === today ? ' cal-today' : ''}${k < today ? ' cal-past' : ''}${soon ? ' cal-soon' : ''}${items.length ? '' : ' cal-empty'}">
       <div class="cal-date"><span class="cal-num">${d.getDate()}</span><span class="cal-long">${d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})}</span></div>
       ${items.map(calChip).join('')}</div>`);
   }
-  const lateCount = list.filter(calIsLate).length;
+  const late = list.filter(calIsLate).sort((a,b)=> String(a.deadline).localeCompare(String(b.deadline)));
   $('#calendarView').innerHTML = `
     <div class="cal-bar">
       <div class="cal-nav"><button type="button" class="btn btn-ghost btn-sm" data-cal="prev" aria-label="Précédent">‹</button><strong class="cal-title">${title}</strong><button type="button" class="btn btn-ghost btn-sm" data-cal="next" aria-label="Suivant">›</button></div>
       <div class="cal-nav"><button type="button" class="btn btn-ghost btn-sm" data-cal="today">Aujourd'hui</button>
         <div class="view-toggle keep-mobile"><button type="button" data-cal="mois" class="${calMode==='mois'?'active':''}">Mois</button><button type="button" data-cal="semaine" class="${calMode==='semaine'?'active':''}">Semaine</button></div></div>
     </div>
-    ${lateCount ? `<div class="cal-alert">${lateCount} commande${lateCount>1?'s':''} en retard</div>` : ''}
+    ${late.length ? `<div class="cal-alert"><strong>En retard (${late.length})</strong>${late.map(o=> calChip(o).replace('</button>', ` · ${formatDate(o.deadline)}</button>`)).join('')}</div>` : ''}
     <div class="cal-wrap">
       <div class="cal-main">
         <div class="cal-head">${['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(j=>`<div>${j}</div>`).join('')}</div>
