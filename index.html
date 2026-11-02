@@ -393,7 +393,18 @@
   .cal-alert .cal-chip{width:auto;max-width:100%;}
   .cal-soon{background:#f0f0f0;}
   .cal-today{box-shadow:inset 0 0 0 2px #111;}
-  .stat-cal .stat-late{display:inline-block;margin-top:4px;background:#111;color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:1px 7px;}
+  header #stats{grid-template-columns:repeat(5,minmax(96px,1fr)) minmax(250px,2.4fr);}
+  .mini-cal{text-align:left;display:flex;flex-direction:column;gap:6px;}
+  .mc-top{display:flex;justify-content:space-between;align-items:center;gap:6px;}
+  .mc-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+  .mc-day{display:flex;flex-direction:column;align-items:center;border-radius:6px;padding:3px 0;line-height:1.15;opacity:.7;}
+  .mc-wd{font-size:9px;text-transform:uppercase;letter-spacing:.03em;}
+  .mc-d{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;}
+  .mc-n{font-size:11px;font-weight:700;}
+  .mc-has{opacity:1;}
+  .mc-has .mc-n{background:#F7F3EE;color:#111;border-radius:8px;padding:0 6px;}
+  .mc-today{opacity:1;box-shadow:inset 0 0 0 1px rgba(247,243,238,0.6);}
+  .stat-late{display:inline-block;margin-top:4px;background:#111;color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:1px 7px;}
   .stat-relance{grid-column:1/-1;justify-self:end;background:none;border:none;color:inherit;opacity:.75;font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:0 2px;}
   .stat-relance.on{opacity:1;font-weight:700;}
   .cal-wrap{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:start;}
@@ -419,6 +430,8 @@
   .cal-nodate h4{margin:0 0 4px;font-size:13px;}
   @media (max-width:640px){
     #calendarView{padding:0 12px 24px;}
+    header #stats{grid-template-columns:repeat(3,1fr);}
+    header .stats .mini-cal{grid-column:1/-1;}
     .view-toggle.keep-mobile{display:flex !important;}
     .cal-title{min-width:0;font-size:16px;}
     .cal-wrap{grid-template-columns:1fr;}
@@ -1980,7 +1993,6 @@ function renderStats(){
   const relanceCount = orders.filter(needsRelance).length;
   const upcoming = active.filter(calIsUpcoming);
   const prodLate = upcoming.filter(calIsLate).length;
-  const prodWeek = upcoming.filter(o=> o.deadline && daysUntil(o.deadline) >= 0 && daysUntil(o.deadline) <= 7).length;
   const dueTotal = orders.reduce((sum,o)=> sum + amountDue(o), 0);
   const dueCount = orders.filter(o=> amountDue(o) > 0).length;
   $('#stats').innerHTML = `
@@ -1988,14 +2000,14 @@ function renderStats(){
     <div class="stat urgent"><div class="n">${urgent}</div><div class="l">Urgentes</div></div>
     <div class="stat"><div class="n">${production}</div><div class="l">Production</div></div>
     <div class="stat"><div class="n">${livree}</div><div class="l">Livrées ce mois</div></div>
-    <div class="stat clickable stat-cal" data-goto="calendar" title="Commandes à rendre dans les 7 prochains jours : ouvrir le calendrier"><div class="n">${prodWeek}</div><div class="l">Prod 7 jours</div>${prodLate ? `<div class="stat-late">${prodLate} en retard</div>` : ''}</div>
     <div class="stat clickable ${activeFilter==='encaisser'?'on':''}" data-filter="encaisser" title="${dueCount} commande(s) avec un reste à payer (livrées comprises)"><div class="n">${dueTotal.toFixed(0)} €</div><div class="l">À encaisser</div></div>
+    ${miniCalendarHTML(upcoming, prodLate)}
     ${relanceCount || activeFilter==='relance' ? `<button type="button" class="stat-relance ${activeFilter==='relance'?'on':''}" data-filter="relance" title="Prêtes depuis ${RELANCE_DAYS} jours ou plus">À relancer : ${relanceCount}</button>` : ''}
   `;
-  $('#stats').querySelector('.stat-cal').addEventListener('click', ()=>{
-    $('#btnCalendar').click();
-    $('#calendarView').scrollIntoView({ behavior:'smooth', block:'start' });
-  });
+  const openCal = ()=>{ $('#btnCalendar').click(); $('#calendarView').scrollIntoView({ behavior:'smooth', block:'start' }); };
+  const mc = $('#stats').querySelector('.mini-cal');
+  mc.addEventListener('click', openCal);
+  mc.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openCal(); } });
   const relBtn = $('#stats').querySelector('.stat-relance');
   if(relBtn) relBtn.addEventListener('click', ()=>{
     activeFilter = activeFilter === 'relance' ? null : 'relance';
@@ -2280,6 +2292,18 @@ let calRef = new Date();
 function calKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 function calIsUpcoming(o){ return !o.archived && ['attente_production','production'].includes(o.status); }
 function calIsLate(o){ return !!o.deadline && !['livree','annulee'].includes(o.status) && daysUntil(o.deadline) < 0; }
+// Petit calendrier du haut : aujourd'hui et les 6 jours suivants, nombre de commandes à rendre par jour ; un clic ouvre le grand.
+function miniCalendarHTML(upcoming, lateCount){
+  const cells = [];
+  for(let i = 0; i < 7; i++){
+    const d = new Date(); d.setDate(d.getDate() + i);
+    const k = calKey(d), n = upcoming.filter(o=> String(o.deadline || '').slice(0,10) === k).length;
+    cells.push(`<div class="mc-day${i === 0 ? ' mc-today' : ''}${n ? ' mc-has' : ''}"><span class="mc-wd">${i === 0 ? 'Auj.' : d.toLocaleDateString('fr-FR', {weekday:'short'}).replace('.', '')}</span><span class="mc-d">${d.getDate()}</span><span class="mc-n">${n || '·'}</span></div>`);
+  }
+  return `<div class="stat clickable mini-cal" role="button" tabindex="0" title="Ouvrir le calendrier de la prod à venir">
+    <div class="mc-top"><span class="l">Prod à venir</span>${lateCount ? `<span class="stat-late">${lateCount} en retard</span>` : ''}</div>
+    <div class="mc-days">${cells.join('')}</div></div>`;
+}
 function calChip(o){
   const late = calIsLate(o);
   return `<button type="button" class="cal-chip cal-st-${o.status}${late ? ' cal-late' : ''}" data-id="${o.id}" title="${esc(statusLabel(o.status))}${late ? ' · en retard' : ''}">`
