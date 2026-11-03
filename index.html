@@ -384,7 +384,7 @@
   .view-toggle button{border:none;background:var(--canvas-2);padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-2);}
   .view-toggle button.active{background:var(--ink);color:var(--canvas-2);}
   /* Calendrier : noir, blanc, gris ; le retard en noir plein */
-  .cal-modal{max-width:1180px;}
+  .modal.cal-modal{max-width:none;width:calc(100vw - 32px);}
   .cal-modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
   .cal-modal-head h3{margin:0;font-family:'Oswald',sans-serif;}
   .cal-bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px;}
@@ -413,7 +413,7 @@
   .cal-head,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));}
   .cal-head div{font-size:11px;font-weight:600;color:#777;text-transform:uppercase;padding:0 6px 6px;}
   .cal-grid{border-top:1px solid #ddd;border-left:1px solid #ddd;}
-  .cal-day{border-right:1px solid #ddd;border-bottom:1px solid #ddd;min-height:96px;padding:4px;background:#fff;display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .cal-day{border-right:1px solid #ddd;border-bottom:1px solid #ddd;min-height:130px;padding:4px;background:#fff;display:flex;flex-direction:column;gap:3px;min-width:0;}
   .cal-semaine .cal-day{min-height:260px;}
   .cal-out{background:#f6f6f6;}
   .cal-out .cal-num{color:#aaa;}
@@ -421,7 +421,9 @@
   .cal-long{display:none;}
   .cal-today .cal-num{background:#111;color:#fff;border-radius:10px;padding:1px 7px;}
   .cal-none{display:none;}
-  .cal-chip{display:block;width:100%;text-align:left;font:inherit;font-size:11px;line-height:1.3;padding:3px 6px;border-radius:4px;border:1px solid #bbb;background:#fff;color:#111;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cal-chip{display:block;width:100%;text-align:left;font:inherit;font-size:11px;line-height:1.3;padding:3px 6px;border-radius:4px;border:1px solid #bbb;background:#fff;color:#111;cursor:pointer;overflow-wrap:anywhere;}
+  .cal-chip strong{display:block;font-weight:600;}
+  .cal-prod{display:block;font-size:10px;opacity:.75;}
   .cal-st-production{background:#e4e4e4;border-color:#c8c8c8;}
   .cal-st-prete{background:#555;border-color:#555;color:#fff;}
   .cal-st-livree{background:#f4f4f4;border-color:#e2e2e2;color:#999;text-decoration:line-through;}
@@ -2315,7 +2317,8 @@ function miniCalendarHTML(upcoming, lateCount){
 function calChip(o){
   const late = calIsLate(o);
   return `<button type="button" class="cal-chip cal-st-${o.status}${late ? ' cal-late' : ''}" data-id="${o.id}" title="${esc(statusLabel(o.status))}${late ? ' · en retard' : ''}">`
-    + `${late ? '<b>Retard</b> ' : ''}#${String(o.orderNumber||0).padStart(4,'0')} ${esc(o.clientName || '')}</button>`;
+    + `${late ? '<b>Retard</b> ' : ''}<strong>#${String(o.orderNumber||0).padStart(4,'0')} ${esc(o.clientName || '')}</strong>`
+    + `<span class="cal-prod">${esc(productLabel(o) || '')}</span></button>`;
 }
 function renderCalendar(list){
   list = list.filter(calIsUpcoming);
