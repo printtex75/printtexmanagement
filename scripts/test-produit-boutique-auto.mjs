@@ -22,15 +22,15 @@ const ctx = {
 };
 vm.createContext(ctx);
 const oneLine = name => html.slice(html.indexOf(`function ${name}(`)).split('\n')[0];
-vm.runInContext([oneLine('storeKey'), ...['parseVariantTitle', 'countFaces', 'importStoreOrders'].map(fn)].join('\n'), ctx);
+vm.runInContext([html.slice(html.indexOf('const SKU_BLANKS'), html.indexOf('function skuBlank(')), fn('skuBlank'), oneLine('storeKey'), ...['parseVariantTitle', 'countFaces', 'importStoreOrders'].map(fn)].join('\n'), ctx);
 
 // Sade : coché par l'atelier sans produit (« __auto ») ; Mug : pas coché.
 ctx.b = { id: 'zou', storeConnected: true, storeMap: { 'T-SHIRT EDIE BRITT': 'p1', 'T-SHIRT SADE': '__auto' } };
 ctx.tasks = [];
 ctx.products = [{ id: 'p1', nom: 'T-shirt Edie Britt', blank: 'AWDIS180', images: [] }];
 ctx.ORDERS = [{ ref: '#ZOU6799', date: '2026-11-12T12:49:36Z', lines: [
-  { title: 'T-SHIRT EDIE BRITT', variant: 'M', quantity: 1, options: '' },
-  { title: 'T-SHIRT SADE', variant: 'S / Blanc / Unisexe', quantity: 1, options: '' },
+  { title: 'T-SHIRT EDIE BRITT', variant: 'M', quantity: 1, options: 'SKU : AWDIS180-M' },
+  { title: 'T-SHIRT SADE', variant: 'S / Blanc / Unisexe', quantity: 1, options: 'SKU : FOTL-BLANC' },
   { title: 'MUG ZOU', variant: '', quantity: 1, options: '' },
 ] }];
 
@@ -41,7 +41,12 @@ assert.equal(savedProducts[0].nom, 'T-SHIRT SADE');
 assert.equal(ctx.b.storeMap['T-SHIRT SADE'], savedProducts[0].id, 'le nouveau produit est relié');
 const sade = savedTasks.find(t => t.nom === 'T-SHIRT SADE');
 assert.equal(sade.taille, 'S');
-assert.match(sade.remarque, /à compléter/);
+assert.match(sade.remarque, /ajoutez le visuel/);
+assert.doesNotMatch(sade.remarque, /SKU/);
+// Le vêtement vient du SKU : AWDIS180 = Basic 180 g ; FOTL = Autre (Fruit of the Loom), aussi sur le produit créé.
+assert.equal(savedTasks.find(t => t.nom === 'T-shirt Edie Britt').blank, 'Basic 180 g');
+assert.equal(sade.blank, 'Autre'); assert.equal(sade.blankOther, 'Fruit of the Loom');
+assert.equal(savedProducts[0].blankOther, 'Fruit of the Loom');
 assert.equal(JSON.stringify(acks), '[["#ZOU6799"]]');
 
 // Deuxième commande du même produit : pas de second produit créé.

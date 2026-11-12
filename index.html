@@ -4461,6 +4461,15 @@ $('#btnShowShopify').addEventListener('click', ()=>{ storeWizard = null; showTas
 const STORE_MAIL = 'printtex75+commandes@gmail.com';
 let storeWizard = null;
 // Comparaison des titres sans accents ni ponctuation (les mails et la tâche automatique peuvent abîmer les accents).
+// Référence du vêtement dans le SKU de la boutique (« AWDIS180-M », « FOTL-BLANC-L ») : le premier morceau désigne le vêtement.
+const SKU_BLANKS = { AWDIS180:'Basic 180 g', AWDISEPAIS:'Épais 220 g', AWDISBOXY:'Boxy 240 g', AWDISZIP:'Zip hoodie', SOLSML:'Manches longues' };
+const SKU_OTHER = { FOTL:'Fruit of the Loom', SOLSFEMME:"Sol's femme moulant", SOLSCROP:"Sol's crop femme", ENFANT:'T-shirt enfant' };
+function skuBlank(options){
+  const m = String(options || '').match(/SKU\s*:\s*([A-Za-z0-9]+)/i);
+  if(!m) return null;
+  const code = m[1].toUpperCase();
+  return SKU_BLANKS[code] ? { blank: SKU_BLANKS[code], blankOther:'' } : { blank:'Autre', blankOther: SKU_OTHER[code] || code };
+}
 function storeKey(t){ return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
 async function publishStore(b){
   if(!b.storeConnected) return;
@@ -4480,9 +4489,11 @@ async function importStoreOrders(b, tasks, products){
     for(const l of o.lines || []){
       const pid = map[storeKey(l.title)];
       let p = pid && products.find(x=>x.id===pid);
+      const sk = skuBlank(l.options);
+      const opts = String(l.options || '').split('·').map(s=>s.trim()).filter(s=> s && !/^SKU\s*:/i.test(s)).join(' · ');
       // Coché par l'atelier sans produit Printtex (« __auto ») : le produit est créé et relié à la première commande.
       if(!p && pid === '__auto' && l.title){
-        const np = { id: 'prod_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), nom: String(l.title), couleurs:'', impression:'', blank:'', images:[], fromStore:true, createdAt: new Date().toISOString() };
+        const np = { id: 'prod_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), nom: String(l.title), couleurs:'', impression:'', blank: sk ? sk.blank : '', blankOther: sk ? sk.blankOther : '', images:[], fromStore:true, createdAt: new Date().toISOString() };
         const r = await saveProductDoc(b.id, np);
         if(!r.ok){ orderOk = false; continue; }
         products.push(np);
@@ -4495,12 +4506,12 @@ async function importStoreOrders(b, tasks, products){
       if(tasks.some(t=>t.id===id)) continue;
       const v = parseVariantTitle(l.variant);
       const task = {
-        id, nom: p.nom, blank: p.blank || '', blankOther: p.blankOther || '', taille: v.taille, couleur: v.couleur || p.couleurs || '',
+        id, nom: p.nom, blank: sk ? sk.blank : (p.blank || ''), blankOther: sk ? sk.blankOther : (p.blankOther || ''), taille: v.taille, couleur: v.couleur || p.couleurs || '',
         impression: p.impression || '', quantity: Number(l.quantity) || 0, productId: p.id,
-        remarque: [v.emplacement && 'Emplacement : ' + v.emplacement, 'Commande ' + o.ref, l.options, p.fromStore && !p.blank && 'Produit créé depuis la boutique : à compléter (vêtement, visuel)'].filter(Boolean).join(' · '), mockup: (p.images || []).slice(0,4),
+        remarque: [v.emplacement && 'Emplacement : ' + v.emplacement, 'Commande ' + o.ref, opts, p.fromStore && !(p.images || []).length && 'Produit créé depuis la boutique : ajoutez le visuel'].filter(Boolean).join(' · '), mockup: (p.images || []).slice(0,4),
         done:false, readyQty:0, createdAt: o.date ? new Date(o.date).toISOString() : new Date().toISOString(), storeOrder: String(o.ref)
       };
-      const faces = countFaces(v.emplacement + ' ' + (l.options || ''));
+      const faces = countFaces(v.emplacement + ' ' + opts);
       if(faces) task.faces = faces;
       if(p.siteProductId){ task.siteProductId = p.siteProductId; task.siteHandle = p.siteHandle || ''; task.siteName = p.siteName || ''; task.siteImage = p.siteImage || ''; }
       if(!(await saveTaskDoc(b.id, task))){ orderOk = false; continue; }
