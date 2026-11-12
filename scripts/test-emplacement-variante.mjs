@@ -26,5 +26,16 @@ assert.deepEqual(p('M / T-shirt blanc - Rose framboise / Au dos'), { taille: 'M'
 assert.equal(faces('Face + Dos'), 2);
 assert.equal(faces('Dos Emplacement : Devant'), 2);
 assert.equal(faces('Noir unisexe'), 0);
+// Relecture de la Session chef : un emplacement n'est compté qu'une fois.
+assert.equal(faces('Face avant'), 1);
+assert.equal(faces('Face arrière'), 1);
+assert.equal(faces('Dos Emplacement : Dos'), 1);
+assert.equal(faces('Visuel : face avant'), 1);
+assert.equal(faces('Face : logo.png · Dos : texte.png'), 2);
+assert.equal(faces('Dos Devant'), 2);
+assert.equal(faces("À l'avant"), 1);
+assert.equal(faces('Manche gauche · Manche droite'), 2);
+assert.equal(faces('Manches longues'), 0);
+assert.deepEqual(p('M / Manche longue / Noir'), { taille: 'M', couleur: 'Manche longue / Noir', emplacement: '' });
 
 console.log('test-emplacement-variante : OK');
