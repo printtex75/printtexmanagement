@@ -4480,13 +4480,13 @@ async function importStoreOrders(b, tasks, products){
     for(const l of o.lines || []){
       const pid = map[storeKey(l.title)];
       let p = pid && products.find(x=>x.id===pid);
-      // Produit pas encore relié (et pas écarté par la marque) : on le crée et on le relie, plutôt que perdre l'article.
-      if(!p && !pid && l.title && !(b.storeSkip || []).some(t=> storeKey(t) === storeKey(l.title))){
+      // Coché par l'atelier sans produit Printtex (« __auto ») : le produit est créé et relié à la première commande.
+      if(!p && pid === '__auto' && l.title){
         const np = { id: 'prod_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), nom: String(l.title), couleurs:'', impression:'', blank:'', images:[], fromStore:true, createdAt: new Date().toISOString() };
         const r = await saveProductDoc(b.id, np);
         if(!r.ok){ orderOk = false; continue; }
         products.push(np);
-        b.storeMap[l.title] = np.id; map[storeKey(l.title)] = np.id;
+        b.storeMap[Object.keys(b.storeMap).find(k=> storeKey(k) === storeKey(l.title)) || l.title] = np.id; map[storeKey(l.title)] = np.id;
         storeMapChanged = true;
         p = np;
       }
@@ -4560,8 +4560,8 @@ async function renderStoreView(){
       <div class="shopify-connect">
         <h3>Ma boutique en ligne</h3>
         <div class="shopify-status">Boutique connectée : <strong>${esc(b.storeUrl || '')}</strong> (${b.storePlatform === 'bigcartel' ? 'Big Cartel' : 'Shopify'})</div>
-        <p class="hint">${b.storeLastOrderAt ? 'Dernières commandes reçues le ' + formatDate(b.storeLastOrderAt) + '.' : 'En attente de la première commande : elles arrivent deux fois par jour, à 9 h et 16 h.'}</p>
-        <div class="store-list">${items.length ? items.map(([t, pid])=>{ const p = currentBrandProducts.find(x=>x.id===pid); return `<div>${esc(t)} <span class="hint">→ ${esc(p ? p.nom : 'produit supprimé')}</span></div>`; }).join('') : '<div class="hint">Aucun produit coché.</div>'}</div>
+        <p class="hint">${b.storeLastOrderAt ? 'Dernières commandes reçues le ' + formatDate(b.storeLastOrderAt) + '.' : 'En attente de la première commande : elles arrivent trois fois par jour, à 9 h, 13 h et 17 h.'}</p>
+        <div class="store-list">${items.length ? items.map(([t, pid])=>{ const p = currentBrandProducts.find(x=>x.id===pid); return `<div>${esc(t)} <span class="hint">→ ${esc(p ? p.nom : (pid === '__auto' ? 'créé à la première commande' : 'produit supprimé'))}</span></div>`; }).join('') : '<div class="hint">Aucun produit coché.</div>'}</div>
         <div class="modal-actions">
           <div class="left">${back}</div>
           <div class="right">
@@ -4634,7 +4634,7 @@ async function renderStoreView(){
               <div class="shopify-prod-title">${esc(p.title)}</div>
               <label class="check-inline"><input type="checkbox" class="shopify-made" ${sel ? 'checked' : ''}> Fabriqué chez Printtex</label>
               <select class="shopify-match">
-                <option value="">Produit Printtex correspondant…</option>
+                <option value="">${isBrandView() ? 'Produit Printtex correspondant…' : 'Produit Printtex (vide : créé à la 1re commande)'}</option>
                 ${currentBrandProducts.map(cp=>`<option value="${esc(cp.id)}" ${sel===cp.id ? 'selected' : ''}>${esc(cp.nom)}</option>`).join('')}
                 <option value="__new">+ Créer ce produit chez Printtex</option>
               </select>
@@ -4650,7 +4650,8 @@ async function renderStoreView(){
       box.querySelectorAll('.shopify-prod').forEach(el=>{
         const t = el.dataset.title, made = el.querySelector('.shopify-made').checked, pid = el.querySelector('.shopify-match').value;
         el.classList.toggle('on', made);
-        if(made && pid) map[t] = pid; else if(!made) delete map[t];
+        // L'atelier peut cocher sans choisir : le produit Printtex sera créé à la première commande.
+        if(made && pid) map[t] = pid; else if(made && !isBrandView()) map[t] = '__auto'; else if(!made) delete map[t];
       });
       W.map = map;
     };
@@ -4683,7 +4684,7 @@ async function renderStoreView(){
     $('#btnStoreNext').onclick = ()=>{
       sync();
       const missing = [...box.querySelectorAll('.shopify-prod')].filter(el=> el.querySelector('.shopify-made').checked && !el.querySelector('.shopify-match').value).length;
-      if(missing){ $('#storeError').textContent = 'Choisissez le produit Printtex pour chaque produit coché.'; return; }
+      if(missing && isBrandView()){ $('#storeError').textContent = 'Choisissez le produit Printtex pour chaque produit coché.'; return; }
       if(!Object.keys(map).length){ $('#storeError').textContent = 'Cochez au moins un produit fabriqué chez Printtex.'; return; }
       W.step = 3; renderStoreView();
     };
@@ -4717,8 +4718,6 @@ async function renderStoreView(){
     if(W.revoir){ storeWizard = null; renderStoreView(); return; }
     b.storeConnected = true;
     b.storeUrl = W.url; b.storePlatform = W.platform; b.storeMap = W.map;
-    // Produits laissés sans produit Printtex : jamais créés automatiquement à l'arrivée d'une commande.
-    if(W.products) b.storeSkip = W.products.map(p=>p.title).filter(t=> t && !W.map[t]);
     b.storeConnectedAt = b.storeConnectedAt || new Date().toISOString();
     await saveBrandDoc(b);
     await publishStore(b);

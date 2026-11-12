@@ -24,7 +24,8 @@ vm.createContext(ctx);
 const oneLine = name => html.slice(html.indexOf(`function ${name}(`)).split('\n')[0];
 vm.runInContext([oneLine('storeKey'), ...['parseVariantTitle', 'countFaces', 'importStoreOrders'].map(fn)].join('\n'), ctx);
 
-ctx.b = { id: 'zou', storeConnected: true, storeMap: { 'T-SHIRT EDIE BRITT': 'p1' }, storeSkip: ['MUG ZOU'] };
+// Sade : coché par l'atelier sans produit (« __auto ») ; Mug : pas coché.
+ctx.b = { id: 'zou', storeConnected: true, storeMap: { 'T-SHIRT EDIE BRITT': 'p1', 'T-SHIRT SADE': '__auto' } };
 ctx.tasks = [];
 ctx.products = [{ id: 'p1', nom: 'T-shirt Edie Britt', blank: 'AWDIS180', images: [] }];
 ctx.ORDERS = [{ ref: '#ZOU6799', date: '2026-11-12T12:49:36Z', lines: [
