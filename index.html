@@ -4462,7 +4462,7 @@ const STORE_MAIL = 'printtex75+commandes@gmail.com';
 let storeWizard = null;
 // Comparaison des titres sans accents ni ponctuation (les mails et la tâche automatique peuvent abîmer les accents).
 // Référence du vêtement dans le SKU de la boutique (« AWDIS180-M », « FOTL-BLANC-L ») : le premier morceau désigne le vêtement.
-const SKU_BLANKS = { AWDIS180:'Basic 180 g', AWDISEPAIS:'Épais 220 g', AWDISBOXY:'Boxy 240 g', AWDISZIP:'Zip hoodie', SOLSML:'Manches longues' };
+const SKU_BLANKS = { AWDIS180:'Basic 180 g', AWDISEPAIS:'Boxy 240 g', AWDISBOXY:'Boxy 240 g', AWDISZIP:'Zip hoodie', SOLSML:'Manches longues' };
 const SKU_OTHER = { FOTL:'Fruit of the Loom', SOLSFEMME:"Sol's femme moulant", SOLSCROP:"Sol's crop femme", ENFANT:'T-shirt enfant' };
 function skuBlank(options){
   const m = String(options || '').match(/SKU\s*:\s*([A-Za-z0-9]+)/i);
