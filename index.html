@@ -747,6 +747,9 @@
   .shopify-prod-title{font-weight:600;font-size:13px;color:var(--ink);}
   /* Facturation (Printtex seulement) */
   body.role-brand #btnShowBilling, body.role-brand #tasksViewBilling{display:none !important;}
+  .price-panel-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .price-panel-row .hint{display:block;margin-top:2px;}
+  .price-panel-row button{flex:none;}
   .brand-pay-bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:12px;}
   .brand-pay-bar .pay-total{flex:1;min-width:160px;font-size:14px;}
   .pay-row{text-transform:none;letter-spacing:0;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:13px;font-weight:600;}
@@ -3339,7 +3342,7 @@ $('#btnBrandPrices').addEventListener('click', async ()=>{
   }));
   rows.sort((x,y)=> (x.total - x.set === 0) - (y.total - y.set === 0) || x.b.name.localeCompare(y.b.name));
   box.innerHTML = rows.map(r=> `
-    <div class="billing-price-row">
+    <div class="price-panel-row">
       <span><strong>${esc(r.b.name)}</strong> <span class="hint">${r.err ? 'illisible (connexion)' : `${r.set} / ${r.total} produit(s) avec un prix${r.b.payAtOrder ? ' · paiement à la commande' : ''}`}</span></span>
       <button type="button" class="btn btn-ghost btn-sm" data-brand="${esc(r.b.id)}">Gérer les prix</button>
     </div>`).join('') || '<div class="hint">Aucune marque.</div>';
